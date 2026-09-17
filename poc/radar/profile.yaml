@@ -1,0 +1,40 @@
+# 账号定位与人设配置（选题雷达 + 仿写共用）
+
+persona:
+  name: 行程规划旅行家
+  positioning: 提供旅游行程规划与定制服务的旅行家
+  tone: 专业但不端着，像懂行的朋友给建议
+  differentiation: 对标笔记讲"去哪玩"，我的内容强化"怎么排"——天数/预算/节奏表格化
+  service_hook: 评论区留言你的出行人数/天数/预算，帮你出定制行程
+
+# 关键词体系（雷达采集用，三层）
+keywords:
+  audience:      # 人群层
+    - 带娃游
+    - 亲子旅行
+    - 带老人出行
+    - 情侣出游
+  theme:         # 主题层
+    - 避寒
+    - 玩雪
+    - 错峰出行
+    - 穷游
+    - citywalk
+  service:       # 服务意图层
+    - 行程规划
+    - 定制游
+    - 保姆级攻略
+    - 天晚怎么排
+
+# 评分配置
+scoring:
+  heat_threshold: 25.0   # 数值热度门槛（H = log10 加权互动 ×10 × 时间衰减）
+  min_likes: 500         # 最低点赞门槛
+  hard_gates:            # LLM 语义评分硬门槛
+    relevance: 6         # 赛道相关性 < 6 淘汰
+    virality: 5          # 爆款潜力 < 5 淘汰
+  weights:               # 机会分权重
+    relevance: 0.3
+    virality: 0.3
+    persona_fit: 0.2
+    conversion: 0.2
