@@ -121,18 +121,18 @@ def gen_itinerary():
         ("Day 3", "博物馆收尾", "上午 南京博物院（提前 7 天预约）· 下午 鸡鸣寺 → 台城城墙 → 返程",
          "地铁 2 号线明故宫站附近，返程顺路"),
     ]
-    y = 640
+    y = 616
     for tag, theme, content, traffic in days:
-        d.rounded_rectangle([MARGIN, y, W - MARGIN, y + 264], radius=26, fill=CARD, outline=LINE, width=2)
-        pill(d, MARGIN + 34, y + 30, tag, F(38, True), (255, 255, 255), MAPLE)
-        d.text((MARGIN + 200, y + 34), theme, font=F(52), fill=DARK)
-        wrap(d, MARGIN + 34, y + 122, content, F(42, False), DARK, W - MARGIN * 2 - 68, max_lines=2)
-        d.text((MARGIN + 34, y + 208), "🚇 " if False else "· ", font=F(36), fill=GOLD)
-        d.text((MARGIN + 58, y + 206), traffic, font=F(36), fill=GRAY)
-        y += 286
+        d.rounded_rectangle([MARGIN, y, W - MARGIN, y + 306], radius=26, fill=CARD, outline=LINE, width=2)
+        pill(d, MARGIN + 34, y + 28, tag, F(38, True), (255, 255, 255), MAPLE)
+        d.text((MARGIN + 200, y + 32), theme, font=F(52), fill=DARK)
+        wrap(d, MARGIN + 34, y + 118, content, F(42, False), DARK, W - MARGIN * 2 - 68, max_lines=2)
+        d.text((MARGIN + 34, y + 248), "· ", font=F(36), fill=GOLD)
+        d.text((MARGIN + 58, y + 246), traffic, font=F(36), fill=GRAY)
+        y += 324
 
-    d.rounded_rectangle([MARGIN, 1520, W - MARGIN, 1600], radius=22, fill=(240, 247, 228))
-    d.text((W / 2, 1560), "节奏原则：上午一个重点 · 下午一个重点，不赶路", font=F(42), fill=LEAF, anchor="mm")
+    d.rounded_rectangle([MARGIN, 1590, W - MARGIN, 1650], radius=20, fill=(240, 247, 228))
+    d.text((W / 2, 1620), "节奏原则：上午一个重点 · 下午一个重点，不赶路", font=F(40), fill=LEAF, anchor="mm")
     img.save(os.path.join(OUT, "itinerary.jpg"), quality=92)
 
 
@@ -153,20 +153,17 @@ def gen_spots():
     ]
     y = 204
     for img_name, name, tag, rows in spots:
-        d.rounded_rectangle([MARGIN, y, W - MARGIN, y + 430], radius=26, fill=CARD, outline=LINE, width=2)
-        paste_rounded(img, load_crop(img_name, 382, 382), (MARGIN + 34, y + 24), radius=20)
+        d.rounded_rectangle([MARGIN, y, W - MARGIN, y + 464], radius=26, fill=CARD, outline=LINE, width=2)
+        paste_rounded(img, load_crop(img_name, 382, 382), (MARGIN + 34, y + 41), radius=20)
         tx = MARGIN + 456
-        d.text((tx, y + 40), name, font=F(52), fill=DARK)
-        pill(d, tx + F(52).getlength(name) + 22, y + 44, tag, F(34, True), AMBER, (253, 236, 213))
-        ry = y + 136
+        d.text((tx, y + 38), name, font=F(52), fill=DARK)
+        pill(d, tx + F(52).getlength(name) + 22, y + 42, tag, F(34, True), AMBER, (253, 236, 213))
+        ry = y + 130
         for label, content in rows:
             d.text((tx, ry), label, font=F(36), fill=GOLD)
-            ry = wrap(d, tx, ry + 52, content, F(40, False), DARK, W - MARGIN - 34 - tx, max_lines=2) + 14
-        d.text((tx, y + 388), "门票/预约以官方渠道为准", font=F(32, False), fill=GRAY)
-        y += 450
+            ry = wrap(d, tx, ry + 48, content, F(40, False), DARK, W - MARGIN - 34 - tx, max_lines=2) + 20
+        y += 478
 
-    d.rounded_rectangle([MARGIN, 1566, W - MARGIN, 1636], radius=20, fill=(253, 236, 213))
-    d.text((W / 2, 1601), "以上为规划参考，开放时间以各官方渠道实时为准", font=F(36), fill=AMBER, anchor="mm")
     img.save(os.path.join(OUT, "spots.jpg"), quality=92)
 
 
