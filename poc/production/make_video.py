@@ -19,16 +19,25 @@ ADIR = os.path.join(VDIR, "audio")
 CDIR = os.path.join(VDIR, "clips")
 FONT = os.path.join(BASE, "assets", "fonts", "NotoSansSC-Bold.otf")
 TTS_URL = "https://openspeech.bytedance.com/api/v3/plan/tts/unidirectional"
-SPEAKER = "zh_female_vv_uranus_bigtts"  # 文档示例音色，可按音色库更换
+SPEAKER = "zh_female_qingxinnvsheng_uranus_bigtts"  # 清新女声
+BGM = os.path.join(BASE, "assets", "bgm_travel.mp3")  # Carefree · Kevin MacLeod (CC-BY)
+BGM_VOL = 0.16       # BGM 音量（旁白优先）
+XFADE = 0.5          # 镜头叠化时长
 FPS = 25
 OUT_W, OUT_H = 1080, 1440  # 3:4 竖版
 
+# 分镜脚本：图文严格同源——每段旁白只讲对应图片上承载的内容
 STORYBOARD = [
+    # 图1 封面：标题大字 + Day1/2/3 预告 → 开场钩子
     ("images/cover_photo_ref.jpg", "国庆带娃去南京，怕人多又想看秋色？这份三天的赏秋路线，直接抄作业。"),
-    ("images/itinerary.jpg", "第一天钟山赏秋线，石象路上午去，光线好还出片，下午梧桐大道加灵谷寺。"),
-    ("assets/spot_zoo.jpg", "第二天红山动物园，开园就进，动物上午最活跃，娃能开心一上午。"),
-    ("images/spots.jpg", "第三天南京博物院收尾，记得提前七天预约。石象路早上八点最出片，梧桐大道下午四点后最美。"),
-    ("images/stay_hook.jpg", "住宿就选夫子庙老门东片区，动线最顺。你家情况不一样？评论区报人数天数，我帮你重排。"),
+    # 图2 三日总览卡：Day1 钟山赏秋线 / Day2 红山动物园 / Day3 博物院收尾 → 三天概览 + 预约提醒
+    ("images/itinerary.jpg", "三天这样排：第一天钟山赏秋线，第二天红山动物园，第三天南京博物院收尾，博物院记得提前七天预约。"),
+    # 图3 红山实景（小熊猫）→ Day2 重点展开
+    ("assets/spot_zoo.jpg", "重点说红山动物园，开园就进，动物上午最活跃，娃能开心一上午。"),
+    # 图4 点位卡：石象路 8-10 点 / 梧桐大道下午 4 点后 / 红山开园即入 → 只讲图上三个时段
+    ("images/spots.jpg", "出片时段记好：石象路早上八点到十点，光线好游客少；梧桐大道下午四点后，斜阳穿树最美。"),
+    # 图5 住宿三原则（动线/床/退改）+ 评论区钩子 → 同步收尾
+    ("images/stay_hook.jpg", "带娃住宿记住三点：动线顺、床舒服、能免费退改。你家情况不一样？评论区报人数天数，我帮你重排一版。"),
 ]
 
 
@@ -144,14 +153,41 @@ def main():
         clips.append((clip, dur))
         total += dur
 
-    # 2. concat 拼接
-    lst = os.path.join(VDIR, "concat.txt")
-    with open(lst, "w") as f:
-        for c, _ in clips:
-            f.write(f"file '{os.path.abspath(c)}'\n")
+    # 2. xfade 叠化拼接（视频 + 音频同步过渡）
+    n = len(clips)
+    inputs = []
+    for c, _ in clips:
+        inputs += ["-i", c]
+
+    vf_chain, prev = [], "[0:v]"
+    acc = 0.0
+    for i in range(1, n):
+        acc += clips[i - 1][1]
+        offset = acc - i * XFADE
+        out = f"[v{i}]" if i < n - 1 else "[vout]"
+        vf_chain.append(f"{prev}[{i}:v]xfade=transition=fade:duration={XFADE}:offset={offset:.3f}{out}")
+        prev = out
+    af_chain, prev = [], "[0:a]"
+    for i in range(1, n):
+        out = f"[a{i}]" if i < n - 1 else "[avox]"
+        af_chain.append(f"{prev}[{i}:a]acrossfade=d={XFADE}{out}")
+        prev = out
+
+    total = sum(d for _, d in clips) - (n - 1) * XFADE
     joined = os.path.join(VDIR, "joined.mp4")
+    # BGM：循环铺满 + 音量压低 + 淡入淡出，与旁白混音（旁白优先）
+    bg_fade_out = max(total - 2.5, 0)
     subprocess.run(
-        ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", joined],
+        ["ffmpeg", "-y", *inputs, "-stream_loop", "-1", "-i", BGM,
+         "-filter_complex",
+         ";".join(vf_chain + af_chain) +
+         f";[{n}:a]volume={BGM_VOL},afade=t=in:d=1.5,"
+         f"afade=t=out:st={bg_fade_out:.2f}:d=2.2[bgm];"
+         f"[avox][bgm]amix=inputs=2:duration=first:normalize=0[aout]",
+         "-map", "[vout]", "-map", "[aout]",
+         "-t", f"{total:.3f}",
+         "-c:v", "libx264", "-preset", "medium", "-crf", "20",
+         "-c:a", "aac", "-b:a", "160k", joined],
         check=True, capture_output=True,
     )
 
