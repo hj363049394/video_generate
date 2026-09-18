@@ -49,16 +49,17 @@
 
 关键词体系非静态：每周从抓回的爆款笔记中自动发现新热词并回填（Phase 1 实现）。
 
-### 3.2 数据源（已验证可用）
+### 3.2 数据源（2026-09-17 实测定稿）
 
-| 数据源 | 能力 | 价格 | 用途 |
+| 数据源 | 能力 | 价格 | 定位 |
 |---|---|---|---|
-| Apify · SocialDataX | 笔记搜索、搜索热榜、标签页笔记、评论、详情、博主作品 | $4.99/1000 条 | 主源 |
-| Apify · ethereal_wool | 关键词搜索（热度排序）+ 评论 + 博主主页 | $0.01/条 | 备源 |
-| 红狐数据 redfox.hk | 小红书爆款笔记查询、作品详情 | 按量付费 | 备源（国内直连） |
-| 手动粘贴 | 用户已有工具导出的笔记数据 | 免费 | 兜底 / POC 主路径 |
+| **红狐数据 redfox.hk** | 关键词搜笔记（热度排序，自带**全文正文**）、爆款洞察（含相关性评分）、日/周爆款榜、黑马榜（低粉爆款）、评论、热门账号榜、视频提文案 | ¥0.02/次，无月费 | **主源** |
+| Apify · SocialDataX | 笔记搜索、热榜、话题、评论、详情、博主作品（数据实时性好） | $4.99/1000 条 + Apify $39/月 | 备源（需高实时性时） |
+| 手动粘贴 | 用户已有工具导出的笔记数据 | 免费 | 兜底 |
 
-所有数据源经适配器统一为内部 Schema（见 3.5），可热切换。
+**红狐实测结论**（对比 SocialDataX）：同笔记交叉验证数据一致（互动数差异 5-8%，快照时间差）；"避寒"关键词精准度显著更高（无游戏噪音）；优质库机制保证爆款浓度；错误处理规范（未收录不扣费）。已知瑕疵：详情接口（优质库）覆盖不全（搜索接口自带全文，无影响）、互动数据有数天缓存滞后。
+
+所有数据源经适配器统一为内部 Schema（见 3.5），可热切换。适配器：`fetch_redfox.py`（主）/ `fetch_apify.py`（备）。
 
 ### 3.3 热度计算（数值层，代码完成）
 
@@ -202,11 +203,12 @@
 ```
 poc/radar/
   profile.yaml                  # 人设 + 关键词配置
-  fetch_apify.py                # 数据抓取适配器（SocialDataX 主源 / ethereal 备源）
+  fetch_redfox.py               # 红狐数据适配器（主源：搜索/爆款洞察）
+  fetch_apify.py                # Apify 适配器（备源：SocialDataX / ethereal）
   score_topics.py               # 数值热度计算与候选筛选
   prompts/topic_scoring.md      # LLM 语义评分 prompt 模板
   sample_search_results.json    # POC 演示数据（fixture，含 1 条真实笔记）
   output/                       # 运行产出（candidates / topic_list）
 ```
 
-运行方式：`APIFY_TOKEN=xxx python3 fetch_apify.py --keyword "带娃游"`（真实抓取）；无 token 时以 `sample_search_results.json` 走演示链路：`python3 score_topics.py --input sample_search_results.json`。
+运行方式：`export REDFOX_API_KEY=ak_xxx` 后 `python3 fetch_redfox.py --keyword "带娃游"`（主源，热度排序）；`python3 fetch_redfox.py --keyword "带娃游" --mode hot` 为爆款洞察模式（含相关性评分）；`python3 score_topics.py --input output/search_results_redfox_search_*.json` 完成数值评分。
