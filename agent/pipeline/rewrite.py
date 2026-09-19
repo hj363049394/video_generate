@@ -80,28 +80,45 @@ def run_rewrite(llm_call: Callable[[str], str], benchmark: dict, persona: dict) 
 
 # ─── LLM 调用（OpenAI 兼容接口，config.llm 注入） ──────────────────────
 
+def _chat_once(base_url: str, api_key: str, model: str, prompt: str, timeout: int = 300) -> str:
+    """单模型一次对话调用。"""
+    body = json.dumps({
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.7,
+    }).encode()
+    req = urllib.request.Request(
+        f"{base_url}/chat/completions", data=body, method="POST",
+        headers={"Authorization": f"Bearer {api_key}",
+                 "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        data = json.loads(resp.read())
+    return data["choices"][0]["message"]["content"]
+
+
 def llm_call_factory(llm_config: dict) -> Callable[[str], str]:
-    """构建同步 llm_call(prompt) -> str。未配置时抛出可读错误。"""
+    """构建同步 llm_call(prompt) -> str。
+
+    支持模型优先级列表（config.llm.models，按序 fallback，如
+    [qwen3.8-max, glm-5.3, deepseek-v4-pro]）或单模型（config.llm.model）。
+    """
     base_url = (llm_config.get("base_url") or "").rstrip("/")
     api_key = llm_config.get("api_key") or os.environ.get("LLM_API_KEY", "")
-    model = llm_config.get("model") or ""
-    if not (base_url and api_key and model):
+    models = list(llm_config.get("models") or [])
+    if llm_config.get("model"):
+        models.append(llm_config["model"])
+    if not (base_url and api_key and models):
         raise RuntimeError(
-            "未配置仿写 LLM：请在 agent/config/config.yaml 的 llm 段填 base_url/api_key/model"
-            "（OpenAI 兼容 chat/completions 接口，如智谱/火山方舟 chat 模型）")
+            "未配置仿写 LLM：请在 agent/config/config.yaml 的 llm 段填 base_url/api_key"
+            " 及 models（优先级列表）或 model（单模型），OpenAI 兼容 chat/completions 接口")
 
     def llm_call(prompt: str) -> str:
-        body = json.dumps({
-            "model": model,
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.7,
-        }).encode()
-        req = urllib.request.Request(
-            f"{base_url}/chat/completions", data=body, method="POST",
-            headers={"Authorization": f"Bearer {api_key}",
-                     "Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=300) as resp:
-            data = json.loads(resp.read())
-        return data["choices"][0]["message"]["content"]
+        errors = []
+        for model in models:  # 按优先级逐个尝试，成功即返回
+            try:
+                return _chat_once(base_url, api_key, model, prompt)
+            except Exception as exc:  # noqa: BLE001 —— fallback 需吞掉单模型异常
+                errors.append(f"{model}: {exc}")
+        raise RuntimeError("全部 LLM 模型失败 -> " + " | ".join(errors))
 
     return llm_call

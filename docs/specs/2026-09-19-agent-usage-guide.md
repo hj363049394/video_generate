@@ -48,7 +48,7 @@ cp config/config.example.yaml config/config.yaml
 
 | 配置项 | 填什么 | 怎么获取 |
 |---|---|---|
-| `llm.base_url / api_key / model` | 仿写对话模型（OpenAI 兼容） | 智谱：[open.bigmodel.cn](https://open.bigmodel.cn/) → 控制台 → API 密钥；base_url `https://open.bigmodel.cn/api/paas/v4`，model `glm-4-flash`（便宜）。DeepSeek 亦可：`https://api.deepseek.com` + `deepseek-chat` |
+| `llm.base_url / api_key / models` | 仿写对话模型（OpenAI 兼容，支持优先级列表 + 自动 fallback） | 阿里百炼（推荐，聚合三家模型）：[bailian.aliyun.com](https://bailian.aliyun.com) → 开通 → API-KEY → 创建 `sk-` key；base_url `https://dashscope.aliyuncs.com/compatible-mode/v1`；models 按优先级 `qwen3.8-max / glm-5.3 / deepseek-v4-pro`（2026-09-19 实测三家均可用） |
 | `channel.weixin.account_id / token` | 可留空，走 §2.1 扫码自动落盘 | `--qr-login` 产物；或从验证手册 V1 的 `~/.hermes/weixin/accounts/*.json` 抄录 |
 | `channel.weixin.allow_users` | 你的 ilink user_id | 首次发消息时看终端日志（有打印指引） |
 | `channel.weixin.home_uid` | `weixin:{你的ilink_user_id}` | 雷达每日推送目标 |

@@ -1,0 +1,43 @@
+# 小红书仿写 Agent · 正式配置（含真实 key，勿提交到公开仓库）
+
+channel:
+  weixin:
+    enabled: true
+    account_id: ""              # 待 V1 扫码后填写（或 --qr-login 自动落盘 state/weixin/）
+    token: ""
+    base_url: ""
+    allow_users: []             # 待首条消息后填 ilink user_id
+    home_uid: ""
+
+imagegen:
+  primary: ark
+  providers:
+    ark:
+      enabled: true
+      api_key: ""               # 环境变量 ARK_API_KEY
+    redfox_gpt:
+      enabled: false            # 红狐生图 3203 仅付费，充值后改 true
+      api_key: ""
+      resolution: "2k"
+    redfox_doubao:
+      enabled: false
+      api_key: ""
+
+deliver:
+  video_max_mb: 25              # V4 实测后调整
+
+llm:                            # 阿里百炼（OpenAI 兼容端点）
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  api_key: sk-ws-H.PILDRHE.djF2.MEUCIAbQ5eCD2uuH_1UXCKFV2_a124yPhEEK-yTfFFuZw-CLAiEAmW9Cu69coAYk176Ue0VyBp8xM-eQe_Qp03IVjbj7ObA
+  models:                       # 优先级从上到下，失败自动 fallback（2026-09-19 实测三模型均可用）
+    - qwen3.8-max
+    - glm-5.3
+    - deepseek-v4-pro
+
+persona:
+  soul: ""
+
+radar:
+  daily_hour: 8
+  keywords: [带娃游, 亲子旅行, 行程规划, 避寒]
+  max_items: 20
