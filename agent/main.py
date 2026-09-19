@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -35,12 +36,75 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname
 logger = logging.getLogger("main")
 
 
+def _load_dotenv(env_path: Path) -> None:
+    """简易 .env 加载器（不引入 python-dotenv 依赖）。
+
+    规则：
+      - 只读 KEY=VALUE 行，跳过注释 / 空行
+      - 不覆盖已存在的环境变量（让 shell export 优先级最高）
+      - 值两端引号会被剥离
+    """
+    if not env_path.exists():
+        return
+    for raw in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip("'").strip('"')
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+def _apply_env(cfg: dict) -> None:
+    """环境变量回填 config（仅在 config 字段为空时填入，不覆盖显式值）。
+
+    回填映射：
+      ARK_API_KEY     → imagegen.providers.ark.api_key
+      REDFOX_API_KEY  → imagegen.providers.redfox_gpt.api_key / redfox_doubao.api_key / radar.redfox_api_key
+      LLM_API_KEY     → llm.api_key
+      HOME_UID        → channel.weixin.home_uid
+    """
+    ark_key = os.environ.get("ARK_API_KEY", "")
+    redfox_key = os.environ.get("REDFOX_API_KEY", "")
+    llm_key = os.environ.get("LLM_API_KEY", "")
+    home_uid = os.environ.get("HOME_UID", "")
+
+    providers = ((cfg.get("imagegen") or {}).get("providers") or {})
+    for name, spec in providers.items():
+        if not isinstance(spec, dict) or spec.get("api_key"):
+            continue
+        if name == "ark" and ark_key:
+            spec["api_key"] = ark_key
+        elif name in ("redfox_gpt", "redfox_doubao") and redfox_key:
+            spec["api_key"] = redfox_key
+
+    llm = cfg.get("llm") or {}
+    if not llm.get("api_key") and llm_key:
+        llm["api_key"] = llm_key
+
+    radar = cfg.get("radar") or {}
+    if not radar.get("redfox_api_key") and redfox_key:
+        radar["redfox_api_key"] = redfox_key
+
+    wx = (cfg.get("channel") or {}).get("weixin") or {}
+    if not wx.get("home_uid") and home_uid:
+        wx["home_uid"] = home_uid
+
+
 def load_config(profile: str = "default") -> dict:
-    """按 profile 加载对应 config 文件。
+    """按 profile 加载对应 config 文件，并回填环境变量。
+
+    优先级（高 → 低）：
+      1. config.yaml 中的显式值
+      2. 环境变量（含 shell export）
+      3. .env 文件（由 _load_dotenv 注入到 os.environ）
 
     - profile="default" → config/config.yaml
     - profile="bot2"    → config/config.bot2.yaml
     """
+    _load_dotenv(BASE.parent / ".env")
     if profile == "default":
         cfg_path = BASE / "config" / "config.yaml"
     else:
@@ -49,7 +113,9 @@ def load_config(profile: str = "default") -> dict:
         example = BASE / "config" / "config.example.yaml"
         hint = f"cp {example} {cfg_path}"
         raise SystemExit(f"缺少配置 [{profile}]：{cfg_path}\n创建：{hint} 后填写（详见文件内注释）")
-    return yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+    _apply_env(cfg)
+    return cfg
 
 
 async def radar_push_loop(router: Router, adapter: WeixinTriggerAdapter, cfg: dict) -> None:
