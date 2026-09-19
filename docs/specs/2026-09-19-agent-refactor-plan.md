@@ -90,3 +90,41 @@ agent/
   state.db                 # 运行时生成（SQLite）
   workspace/users/{uid}/   # 每用户产出
 ```
+
+## 八、需要用户提供 / 决策的事项（2026-09-19 梳理）
+
+| # | 事项 | 类型 | 去向 | 是否阻塞 |
+|---|---|---|---|---|
+| 1 | **仿写 LLM 的 API key**（OpenAI 兼容 chat 接口，智谱 / 火山 doubao chat / DeepSeek 任选一家） | 提供 | `config.yaml` llm 段 | **阻塞** /确认 N 全流程（现状：无 key 时仿写步骤失败并提示） |
+| 2 | **红狐生图充值决策**（3203 仅付费） | 决策 | 不充 = ark 单通道照常跑；充值后 config 打开 redfox_gpt 即启用（零代码改动） | 不阻塞 |
+| 3 | V1 扫码凭据（account_id / token） | 验证产出 | `config.yaml` channel.weixin（或本工程 `--qr-login` 自动落盘） | 阻塞微信联调 |
+| 4 | 你的 ilink user_id | 验证产出 | `allow_users` + `home_uid`（首条消息的日志可查） | 阻塞微信联调 |
+| 5 | V3/V4 视频直发阈值 | 验证回填 | `deliver.video_max_mb`（默认 25MB 占位） | 不阻塞（有默认值） |
+| 6 | V6 隔夜推送结果 | 验证回填 | 补发队列策略（当前默认开启，实测通过可关） | 不阻塞 |
+| 7 | V7 多用户 ID 列表 | 验证回填 | `allow_users` 扩展 | 不阻塞 |
+
+已有 key（无需再提供）：`ARK_API_KEY`（火山 Agent Plan，生图+TTS，已实测可用）、`REDFOX_API_KEY`（雷达数据源，已实测可用）。
+
+## 九、Transformer 五层配置对照（回应「是否还需配置 Hermes」）
+
+本工程走**形态 C（独立进程，只移植 WeixinAdapter 协议层）**，不运行 hermes 主程序，因此**不需要** hermes 的 gateway / 模型 / skills 目录等任何运行时配置。但知识库 Transformer 的五层配置模式**全部采纳**，载体换成本工程：
+
+| Transformer 五层 | 本工程载体 | 状态 |
+|---|---|---|
+| SOUL.md（人设） | `config.yaml` persona.soul | 已做（Phase 1.5 独立成 `agent/SOUL.md`） |
+| system-prompt.md（系统提示词） | `pipeline/rewrite.py` build_rewrite_prompt()（源自 xhs-standard-prompts.md） | 已做 |
+| SKILL（技能） | 三份：xhs-rewrite / xhs-imagepack / xhs-video | rewrite 已代码化；图文排版、视频合成两份属 Phase 1.5 |
+| config.yaml（配置） | `agent/config/config.yaml` | 已做 |
+| checklist（验收） | 原创度自检（3-gram，代码内）+ 发布前人工终审清单 | 自检已做；终审清单 Phase 1.5 |
+
+说明：验证手册里的 hermes gateway 安装仅是**通道验证工具**（V1-V8），验证产出的凭据喂给本工程，两者不冲突、不共存。
+
+## 十、Phase 1.5 · 三份 SKILL 化说明
+
+| SKILL | 做什么 | 现状 | 依赖 |
+|---|---|---|---|
+| xhs-rewrite | 五层拆解 → 同构异题仿写 → 内容单元 JSON | **已基本代码化**（pipeline/rewrite.py，差 LLM key 联调） | 事项 #1 |
+| xhs-imagepack | 任意仿写稿 → 4 张图文卡片（底图生图 + HTML 排版层） | POC 脚本为单篇硬编码，需参数化 | 不依赖微信通道，可先行 |
+| xhs-video | 内容单元 → 图文同源分镜 → TTS + Ken Burns + xfade + BGM 成片 | 同上 | 同上 |
+
+三份 SKILL 均不依赖微信 token（pipeline 内核独立），验证期间可并行开发；仅端到端联调需等事项 #3/#4。
