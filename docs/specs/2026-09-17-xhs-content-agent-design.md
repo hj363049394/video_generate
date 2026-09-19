@@ -95,6 +95,8 @@ class TriggerAdapter(ABC):
 
 两路汇合同一「已确认任务」队列；确认卡点保留人工环节（选题确认 + 终审发布），与 1.2 边界一致。
 
+微信渠道推送降级（源自 hermes WeixinAdapter 源码预验证，2026-09-19）：iLink 为会话制协议，bot 主动推送走 **tokenless 降级发送**路径；若用户长期未发消息导致推送失败，任务转入待发队列，用户下次对话时补发。推送丢失不丢任务——选题清单同时落盘，用户随时 /选题 拉取当日清单。
+
 ### 3.5 指令集（v1）
 
 | 指令（示例写法，非精确匹配） | 动作 |
@@ -118,12 +120,14 @@ class TriggerAdapter(ABC):
 
 | 维度 | bot_feishu.py | bot_weixin.py |
 |---|---|---|
-| 协议 | lark-oapi WebSocket（官方） | ClawBot / iLink（hermes gateway 中转，2026.3 开放） |
-| 消息能力 | 文本 / 图片 / 文件 / 交互卡片 | 文本 / 图片 / 视频 / 文件 |
+| 协议 | lark-oapi WebSocket（官方） | ClawBot / iLink（`ilinkai.weixin.qq.com` 长轮询，2026.3 开放） |
+| 消息能力 | 文本 / 图片 / 文件 / 交互卡片 | 文本（2000 字/条，自动分片）/ 图片 / 视频 / 文件 / 语音（降级为附件）——源码确认 |
+| 群聊 | 群机器人可用 | **不可用**：iLink bot 身份（@im.bot）无法进普通微信群，仅私聊 DM |
 | 富交互 | Interactive Card：选题清单卡片 + 按钮确认 | 无卡片：纯文本清单 + 序号回复 |
 | 图文交付 | 4 图直发 + 文案转飞书文档（可编辑）+ zip 包 | 4 图逐张直发 + 文案整段文本消息 |
-| 视频交付 | 文件直发（API 约 ≤30MB，POC 成片 20MB 可发） | 视频直发（上限待实测；超限转网盘链接） |
-| 参考实现 | Transformer bot.py 已验证模式 | 未验证：先跑 [ClawBot 对接验证清单](2026-09-19-clawbot-integration-checklist.md)，通过后再实现 |
+| 视频交付 | 文件直发（API 约 ≤30MB，POC 成片 20MB 可发） | 客户端无大小限制（源码确认），服务端阈值待实测；超限转网盘链接 |
+| 限流保护 | 官方 API 配额 | -2 限流自动退避（4 次重试）+ 30s 熔断器；入站 3s 防抖合并连发——源码确认 |
+| 参考实现 | Transformer bot.py 已验证模式 | hermes WeixinAdapter（MIT，1258 行）源码沙箱预验证完成，bot_weixin.py 按其移植实现；服务端阈值与长期稳定性由本地实测覆盖（见 [ClawBot 对接验证清单](2026-09-19-clawbot-integration-checklist.md)） |
 
 ### 3.8 目录规划（Phase 1）
 
@@ -292,7 +296,7 @@ agent/
 | 视频镜头风格漂移 | 高 | 中 | 首帧锚定 + 统一风格 prompt |
 | 中文生图文字出错 | 高 | 低 | 文字全部走 HTML 排版层 |
 | 全自动选题漂移 | 中 | 中 | POC 强制人工确认选题，稳定后逐步放开 |
-| 微信 ClawBot 通道不稳（2026.3 新开放） | 中 | 中 | 双渠道适配器互为备份，飞书先行；ClawBot 上线前压测一周（见 [ClawBot 对接验证清单](2026-09-19-clawbot-integration-checklist.md)） |
+| 微信 ClawBot 通道不稳（2026.3 新开放） | 中 | 中 | 沙箱已完成源码级预验证（协议 / 五类消息 / 限流退避 / DM pairing 均确认可用；群聊不可用）；服务端媒体阈值与长期稳定性需本地实测一周（见 [ClawBot 对接验证清单](2026-09-19-clawbot-integration-checklist.md)） |
 
 合规：浏览器/API 抓取控制在低频；AI 生成内容发布时按平台要求标注。
 
