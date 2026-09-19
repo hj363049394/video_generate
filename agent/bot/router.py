@@ -23,6 +23,7 @@ from pipeline.imagegen import ImageGenRouter
 from pipeline import radar as radar_mod
 from pipeline import imagepack
 from pipeline import video as video_mod
+from pipeline import note_fetch as note_fetch_mod  # v1.1：拉模式 - 用户粘贴链接抓取
 
 logger = logging.getLogger("bot.router")
 
@@ -37,7 +38,9 @@ HELP_TEXT = """【小红书仿写助手 · 指令】
 /换角度 N 描述 —— 调整第 N 条的仿写角度
 /生图通道 ark|gpt|doubao —— 切换生图通道（ark=火山Seedream，gpt=红狐GPT-Image-2，doubao=红狐豆包）
 /生图 描述文字 —— 直接生一张竖图（通道实测用）
-粘贴小红书笔记链接 —— 手动输入对标（绕过雷达）
+粘贴小红书笔记链接 —— 拉模式：自动抓取详情并仿写
+  · 支持图文笔记：直接仿写 → 4 张图文卡 + 视频
+  · 支持视频笔记：先提取口播文案 → 仿写 → 图文卡 + 视频
 /help —— 本帮助"""
 
 TASK_STAGES = ["queued", "rewriting", "imaging", "delivered", "failed"]
@@ -166,17 +169,35 @@ class Router:
             await self._safe_send(uid, f"生图失败：{exc}")
 
     async def _cmd_manual_note(self, uid: str, text: str) -> None:
+        """v1.1 拉模式：用户粘贴小红书链接 → 红狐详情抓取 → 入队 → 触发 _run_task
+
+        支持图文笔记和视频笔记：
+          - 图文笔记：直接抓详情进流水线
+          - 视频笔记：抓详情 + 提取口播文案 → 进流水线（仿写产出对应图文卡 + 视频）
+        """
+        await self._safe_send(uid, "收到链接，正在抓取笔记详情（红狐）…")
+        try:
+            api_key = (self.config.get("radar") or {}).get("redfox_api_key", "") or os.environ.get("REDFOX_API_KEY", "")
+            topic = await asyncio.to_thread(note_fetch_mod.fetch_topic_from_user_text, text, api_key)
+        except Exception as exc:
+            await self._safe_send(uid, f"笔记抓取失败：{exc}\n请检查链接是否完整或稍后重试。")
+            return
+        note_type = topic.get("type", "image")
         task_id = uuid.uuid4().hex[:8]
         self._db.execute(
             "INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?)",
-            (task_id, uid, "", text[:60], "queued",
-             json.dumps({"manual_input": text[:2000]}, ensure_ascii=False),
+            (task_id, uid, topic.get("note_id", ""),
+             topic.get("title", "")[:60], "queued",
+             json.dumps(topic, ensure_ascii=False),
              time.time(), time.time()))
         self._db.commit()
+        type_label = "视频笔记（已提取口播文案）" if note_type == "video" else "图文笔记"
         await self._safe_send(
-            uid, f"已收到笔记链接，任务 {task_id} 入队。\n"
-                 f"说明：链接详情抓取与全流程生产在 SKILL 化（Phase 1.5）后开放；"
-                 f"当前可直接用 /生图 实测生图通道。")
+            uid, f"已抓取【{type_label}】：{topic.get('title', '')[:30]}\n"
+                 f"点赞 {topic.get('likes', 0)} · 收藏 {topic.get('collects', 0)} · 评论 {topic.get('comments', 0)}\n"
+                 f"任务 {task_id} 已入队，开始仿写+生图+视频合成…\n"
+                 f"/状态 查看进度。")
+        asyncio.create_task(self._run_task(uid, task_id))
 
     # ─── 任务执行（rewrite → 底图 → 交付） ──────────────────────────────
 

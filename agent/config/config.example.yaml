@@ -54,3 +54,7 @@ radar:
   daily_hour: 8               # 每日推送时刻（本地时间整点）
   keywords: [带娃游, 亲子旅行, 行程规划, 避寒]
   max_items: 20
+  # 红狐 API key（v1.1：拉模式 - 用户粘贴链接抓详情必需）
+  # 留空读环境变量 REDFOX_API_KEY（与抓取清单共用）
+  # 同时用于：① 雷达搜索 ② 用户粘贴链接抓详情 ③ 视频笔记提文案
+  redfox_api_key: ""
