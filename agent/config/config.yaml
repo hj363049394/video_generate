@@ -17,11 +17,11 @@ imagegen:
       api_key: ""               # 环境变量 ARK_API_KEY
     redfox_gpt:
       enabled: false            # 红狐生图 3203 仅付费，充值后改 true
-      api_key: ""
+      api_key: "ak_890e5aa9450d40eabfeb15d71d3c53f9"  # 红狐 key（与雷达共用）
       resolution: "2k"
     redfox_doubao:
       enabled: false
-      api_key: ""
+      api_key: "ak_890e5aa9450d40eabfeb15d71d3c53f9"
 
 deliver:
   video_max_mb: 25              # V4 实测后调整
@@ -42,3 +42,4 @@ radar:
   daily_hour: 8
   keywords: [带娃游, 亲子旅行, 行程规划, 避寒]
   max_items: 20
+  redfox_api_key: "ak_890e5aa9450d40eabfeb15d71d3c53f9"  # v1.1：拉模式必需（详情拓取 + 视频提文案）
