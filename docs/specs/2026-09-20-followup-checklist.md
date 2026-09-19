@@ -27,14 +27,14 @@ sudo apt install ffmpeg ffprobe   # 视频合成需要
 
 # 3. 配置 API key
 cp config.example.yaml config.yaml
-# 编辑 config.yaml 填入：
+# 编辑 config.yaml 填入（从各自控制台获取，不要硬编码进文档）：
 #   channel.weixin.account_id = （先留空，扫码后自动落盘）
-#   imagegen.providers.ark.api_key = ARK_API_KEY_PLACEHOLDER
-#   llm.api_key = sk-ws-...（百炼）
-#   radar.redfox_api_key = ak_890e5aa9450d40eabfeb15d71d3c53f9
+#   imagegen.providers.ark.api_key = <从火山方舟控制台获取>
+#   llm.api_key = <从阿里百炼控制台获取>
+#   radar.redfox_api_key = <从红狐控制台获取>
 
 # 4. 扫码登录
-export ARK_API_KEY=ARK_API_KEY_PLACEHOLDER
+export ARK_API_KEY=<你的火山方舟 API key>
 python3 main.py --qr-login
 # 屏幕会显示二维码，用准备好的 bot 微信号扫码
 # 看到 "登录成功" 后 token 自动落盘到 state.weixin/
