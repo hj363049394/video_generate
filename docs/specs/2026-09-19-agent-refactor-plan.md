@@ -105,6 +105,24 @@ agent/
 
 已有 key（无需再提供）：`ARK_API_KEY`（火山 Agent Plan，生图+TTS，已实测可用）、`REDFOX_API_KEY`（雷达数据源，已实测可用）。
 
+### §8.1 · POC 与 Agent 化的「执行者对照」（为什么还缺一个 chat key）
+
+POC 全链路跑通 ≠ 全自动跑通——生成类环节在 POC 中由**对话 AI 人肉完成**（产出已固化在脚本/文档里），代码只负责确定性环节。Agent 化 = 把人肉环节换成程序可调用的 API：
+
+| 环节 | POC 时的执行者 | Agent 化后 | 是否需要新 key |
+|---|---|---|---|
+| 雷达抓取（红狐） | 代码 `fetch_redfox.py` | 代码（已收编 radar.py） | 否（红狐 key 已有） |
+| 数值热度评分 | 代码 `score_topics.py` | 代码（已收编） | 否 |
+| 语义评分（四维） | 对话 AI 人肉 | **chat LLM API**（Phase 1.5） | **是** |
+| **五层拆解 + 同构异题仿写** | **对话 AI 人肉**（rewrite_001.md 即其产出） | **chat LLM API**（rewrite.py 已就绪） | **是（唯一阻塞）** |
+| 图文卡片排版 | 代码（HTML/PIL，文案由 AI 设计后硬编码） | 底图 = 生图 API；版式 Phase 1.5 参数化 | 生图否（Agent Plan 已有） |
+| **底图生图** | 代码 `gen_assets_ark.py` → Agent Plan | 代码（imagegen.py，实测通过） | 否 |
+| **视频分镜口播文案** | **对话 AI 人肉**（图文同源分镜） | **chat LLM API**（Phase 1.5） | **是（同一个 key）** |
+| TTS 配音 | 代码 → Agent Plan TTS（openspeech plan 端点） | 代码（沿用，**不需替换**） | 否 |
+| Ken Burns/xfade/BGM 合成 | 代码 `make_video.py` + ffmpeg | 代码（Phase 1.5 收编） | 否 |
+
+结论：**视频链路的 TTS 与生图继续用 Agent Plan，不替换**；缺的只是一个 chat 对话模型 key（仿写、分镜文案、语义评分三处共用）。火山 Agent Plan key 是专属端点 key（仅视觉+TTS），实测调 chat 报 AuthenticationError，故不可复用。
+
 ## 九、Transformer 五层配置对照（回应「是否还需配置 Hermes」）
 
 本工程走**形态 C（独立进程，只移植 WeixinAdapter 协议层）**，不运行 hermes 主程序，因此**不需要** hermes 的 gateway / 模型 / skills 目录等任何运行时配置。但知识库 Transformer 的五层配置模式**全部采纳**，载体换成本工程：
