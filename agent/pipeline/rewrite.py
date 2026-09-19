@@ -81,19 +81,25 @@ def run_rewrite(llm_call: Callable[[str], str], benchmark: dict, persona: dict) 
 # ─── LLM 调用（OpenAI 兼容接口，config.llm 注入） ──────────────────────
 
 def _chat_once(base_url: str, api_key: str, model: str, prompt: str, timeout: int = 300) -> str:
-    """单模型一次对话调用。"""
-    body = json.dumps({
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.7,
-    }).encode()
-    req = urllib.request.Request(
-        f"{base_url}/chat/completions", data=body, method="POST",
-        headers={"Authorization": f"Bearer {api_key}",
-                 "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        data = json.loads(resp.read())
-    return data["choices"][0]["message"]["content"]
+    """单模型一次对话调用。部分模型（如 kimi-k3）不支持 temperature 参数，自动去参重试。"""
+    def _post(payload: dict) -> str:
+        body = json.dumps(payload).encode()
+        req = urllib.request.Request(
+            f"{base_url}/chat/completions", data=body, method="POST",
+            headers={"Authorization": f"Bearer {api_key}",
+                     "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read())
+        return data["choices"][0]["message"]["content"]
+
+    base_payload = {"model": model, "messages": [{"role": "user", "content": prompt}]}
+    try:
+        return _post({**base_payload, "temperature": 0.7})
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="ignore") if exc.fp else ""
+        if "temperature" in detail:  # 该模型不支持 temperature，去参重试
+            return _post(base_payload)
+        raise
 
 
 def llm_call_factory(llm_config: dict) -> Callable[[str], str]:
