@@ -17,9 +17,12 @@ from pathlib import Path
 from typing import Optional
 
 from bot.base import Intent, TriggerAdapter
+from bot.deliver import deliver_note, deliver_video
 from pipeline import rewrite as rewrite_mod
 from pipeline.imagegen import ImageGenRouter
 from pipeline import radar as radar_mod
+from pipeline import imagepack
+from pipeline import video as video_mod
 
 logger = logging.getLogger("bot.router")
 
@@ -48,6 +51,10 @@ class Router:
         self.base = Path(base_dir)
         self.workspace = self.base / "workspace"
         self.workspace.mkdir(parents=True, exist_ok=True)
+        # 排版/TTS/视频的共享资产（字体/BGM），默认指向 POC 资产目录
+        self.assets_dir = str(Path(self.config.get("pipeline", {}).get(
+            "assets_dir") or (self.base.parent / "poc" / "production" / "assets")))
+        self.video_max_mb = float((self.config.get("deliver") or {}).get("video_max_mb", 25))
         self._db = sqlite3.connect(str(self.base / "state.db"), check_same_thread=False)
         self._db.execute("""CREATE TABLE IF NOT EXISTS tasks(
             id TEXT PRIMARY KEY, uid TEXT, note_id TEXT, title TEXT,
@@ -189,26 +196,32 @@ class Router:
                 raise RuntimeError(f"原创度自检未通过（相似度 {sim:.2f} > 0.30），需人工复写")
             (work_dir / "rewrite.json").write_text(
                 json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-            # ② 首图底图（生图双通道）
+            # ② 版式编排 + 4 张图文卡片（LLM 编排 → 底图生图 → PIL 排版）
             _update("imaging")
-            units = result.get("image_units") or []
-            if units:
-                out = str(work_dir / "cover_base.jpg")
-                path, used = await asyncio.to_thread(
-                    self.gen.generate, units[0].get("prompt", result.get("title", "")),
-                    out, "portrait", None)
-                # ③ 交付（文案 + 底图；图文排版层与视频合成属 Phase 1.5 SKILL）
-                _update("delivered")
-                await self._safe_send(
-                    uid, f"【{result.get('title', '')}】\n\n{result.get('content', '')}\n\n"
-                         f"标签：{' '.join(result.get('tags', []))}\n"
-                         f"（相似度 {sim:.2f} ✓；底图通道 {used}；图文排版/视频合成见 SKILL 化阶段）")
-                await self.adapter.send_image(uid, path)
+            layout = await asyncio.to_thread(imagepack.plan_layout, llm, result)
+            (work_dir / "layout.json").write_text(
+                json.dumps(layout, ensure_ascii=False, indent=2), encoding="utf-8")
+            pack = await asyncio.to_thread(
+                imagepack.generate_pack, layout, self.gen, str(work_dir / "images"), self.assets_dir)
+            # ③ 交付：文案 + 4 图
+            await deliver_note(
+                self.adapter, uid, result.get("title", ""), result.get("content", ""),
+                pack["cards"], video_path=None)
+            # ④ 视频合成（图文同源 5 镜头：narrations 与 video_frames 对应；视频失败不影响图文交付）
+            _update("composing")
+            try:
+                video = await asyncio.to_thread(
+                    video_mod.make_video, pack["video_frames"], layout["narrations"],
+                    str(work_dir / "video.mp4"), self.assets_dir)
+                await deliver_video(self.adapter, uid, video, self.video_max_mb)
+            except Exception as exc:
+                logger.warning("视频合成失败（图文已交付）: %s", exc)
+                await self._safe_send(uid, f"视频合成失败：{exc}\n（图文已交付，视频文件在 {work_dir}/video.mp4 重试）")
+                _update("delivered", f"video_failed: {exc}")
                 return
             _update("delivered")
             await self._safe_send(
-                uid, f"【{result.get('title', '')}】\n\n{result.get('content', '')}\n"
-                     f"（本次未产出图片单元）")
+                uid, f"交付完成 ✅ 相似度 {sim:.2f}｜任务目录 {work_dir}")
         except Exception as exc:
             _update("failed", str(exc))
             logger.exception("任务 %s 失败", task_id)

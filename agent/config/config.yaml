@@ -29,10 +29,11 @@ deliver:
 llm:                            # 阿里百炼（OpenAI 兼容端点）
   base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
   api_key: sk-ws-H.PILDRHE.djF2.MEUCIAbQ5eCD2uuH_1UXCKFV2_a124yPhEEK-yTfFFuZw-CLAiEAmW9Cu69coAYk176Ue0VyBp8xM-eQe_Qp03IVjbj7ObA
-  models:                       # 优先级从上到下，失败自动 fallback（2026-09-19 实测三模型均可用）
-    - qwen3.8-max
-    - glm-5.3
-    - deepseek-v4-pro
+  models:                       # 2026-09-19 四模型实测定稿（改造清单 §8.2）：质量优先
+    - kimi-k3                   # 主力：人设感最强 + 图片单元 5 个最全 + 相似度 0.035
+    - glm-5.3                   # fallback 1：最原创 0.027，速度快
+    - qwen3.8-max               # fallback 2
+    - deepseek-v4-pro           # fallback 3（注意虚构资产风险，仅兜底）
 
 persona:
   soul: ""

@@ -152,10 +152,12 @@ POC 全链路跑通 ≠ 全自动跑通——生成类环节在 POC 中由**对�
 
 ## 十、Phase 1.5 · 三份 SKILL 化说明
 
-| SKILL | 做什么 | 现状 | 依赖 |
-|---|---|---|---|
-| xhs-rewrite | 五层拆解 → 同构异题仿写 → 内容单元 JSON | **已基本代码化**（pipeline/rewrite.py，差 LLM key 联调） | 事项 #1 |
-| xhs-imagepack | 任意仿写稿 → 4 张图文卡片（底图生图 + HTML 排版层） | POC 脚本为单篇硬编码，需参数化 | 不依赖微信通道，可先行 |
-| xhs-video | 内容单元 → 图文同源分镜 → TTS + Ken Burns + xfade + BGM 成片 | 同上 | 同上 |
+| SKILL | 做什么 | 状态 |
+|---|---|---|
+| xhs-rewrite | 五层拆解 → 同构异题仿写 → 内容单元 JSON | ✅ 完成并实测（四模型对比，kimi-k3 定稿主力） |
+| xhs-imagepack | 任意仿写稿 → 4 张图文卡片（LLM 版式编排 + 双通道底图 + PIL 排版） | ✅ 完成：`pipeline/imagepack.py`（plan_layout + generate_pack） |
+| xhs-video | 内容单元 → 图文同源 5 镜头 → TTS + Ken Burns + xfade + BGM 成片 | ✅ 完成：`pipeline/video.py`（make_video，数据驱动） |
 
-三份 SKILL 均不依赖微信 token（pipeline 内核独立），验证期间可并行开发；仅端到端联调需等事项 #3/#4。
+**端到端实测（2026-09-19，沙箱，全自动无人干预）**：kimi-k3 仿写（126s）→ kimi-k3 版式编排（193s）→ ark 生 6 底图 + 4 卡渲染（141s）→ TTS 5 段 + ffmpeg 合成（291s）= **单篇全链路约 12 分钟**，产出 4 张 1242×1656 图文卡 + 74.4s / 1080×1440 / 30MB 成片（产物：`agent/workspace/e2e/`）。注意：30MB 超过默认 video_max_mb=25，微信交付时将触发超限降级（人工取件或调码率/V4 实测后调阈值）。
+
+三份 SKILL 均已接入 router 任务流水线（确认选题 → 仿写 → 编排 → 4 图交付 → 视频交付，视频失败不影响图文）。
