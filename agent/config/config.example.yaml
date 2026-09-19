@@ -1,0 +1,45 @@
+# 小红书仿写 Agent 配置模板
+# 复制为 config.yaml 后填写；留空的 key 项会回落到同名环境变量
+
+channel:
+  weixin:
+    enabled: true
+    # 二选一：① 留空并先跑 `python3 main.py --qr-login`（token 自动落盘 state/weixin/）
+    #        ② 完成《ClawBot 验证手册》V1 后，从 ~/.hermes/weixin/accounts/*.json 抄录
+    account_id: ""
+    token: ""
+    base_url: ""              # 留空用默认 https://ilinkai.weixin.qq.com
+    # 白名单：ilink 用户 ID（不是微信昵称）。首个陌生消息的发送者 ID 会打印在日志里，复制进来即可
+    allow_users: []
+    # 管理员 uid（雷达推送目标），格式：weixin:{ilink用户ID}，与 allow_users 中你自己的 ID 对应
+    home_uid: ""
+
+imagegen:                     # 生图双通道（改造清单 §3）
+  primary: ark               # ark | redfox_gpt | redfox_doubao；可用 /生图通道 指令运行时切换
+  providers:
+    ark:                      # 通道 A · 火山 Agent Plan（主，POC 验证路径）
+      enabled: true
+      api_key: ""             # 留空读环境变量 ARK_API_KEY
+    redfox_gpt:               # 通道 B · 红狐 GPT-Image-2（支持 ≤2 张参考图，要素调整用）
+      enabled: true
+      api_key: ""             # 留空读环境变量 REDFOX_API_KEY
+      resolution: "2k"        # 1k / 2k / 4k
+    redfox_doubao:            # 通道 C · 红狐豆包 Seedream Lite 转发（Agent Plan 额度备源）
+      enabled: false
+      api_key: ""
+
+deliver:
+  video_max_mb: 25            # 视频直发上限；验证手册 V4 实测后调整，超限提示人工取件
+
+llm:                          # 仿写用 chat 模型（OpenAI 兼容 /chat/completions）
+  base_url: ""                # 如 https://open.bigmodel.cn/api/paas/v4
+  api_key: ""                 # 留空读环境变量 LLM_API_KEY
+  model: ""
+
+persona:                      # 人设（SOUL 化属 Phase 1.5，当前作为仿写注入）
+  soul: ""
+
+radar:
+  daily_hour: 8               # 每日推送时刻（本地时间整点）
+  keywords: [带娃游, 亲子旅行, 行程规划, 避寒]
+  max_items: 20
