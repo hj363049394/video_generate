@@ -31,9 +31,11 @@ class TriggerAdapter(ABC):
     实现方义务：
       - start(on_intent) 内启动监听，每条白名单内消息构造 Intent 后回调
       - send_* 家族完成出站投递，失败抛异常（由 Router 决定降级/补发）
+      - bot_id 属性标识本适配器所属 Bot 实例（多 Bot 隔离用，单 Bot 默认 "default"）
     """
 
     name: str = "base"
+    bot_id: str = "default"  # 多 Bot 实例隔离标识（v1.1：支持多进程多 Bot）
 
     @abstractmethod
     async def start(self, on_intent: OnIntent) -> None:

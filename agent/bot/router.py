@@ -49,13 +49,18 @@ class Router:
         self.gen = gen
         self.config = config or {}
         self.base = Path(base_dir)
-        self.workspace = self.base / "workspace"
+        # v1.1：多 Bot 隔离——bot_id 从 adapter.bot_id 取（单 Bot 默认 "default"）
+        # 数据库 / 产物路径均按 bot_id 分层，为 P2 多进程多 Bot 铺路
+        self.bot_id = getattr(adapter, "bot_id", "default")
+        self.workspace = self.base / "workspace" / self.bot_id
         self.workspace.mkdir(parents=True, exist_ok=True)
         # 排版/TTS/视频的共享资产（字体/BGM），默认指向 POC 资产目录
         self.assets_dir = str(Path(self.config.get("pipeline", {}).get(
             "assets_dir") or (self.base.parent / "poc" / "production" / "assets")))
         self.video_max_mb = float((self.config.get("deliver") or {}).get("video_max_mb", 25))
-        self._db = sqlite3.connect(str(self.base / "state.db"), check_same_thread=False)
+        # SQLite 按 bot_id 分文件，物理隔离
+        db_path = self.base / f"state.{self.bot_id}.db"
+        self._db = sqlite3.connect(str(db_path), check_same_thread=False)
         self._db.execute("""CREATE TABLE IF NOT EXISTS tasks(
             id TEXT PRIMARY KEY, uid TEXT, note_id TEXT, title TEXT,
             status TEXT, detail TEXT, created REAL, updated REAL)""")
@@ -149,7 +154,7 @@ class Router:
 
     async def _cmd_gen(self, uid: str, prompt: str) -> None:
         out_dir = self.workspace / "users" / uid.replace(":", "_")
-        out_dir.mkdir(parents=True, exist_ok=True)
+        out_dir.mkdir(parents=True, exist_ok=True)  # v1.1：workspace 已含 bot_id 分层
         out = str(out_dir / f"{int(time.time())}.jpg")
         await self._safe_send(uid, f"生图中（通道 {self.gen.primary}）…")
         try:
@@ -184,7 +189,7 @@ class Router:
         row = self._db.execute("SELECT detail FROM tasks WHERE id=?", (task_id,)).fetchone()
         topic = json.loads(row[0]) if row and row[0] else {}
         work_dir = self.workspace / "users" / uid.replace(":", "_") / task_id
-        work_dir.mkdir(parents=True, exist_ok=True)
+        work_dir.mkdir(parents=True, exist_ok=True)  # v1.1：workspace 已含 bot_id 分层
         try:
             # ① 拆解仿写（需 config.llm；未配置则任务失败并给出指引）
             _update("rewriting")

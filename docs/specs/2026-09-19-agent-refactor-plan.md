@@ -1,8 +1,10 @@
 # Agent 化改造清单（仿写生产线 → 微信 ClawBot 智能体）
 
-- 版本：v1.0 · 日期：2026-09-19
+- 版本：v1.1 · 日期：2026-09-19（v1.1 修正 ClawBot 风险定性、新增 §11 部署形态演进、§12 五层 .md 落地说明）
 - 依据：设计文档 v1.1 第 3 章（TriggerAdapter 触发层）+ MyAgent/Transformer 架构模式 + hermes WeixinAdapter 源码预验证结论
 - 范围：将 POC 脚本集合改造为独立 Agent 工程，**微信 ClawBot 为首发渠道**（飞书架构位保留，不实现），生图双通道（火山 Agent Plan + 红狐）
+
+> **v1.1 风险定性修正**：v1.0 文档中将 ClawBot 风险隐含描述为"风控/封号"是过度定性。ClawBot 是微信 2026.3 开放的官方 iLink Bot 协议（域名 `ilinkai.weixin.qq.com`），属于合规产品形态，不存在"灰产/封号"风险。真实存在的风险维度是**性能/稳定性/常驻进程**三方面，详见 §11 修正后口径。
 
 ## 一、总体架构改造（POC 脚本 → Agent 工程）
 
@@ -140,13 +142,13 @@ POC 全链路跑通 ≠ 全自动跑通——生成类环节在 POC 中由**对�
 
 本工程走**形态 C（独立进程，只移植 WeixinAdapter 协议层）**，不运行 hermes 主程序，因此**不需要** hermes 的 gateway / 模型 / skills 目录等任何运行时配置。但知识库 Transformer 的五层配置模式**全部采纳**，载体换成本工程：
 
-| Transformer 五层 | 本工程载体 | 状态 |
+| Transformer 五层 | 本工程载体 | 状态（v1.1 复盘） |
 |---|---|---|
-| SOUL.md（人设） | `config.yaml` persona.soul | 已做（Phase 1.5 独立成 `agent/SOUL.md`） |
-| system-prompt.md（系统提示词） | `pipeline/rewrite.py` build_rewrite_prompt()（源自 xhs-standard-prompts.md） | 已做 |
-| SKILL（技能） | 三份：xhs-rewrite / xhs-imagepack / xhs-video | rewrite 已代码化；图文排版、视频合成两份属 Phase 1.5 |
-| config.yaml（配置） | `agent/config/config.yaml` | 已做 |
-| checklist（验收） | 原创度自检（3-gram，代码内）+ 发布前人工终审清单 | 自检已做；终审清单 Phase 1.5 |
+| SOUL.md（人设） | `agent/SOUL.md` | ❌ v1.0 称"已做"是错的（`config.yaml` persona.soul 为空字符串）；**§12 落地补齐** |
+| system-prompt.md（系统提示词） | `agent/prompts/system-prompt.md` | ❌ v1.0 称"已做"是错的（揉在 rewrite.py 内，无 .md）；**§12 落地补齐** |
+| SKILL（技能） | `agent/skills/{name}/SKILL.md` ×3 | ⚠ 代码已实现（rewrite/imagepack/video.py），但无 .md 声明契约；**§12 落地补齐** |
+| config.yaml（配置） | `agent/config/config.yaml` | ✅ 已做 |
+| checklist（验收） | `agent/CHECKLIST.md` | ❌ v1.0 称"Phase 1.5"未落地；**§12 落地补齐** |
 
 说明：验证手册里的 hermes gateway 安装仅是**通道验证工具**（V1-V8），验证产出的凭据喂给本工程，两者不冲突、不共存。
 
@@ -161,3 +163,61 @@ POC 全链路跑通 ≠ 全自动跑通——生成类环节在 POC 中由**对�
 **端到端实测（2026-09-19，沙箱，全自动无人干预）**：kimi-k3 仿写（126s）→ kimi-k3 版式编排（193s）→ ark 生 6 底图 + 4 卡渲染（141s）→ TTS 5 段 + ffmpeg 合成（291s）= **单篇全链路约 12 分钟**，产出 4 张 1242×1656 图文卡 + 74.4s / 1080×1440 / 30MB 成片（产物：`agent/workspace/e2e/`）。注意：30MB 超过默认 video_max_mb=25，微信交付时将触发超限降级（人工取件或调码率/V4 实测后调阈值）。
 
 三份 SKILL 均已接入 router 任务流水线（确认选题 → 仿写 → 编排 → 4 图交付 → 视频交付，视频失败不影响图文）。
+
+## 十一、部署形态演进与风险修正口径（v1.1 新增）
+
+### 11.1 风险定性修正（关键）
+
+v1.0 文档隐含将 ClawBot 视为"风控风险"是过度定性。修正口径：
+
+| 风险类型 | 是否真实存在 | 严重度 | 说明 |
+|---|---|---|---|
+| 协议合规风险 | ❌ 不存在 | 无 | ClawBot = 微信 2026.3 开放的官方 iLink Bot 协议（域名 `ilinkai.weixin.qq.com`），合规产品形态 |
+| 单微信号消息频率上限 | ⚠ 真实但未测 | 中 | 5-10 人内测安全；20+ 用户阈值由 V5 实测确定，不可先判 |
+| 常驻进程约束 | ✅ 真实 | 高 | 长轮询需常驻进程，关机=bot 掉线（任何 bot 都有此约束） |
+| token 过期（-14） | ✅ 真实 | 中 | 源码已知有 10 分钟自动恢复，长期稳定性由 V8 一周压测确认 |
+| 媒体大小阈值未知 | ✅ 真实 | 低 | V4 实测出真实值，写入 `deliver.video_max_mb` |
+| 多人并发任务排队 | ✅ 真实 | 中 | 单篇 12 分钟，3 人并发即排队拥堵，已有队列机制 |
+| 生图/TTS/LLM 各家限流 | ✅ 真实 | 中 | 已有 fallback，多人并发会触发；非"风控"性质 |
+| 机房 IP 触发风控 | ❌ 撤回 | 无依据 | 此前的"机房 IP 必触发风控"是无依据臆测；ClawBot 既然是官方协议，云部署可行性需实测确认，不能先判 |
+
+**v1.0 提到的"准备独立小号防封/朋友圈养号/节流加固"等待办全部撤销**——这些是建立在错误前提上的伪需求。
+
+### 11.2 部署形态演进路径
+
+| 形态 | 部署位置 | 通道 | 电脑要开机 | 商业化 | 适用规模 | 当前进展 |
+|---|---|---|---|---|---|---|
+| **P0 本地电脑** | 个人 PC/笔记本 | ClawBot 个人号 | ✅ 必须 | ❌ 单用户 | 1 人 | 代码就绪，待 V1 扫码联调 |
+| **P1 本地常驻机** | 树莓派/Rock 5/旧 Mac mini | 同上 | ✅ 但常驻 | ⚠ 5-10 用户 | 5-10 人 | P0 稳定后迁移 |
+| **P2 轻量云 + 微信云控** | 阿里云/腾讯云 + 家中常驻机 | ClawBot（家中常驻） | ❌ 不用 | ✅ 中小规模 | 50-200 人 | 待 P1 稳定后重构 |
+| **P3 企业微信 + SaaS** | ECS/K8s | 企业微信官方 API | ❌ 不用 | ✅ 规模化 | B 端 | 重做通道 |
+
+### 11.3 当前阶段（P0）真待办
+
+| # | 行动 | 落地位置 | 必做性 |
+|---|---|---|---|
+| 1 | 扫码登录让 bot 号上线 | `python3 main.py --qr-login` | 必做 |
+| 2 | 加好友、发消息、收回复 | V2-V5 验证 | 必做 |
+| 3 | main.py 加 `--profile` 参数支持多 Bot 实例 | §13 落地 | 必做（支持 10 内多用户） |
+| 4 | SQLite schema 加 bot_id + 产物路径分层 | §13 落地 | 必做（为 P2 铺路） |
+| 5 | 失败降级（连续失败 N 次 → 转人工提示） | router.py（已有部分） | 中（稳定性） |
+
+## 十二、Hermes 五层 .md 落地（v1.1 新增）
+
+为让工程符合 Hermes 形态、可被非工程师参与迭代，v1.0 文档 §9 标"已做"但实际未落地的四层 .md 在 v1.1 全部补齐：
+
+| 载体 | 路径 | 内容来源 |
+|---|---|---|
+| SOUL.md | `agent/SOUL.md` | 新建：旅游行程规划师人设 |
+| system-prompt.md | `agent/prompts/system-prompt.md` | 合并 `docs/prompts/xhs-standard-prompts.md` + rewrite.py build_rewrite_prompt() |
+| xhs-rewrite SKILL | `agent/skills/xhs-rewrite/SKILL.md` | 提示词①② + rewrite.py 接口契约 |
+| xhs-imagepack SKILL | `agent/skills/xhs-imagepack/SKILL.md` | 提示词③ + imagepack.py plan_layout/generate_pack 契约 |
+| xhs-video SKILL | `agent/skills/xhs-video/SKILL.md` | 提示词④ + video.py make_video 契约 + 附录 B/C（音色、API 接入） |
+| CHECKLIST.md | `agent/CHECKLIST.md` | 新建：发布前 9 项终审清单（含原创度、要素完整、风格统一等） |
+
+落地后影响：
+
+- 改提示词 = 改 .md（运营/策划可参与，无需改代码）
+- 复用做新 Agent = 复制目录改 .md
+- 可审计 = .md 全可见可 diff
+- 与 hermes 主程序接入路径保留（如未来需要）
