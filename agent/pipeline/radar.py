@@ -16,9 +16,10 @@ from pathlib import Path
 RADAR_DIR = Path(__file__).resolve().parents[2] / "poc" / "radar"
 
 
-def run_radar(keywords: list, max_items: int = 20) -> str:
+def run_radar(keywords: list, max_items: int = 20,
+              heat_threshold: float | None = None, min_likes: int | None = None) -> str:
     """跑一轮雷达：逐关键词抓取 + 数值评分，产出 agent/workspace/topic_list_YYYY-MM-DD.json。
-    返回清单路径。"""
+    返回清单路径。门槛不传时用 score_topics.py 默认值（H≥25 且 赞≥500）。"""
     if not keywords:
         raise ValueError("radar.keywords 未配置")
     env = dict(os.environ)
@@ -34,9 +35,12 @@ def run_radar(keywords: list, max_items: int = 20) -> str:
             result_files.append(hits[-1])
     if not result_files:
         raise RuntimeError("红狐抓取无输出（检查 REDFOX_API_KEY 与网络）")
-    subprocess.run(
-        [sys.executable, str(RADAR_DIR / "score_topics.py"), "--input", *result_files],
-        check=True, cwd=str(RADAR_DIR), env=env)
+    cmd = [sys.executable, str(RADAR_DIR / "score_topics.py"), "--input", *result_files]
+    if heat_threshold is not None:
+        cmd += ["--heat-threshold", str(heat_threshold)]
+    if min_likes is not None:
+        cmd += ["--min-likes", str(min_likes)]
+    subprocess.run(cmd, check=True, cwd=str(RADAR_DIR), env=env)
     candidates = json.loads((RADAR_DIR / "output" / "candidates.json").read_text(encoding="utf-8"))
     passed = candidates.get("passed", [])[:10]  # 数值热度 Top 10（语义评分 Phase 1.5）
     out_dir = Path(__file__).resolve().parents[1] / "workspace"

@@ -137,7 +137,9 @@ async def radar_push_loop(router: Router, adapter: WeixinTriggerAdapter, cfg: di
             path = await asyncio.to_thread(
                 radar_mod.run_radar,
                 (cfg.get("radar") or {}).get("keywords", []),
-                (cfg.get("radar") or {}).get("max_items", 20))
+                (cfg.get("radar") or {}).get("max_items", 20),
+                (cfg.get("radar") or {}).get("heat_threshold"),
+                (cfg.get("radar") or {}).get("min_likes"))
             if home_uid:
                 text = radar_mod.format_topic_list(path, top=5)
                 try:
@@ -167,7 +169,9 @@ async def run(cfg: dict, profile: str = "default") -> None:
 async def radar_now(cfg: dict, profile: str = "default") -> None:
     path = radar_mod.run_radar(
         (cfg.get("radar") or {}).get("keywords", []),
-        (cfg.get("radar") or {}).get("max_items", 20))
+        (cfg.get("radar") or {}).get("max_items", 20),
+        (cfg.get("radar") or {}).get("heat_threshold"),
+        (cfg.get("radar") or {}).get("min_likes"))
     print(radar_mod.format_topic_list(path, top=5))
     print(f"\n清单已落盘：{path}")
     # 跑完立即推送到 home_uid（与 bot 内每日推送行为一致；bot 不在线也能推，tokenless）
