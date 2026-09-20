@@ -3,3 +3,4 @@ cryptography>=42.0
 PyYAML>=6.0
 redfox-python-sdk
 qrcode>=7.4
+pillow>=10.0
