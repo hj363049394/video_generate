@@ -313,6 +313,25 @@ class WeixinTriggerAdapter(TriggerAdapter):
                 await s.close()
             setattr(self, attr, None)
 
+    async def open_sender(self) -> None:
+        """仅初始化发送通道（不启动收消息轮询）。
+
+        用于 bot 进程之外的一次性推送（--radar-now 等）：start() 会阻塞在
+        poll_loop 上，只推送时用本方法即可。
+        """
+        if not self._token or not self._account_id:
+            raise RuntimeError(
+                "weixin 未配置 token/account_id：请先运行 `python main.py --qr-login` 扫码")
+        if not self._send_session or self._send_session.closed:
+            self._send_session = aiohttp.ClientSession(
+                timeout=aiohttp.ClientTimeout(total=None))
+
+    async def close_sender(self) -> None:
+        """关闭 open_sender() 打开的发送通道。"""
+        if self._send_session and not self._send_session.closed:
+            await self._send_session.close()
+        self._send_session = None
+
     # ---- HTTP 基础 ----
 
     async def _api_post(self, endpoint: str, payload: dict, token: Optional[str], timeout_ms: int) -> dict:

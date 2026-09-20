@@ -177,14 +177,19 @@ async def radar_now(cfg: dict, profile: str = "default") -> None:
     # 跑完立即推送到 home_uid（与 bot 内每日推送行为一致；bot 不在线也能推，tokenless）
     home_uid = ((cfg.get("channel") or {}).get("weixin") or {}).get("home_uid", "")
     if home_uid:
+        adapter = None
         try:
             adapter = WeixinTriggerAdapter(((cfg.get("channel") or {}).get("weixin") or {}),
-                                            state_dir=str(BASE / "state"))
+                                           state_dir=str(BASE / "state"))
             adapter.bot_id = profile
+            await adapter.open_sender()  # 只初始化发送通道，不启动收消息轮询
             await adapter.push_text(home_uid, radar_mod.format_topic_list(path, top=5))
             print(f"已推送到 {home_uid}")
         except Exception as exc:
             print(f"推送失败（{exc}）——bot 在线时会经补发队列重试；也可在微信发 /选题 手动拉取")
+        finally:
+            if adapter:
+                await adapter.close_sender()
     else:
         print("未配置 home_uid，跳过推送（微信里发 /选题 可手动拉取）")
 
