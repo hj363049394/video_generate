@@ -17,9 +17,11 @@ RADAR_DIR = Path(__file__).resolve().parents[2] / "poc" / "radar"
 
 
 def run_radar(keywords: list, max_items: int = 20,
-              heat_threshold: float | None = None, min_likes: int | None = None) -> str:
-    """跑一轮雷达：逐关键词抓取 + 数值评分，产出 agent/workspace/topic_list_YYYY-MM-DD.json。
-    返回清单路径。门槛不传时用 score_topics.py 默认值（H≥25 且 赞≥500）。"""
+              heat_threshold: float | None = None, min_likes: int | None = None,
+              bot_id: str = "default") -> str:
+    """跑一轮雷达：逐关键词抓取 + 数值评分，产出 agent/workspace/<bot_id>/topic_list_YYYY-MM-DD.json。
+    返回清单路径。门槛不传时用 score_topics.py 默认值（H≥25 且 赞≥500）。
+    bot_id 与 Router.workspace 的分层一致（v1.1 多 Bot 隔离）。"""
     if not keywords:
         raise ValueError("radar.keywords 未配置")
     env = dict(os.environ)
@@ -43,7 +45,7 @@ def run_radar(keywords: list, max_items: int = 20,
     subprocess.run(cmd, check=True, cwd=str(RADAR_DIR), env=env)
     candidates = json.loads((RADAR_DIR / "output" / "candidates.json").read_text(encoding="utf-8"))
     passed = candidates.get("passed", [])[:10]  # 数值热度 Top 10（语义评分 Phase 1.5）
-    out_dir = Path(__file__).resolve().parents[1] / "workspace"
+    out_dir = Path(__file__).resolve().parents[1] / "workspace" / bot_id
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"topic_list_{date.today().isoformat()}.json"
     out_path.write_text(json.dumps({
@@ -55,9 +57,20 @@ def run_radar(keywords: list, max_items: int = 20,
 
 
 def latest_topic_list(workspace_dir) -> str | None:
-    """最近一次的当日/历史选题清单路径（优先当日）。"""
+    """最近一次的当日/历史选题清单路径（优先当日）。
+
+    兼容回退：bot 分层目录（workspace/<bot_id>/）无清单时，回落到
+    v1.0 的共享目录（workspace/），避免多 Bot 重构前的落盘读不到。
+    """
     hits = sorted(glob.glob(str(Path(workspace_dir) / "topic_list_*.json")))
-    return hits[-1] if hits else None
+    if hits:
+        return hits[-1]
+    parent = Path(workspace_dir).parent
+    if parent.name == "workspace":  # workspace/<bot_id> → workspace/
+        hits = sorted(glob.glob(str(parent / "topic_list_*.json")))
+        if hits:
+            return hits[-1]
+    return None
 
 
 def format_topic_list(path: str, top: int = 5) -> str:
