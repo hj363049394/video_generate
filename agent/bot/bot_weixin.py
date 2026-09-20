@@ -432,7 +432,10 @@ class WeixinTriggerAdapter(TriggerAdapter):
         intent = Intent(user_id=f"weixin:{sender}", channel="weixin",
                         text=text, media=media, ts=time.time())
         if self._on_intent:
-            self._on_intent(intent)
+            # Router.handle 是 async 协程，必须 await（否则协程从不执行，消息被静默丢弃）
+            res = self._on_intent(intent)
+            if asyncio.iscoroutine(res):
+                await res
 
     @staticmethod
     def _extract_text(item_list: List[dict]) -> str:
