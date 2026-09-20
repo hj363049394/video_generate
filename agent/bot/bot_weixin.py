@@ -366,10 +366,17 @@ class WeixinTriggerAdapter(TriggerAdapter):
                     failures = 0 if failures >= MAX_CONSECUTIVE_FAILURES else failures
                     continue
                 failures = 0
-                if r.get("get_updates_buf"):
-                    sync_buf = str(r["get_updates_buf"])
+                new_buf = r.get("get_updates_buf") or ""
+                msgs = r.get("msgs") or []
+                logger.info("[weixin] poll 收到响应 msgs=%d 条 sync_buf 更新=%s",
+                            len(msgs), bool(new_buf))
+                if new_buf:
+                    sync_buf = str(new_buf)
                     sync_path.write_text(json.dumps({"get_updates_buf": sync_buf}), encoding="utf-8")
-                for message in r.get("msgs") or []:
+                for message in msgs:
+                    logger.info("[weixin] 处理消息 from=%s msg_id=%s",
+                                str(message.get("from_user_id") or "")[:12],
+                                str(message.get("message_id") or "")[:8])
                     asyncio.create_task(self._process_message_safe(message))
             except asyncio.CancelledError:
                 break
