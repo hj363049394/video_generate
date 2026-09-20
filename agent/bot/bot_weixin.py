@@ -129,7 +129,10 @@ class AccountStore:
         path.write_text(json.dumps({
             "token": token, "base_url": base_url, "user_id": user_id,
             "saved_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}), encoding="utf-8")
-        path.chmod(0o600)
+        try:
+            path.chmod(0o600)
+        except OSError:
+            pass  # Windows 不支持 Unix 权限，忽略
 
     def load_account(self, account_id: str) -> Optional[Dict[str, Any]]:
         path = self.dir / f"{account_id}.json"
@@ -139,6 +142,23 @@ class AccountStore:
             return json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             return None
+
+    def first_account_id(self) -> Optional[str]:
+        """扫描 state/weixin/ 目录，返回第一个已登录账号的 account_id。
+        排除 *.context-tokens.json 和 *.sync.json 等辅助文件，只认 {account_id}.json。
+        用于 config.weixin.account_id 为空时自动加载扫码登录产物，免去手工填写。
+        """
+        if not self.dir.exists():
+            return None
+        for p in sorted(self.dir.glob("*.json")):
+            name = p.name
+            if name.endswith(".context-tokens.json") or name.endswith(".sync.json"):
+                continue
+            account_id = name[:-5]  # 去掉 .json 后缀
+            data = self.load_account(account_id)
+            if data and data.get("token"):
+                return account_id
+        return None
 
     # context_token：按 peer 持久化（磁盘缓存，hermes ContextTokenStore 简化版）
     def _ctx_path(self, account_id: str) -> Path:
@@ -238,6 +258,12 @@ class WeixinTriggerAdapter(TriggerAdapter):
         self._base_url = str(self._cfg.get("base_url") or ILINK_BASE_URL).rstrip("/")
         self._cdn = str(self._cfg.get("cdn_base_url") or WEIXIN_CDN_BASE_URL).rstrip("/")
         self._allow = {str(u).strip() for u in (self._cfg.get("allow_users") or []) if str(u).strip()}
+        # config 未填 account_id 时，自动扫描 state/weixin/ 加载扫码登录产物
+        if not self._account_id:
+            auto = self._store.first_account_id()
+            if auto:
+                self._account_id = auto
+                logger.info("[weixin] config 未填 account_id，自动加载已登录账号 %s", auto)
         # 落盘凭据优先于 config 内联值（--qr-login 产物）
         persisted = self._store.load_account(self._account_id) if self._account_id else None
         if persisted:
@@ -375,7 +401,7 @@ class WeixinTriggerAdapter(TriggerAdapter):
         if sender not in self._allow:
             logger.info("[weixin] 白名单外消息 sender=%s（加入 config.allow_users 可放行）", sender[:12])
             try:
-                await self._send_text_chunk(sender, "未授权用户。请管理员在 config.yaml 的 "
+                await self._send_text_chunk(sender, "未授权用户。请管理员在 config.yaml "
                                                     "channel.weixin.allow_users 中添加你的 ID: "
                                                     f"{sender}", None)
             except Exception:
