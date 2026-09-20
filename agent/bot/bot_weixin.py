@@ -294,6 +294,10 @@ class WeixinTriggerAdapter(TriggerAdapter):
             timeout=aiohttp.ClientTimeout(total=None))  # send 走 wait_for 超时，禁用会话级超时
         self._poll_task = asyncio.create_task(self._poll_loop(), name="weixin-poll")
         logger.info("[weixin] 已连接 account=%s…", self._account_id[:8])
+        try:
+            await self._poll_task  # 阻塞直到 poll_task 结束（被 stop() cancel 或异常退出）
+        except asyncio.CancelledError:
+            pass  # 正常停止：stop() 主动 cancel，不当作错误
 
     async def stop(self) -> None:
         self._running = False
