@@ -46,8 +46,10 @@ def _load_dotenv(env_path: Path) -> None:
     """
     if not env_path.exists():
         return
-    for raw in env_path.read_text(encoding="utf-8").splitlines():
-        line = raw.strip()
+    # utf-8-sig：兼容 PowerShell Set-Content -Encoding UTF8 写出的 BOM 头
+    # （BOM 会粘在第一行 key 上导致 ARK_API_KEY 解析失败）
+    for raw in env_path.read_text(encoding="utf-8-sig").splitlines():
+        line = raw.strip().lstrip("\ufeff")
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, _, value = line.partition("=")
