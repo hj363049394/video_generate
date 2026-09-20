@@ -40,12 +40,13 @@ deliver:
   video_max_mb: 25            # 视频直发上限；验证手册 V4 实测后调整，超限提示人工取件
 
 llm:                          # 仿写用 chat 模型（OpenAI 兼容 /chat/completions）
-  base_url: ""                # 阿里百炼：https://dashscope.aliyuncs.com/compatible-mode/v1
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1   # 阿里百炼（默认）；api_key 走 LLM_API_KEY
   api_key: ""                 # 留空读环境变量 LLM_API_KEY
   models:                     # 优先级列表，失败自动 fallback 到下一个；也可只用 model: xxx 单模型
-    - qwen3.8-max
-    - glm-5.3
-    - deepseek-v4-pro
+    - kimi-k3                 # 主力：人设感最强 + 图片单元 5 个最全 + 相似度 0.035（2026-09-19 四模型实测定稿）
+    - glm-5.3                 # fallback 1：最原创 0.027，速度快
+    - qwen3.8-max             # fallback 2
+    - deepseek-v4-pro         # fallback 3（注意虚构资产风险，仅兜底）
 
 persona:                      # 人设（SOUL 化属 Phase 1.5，当前作为仿写注入）
   soul: ""                    # 留空读 agent/SOUL.md（v1.1 已落地）
