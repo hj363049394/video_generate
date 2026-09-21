@@ -11,6 +11,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import shutil
 import subprocess
 import urllib.request
 from pathlib import Path
@@ -162,6 +163,5 @@ def make_video(images: List[str], narrations: List[str], out_path: str,
 
 
 def shutil_which_none(cmd: str) -> bool:
-    """ffmpeg/ffprobe 是否缺失"""
-    return any(subprocess.run(["which", c], capture_output=True).returncode != 0
-               for c in (cmd, "ffprobe"))
+    """ffmpeg/ffprobe 是否缺失（跨平台：shutil.which 在 Windows/macOS/Linux 均可查 exe）"""
+    return any(shutil.which(c) is None for c in (cmd, "ffprobe"))
