@@ -50,8 +50,8 @@ llm:                          # 仿写用 chat 模型（OpenAI 兼容 /chat/comp
   vision_model: ""            # 多模态看图模型（v1.2 拆解用，如 qwen-vl-max / glm-4v）；
                               # 留空则拆解不看图，从正文推断图卡结构（不影响功能）
 
-persona:                      # 人设（SOUL 化属 Phase 1.5，当前作为仿写注入）
-  soul: ""                    # 留空读 agent/SOUL.md（v1.1 已落地）
+persona:                      # 人设（v1.2.1 起经 promptkit.load_soul 组装进仿写提示词）
+  soul: ""                    # 留空读 agent/SOUL.md（已真实接线：config 显式值 > SOUL.md）
 
 radar:
   daily_hour: 8               # 每日推送时刻（本地时间整点）

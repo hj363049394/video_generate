@@ -1,7 +1,8 @@
 """拆解仿写：提示词构建 + LLM 调用 + 原创度自检
 
-标准提示词全文见 docs/prompts/xhs-standard-prompts.md（Skill 化的内核）；
-本模块是其可执行精简版：五层拆解 → 同构异题仿写 → 内容单元 JSON 产出。
+提示词外置（v1.2.1）：本模块消费 agent/prompts/rewrite.md 与 xhs-copy.md，
+人设经 promptkit.load_soul 组装（config persona.soul > agent/SOUL.md）——
+调提示词只改 prompts/ 文件，不改代码。
 """
 from __future__ import annotations
 
@@ -10,6 +11,8 @@ import os
 import re
 import urllib.request
 from typing import Callable, Dict, Optional
+
+from pipeline.promptkit import load_prompt, load_soul
 
 # 原创度门槛：字符 3-gram Jaccard 相似度（POC 定稿 0.30，验收样例 0.014）
 ORIGINALITY_THRESHOLD = 0.30
@@ -27,7 +30,10 @@ def jaccard_ngram(a: str, b: str, n: int = 3) -> float:
     return len(ga & gb) / len(ga | gb) if ga | gb else 0.0
 
 
-# ─── 提示词（xhs-standard-prompts.md 的执行版） ────────────────────────
+# ─── 提示词（外置于 agent/prompts/，调提示词改文件不改代码） ────────────
+
+REWRITE_PROMPT = load_prompt("rewrite")
+
 
 def build_rewrite_prompt(benchmark: dict, persona: dict, analysis: Optional[dict] = None) -> str:
     persona = persona or {}
@@ -52,33 +58,13 @@ def build_rewrite_prompt(benchmark: dict, persona: dict, analysis: Optional[dict
 {img_text or '（无图卡数据）'}
 整体调性：{analysis.get('style_summary', '')}
 """
-    return f"""你是小红书爆款拆解仿写专家。先对对标笔记做五层拆解（选题/标题/正文/视觉/数据层），
-再用「同构异题」策略仿写：保留结构骨架、钩子模式、排版节奏、标签策略；替换主题细节、案例、数据、口吻。
-{analysis_section}
-## 对标笔记
-标题：{benchmark.get('title', '')}
-正文：{benchmark.get('description') or benchmark.get('content') or ''}
-互动：赞 {benchmark.get('likes', 0)} / 藏 {benchmark.get('collects', 0)} / 评 {benchmark.get('comments', 0)}
-热度：{benchmark.get('heat', '')}
-
-## 人设（旅行家定位）
-{persona.get('soul', '提供旅游行程规划与定制服务的旅行家：内容强化规划感（天数/预算/节奏表格化），'
- '对标讲"去哪"仿写强化"怎么排"，结尾固定服务钩子"评论区留言人数/天数/预算，帮你出定制行程"，'
- '口吻专业但不端着，像懂行的朋友给建议。')}
-
-## 输出要求
-严格输出如下 JSON（不要输出其他文字）：
-```json
-{{
-  "title": "仿写标题（沿用对标钩子类型，20 字内）",
-  "content": "仿写正文（结构骨架与对标一致，主题细节全部替换，含结尾服务钩子）",
-  "tags": ["#标签1", "#标签2", "#标签3"],
-  "image_units": [
-    {{"role": "cover", "prompt": "封面底图生图提示词（无文字，中文，旅行摄影风格）"}},
-    {{"role": "page", "prompt": "内页底图生图提示词"}}
-  ]
-}}
-```"""
+    return REWRITE_PROMPT.format(
+        analysis_section=analysis_section,
+        benchmark_title=benchmark.get("title", ""),
+        benchmark_content=benchmark.get("description") or benchmark.get("content") or "",
+        likes=benchmark.get("likes", 0), collects=benchmark.get("collects", 0),
+        comments=benchmark.get("comments", 0), heat=benchmark.get("heat", ""),
+        persona_soul=load_soul(persona))
 
 
 def parse_llm_output(text: str) -> dict:
@@ -106,20 +92,8 @@ def run_rewrite(llm_call: Callable[[str], str], benchmark: dict, persona: dict,
 
 # ─── 小红书发布文案（LLM 排版，手机阅读习惯） ──────────────────────────
 
-XHS_COPY_PROMPT = """你是小红书排版专家。把下面的笔记标题和正文，排版成适合小红书手机端阅读的发布文案。
-
-要求：
-- 第一行：标题（20 字内，保留原标题含义，前缀 1-2 个贴题 emoji）
-- 正文：短句分行（每行不超过 20 字），段落间空一行
-- 关键信息行前加贴题 emoji（如 📍✅💰⚠️🚗🎫 等，不堆砌）
-- 结尾空一行后，输出 3-5 个话题标签（原标签优先，可补充）
-- 只做排版与 emoji 增强，不增删改任何事实信息
-- 直接输出纯文本，不要代码块、不要解释
-
-标题：{title}
-正文：{content}
-标签：{tags}
-"""
+# 提示词外置（v1.2.1）：agent/prompts/xhs-copy.md——调提示词改文件，不改代码
+XHS_COPY_PROMPT = load_prompt("xhs-copy")
 
 
 def format_xhs_copy(llm_call: Callable[[str], str], result: dict) -> str:

@@ -22,6 +22,7 @@ import urllib.request
 from pathlib import Path
 from typing import List, Optional
 
+from pipeline.promptkit import load_prompt
 from pipeline.rewrite import llm_call_factory, llm_vision_call_factory, parse_llm_output
 
 logger = logging.getLogger("pipeline.note_analyze")
@@ -59,9 +60,8 @@ def download_images(urls: List[str], out_dir: str, limit: int = _MAX_IMAGES) -> 
 
 # ─── 多模态看图 ──────────────────────────────────────────────
 
-DESCRIBE_PROMPT = """用一段话客观描述这张小红书笔记图片（它是爆款图集中的一张）：
-画面内容、构图、文字排版形态（如：大字标题封面 / 清单要点卡 / 分栏卡片 / 金句图 /
-纯风景无字 / 对比图）、色调与风格。60 字内，直接输出描述，不要其他文字。"""
+# 提示词外置（v1.2.1）：agent/prompts/describe-image.md——调提示词改文件，不改代码
+DESCRIBE_PROMPT = load_prompt("describe-image")
 
 
 def describe_images(vision_call, img_paths: List[str]) -> List[str]:
@@ -80,48 +80,8 @@ def describe_images(vision_call, img_paths: List[str]) -> List[str]:
 
 # ─── 拆解提示词 ────────────────────────────────────────────────
 
-ANALYZE_PROMPT = """你是小红书爆款拆解专家。对下面这篇爆款笔记做五层拆解（选题/标题/正文/视觉/数据层），
-输出「可仿写的结构规格」——后续仿写将严格按这个结构逐项对标，所以规格必须具体到可执行。
-
-## 对标笔记
-标题：{title}
-正文：{content}
-互动：赞 {likes} / 藏 {collects} / 评 {comments}
-{image_section}
-
-## 输出（严格 JSON，无其他文字）
-```json
-{{
-  "content_structure": {{
-    "title_pattern": "标题钩子类型与公式（如：反差对比+具体数字+场景锚点）",
-    "skeleton": [
-      {{"unit": "钩子开场", "desc": "该单元的作用与写法（30字内）"}},
-      {{"unit": "单元名", "desc": "（30字内）"}}
-    ],
-    "tone": "口吻与视角（20字内）",
-    "tags_strategy": "标签策略（20字内）"
-  }},
-  "image_structure": [
-    {{"idx": 1, "kind": "full_photo_cover", "role": "cover",
-      "desc": "图上有什么（30字内）", "text_layout": "文字排版形态（20字内）", "style": "色调与摄影风格（20字内）"}},
-    {{"idx": 2, "kind": "list_card", "role": "content", "desc": "", "text_layout": "", "style": ""}}
-  ],
-  "style_summary": "整体视觉调性一句话"
-}}
-```
-
-kind 取值（供后续版式映射）：
-- full_photo_cover：整页照片 + 大字标题（封面）
-- list_card：清单/条目卡（①②③ 式要点或清单）
-- rows_card：信息行卡（label+内容 的行式要点）
-- lines_quote：整页图 + 金句/叙事行（情绪页）
-- mixed：以上混合
-
-## 铁律
-- skeleton 单元数与正文实际段落数一致，每个单元写清「作用」而非内容本身
-- image_structure 张数与笔记实际图数一致（无图可见时按正文分段推断，并在 desc 标注「推断」）
-- 不复述笔记内容，只输出结构规格
-"""
+# 提示词外置（v1.2.1）：agent/prompts/analyze.md——调提示词改文件，不改代码
+ANALYZE_PROMPT = load_prompt("analyze")
 
 
 def _image_section(descs: List[str], n_claimed: int) -> str:

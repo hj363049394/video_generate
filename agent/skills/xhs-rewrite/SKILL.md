@@ -36,9 +36,13 @@ tags:
 
 ### Step 1: 提示词构建
 
-调 `pipeline/rewrite.py` 的 `build_rewrite_prompt(benchmark, persona)`，注入：
+调 `pipeline/rewrite.py` 的 `build_rewrite_prompt(benchmark, persona, analysis)`，注入：
 - 对标笔记字段：title / description|content / likes / collects / comments / heat
-- persona：从 `config.yaml` persona.soul 或 `agent/SOUL.md` 读取
+- persona：`pipeline/promptkit.py` 的 `load_soul` 组装——`config.yaml` persona.soul > `agent/SOUL.md`
+- analysis（v1.2）：note_analyze 拆解产出的结构规格（正文骨架/图卡结构），有则注入
+  「对标结构拆解」段，仿写逐单元同构、image_units 数量对齐图卡结构；无则 LLM 隐式拆解
+
+提示词模板外置：`agent/prompts/rewrite.md`（promptkit 启动加载，调提示词改文件不改代码）
 
 ### Step 2: LLM 调用
 
@@ -88,8 +92,9 @@ if sim > ORIGINALITY_THRESHOLD:  # 0.30
 ## 依赖工具
 
 - `pipeline/rewrite.py`：核心执行
+- `pipeline/note_analyze.py`：上游拆解引擎（v1.2 前置环节，产出 analysis 注入本 Skill）
 - `config.llm`：模型优先级 + key + base_url
-- 标准提示词：`agent/prompts/system-prompt.md` + `docs/prompts/xhs-standard-prompts.md`
+- 提示词：`agent/prompts/rewrite.md`（模板）+ `agent/prompts/system-prompt.md`（总纲）
 
 ## 异常处理
 

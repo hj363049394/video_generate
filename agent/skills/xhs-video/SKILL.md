@@ -61,7 +61,7 @@ tts(narration, str(work_dir / f"audio_{i}.mp3"))
 
 - xfade 0.5s 叠化（视频）
 - acrossfade 0.5s（音频同步）
-- concat 拼接 5 镜头
+- concat 拼接全部镜头（3-6 个，随卡片 DSL）
 
 ### Step 4: BGM ducking 混音
 
@@ -85,7 +85,7 @@ video_mod.make_video(
 |---|---|
 | 分辨率 | 1080×1440（3:4 竖版） |
 | 帧率 | 25 fps |
-| 镜头数 | 5（封面/路线/重点/点位/住宿钩子） |
+| 镜头数 | 3-6（随卡片 DSL，与 narrations 等长） |
 | 音色 | zh_female_qingxinnvsheng_uranus_bigtts（清新女声） |
 | Ken Burns | 奇偶交替缓推(1.0→1.18) / 缓拉(1.18→1.0) |
 | 转场 | xfade 0.5s + acrossfade 0.5s |
