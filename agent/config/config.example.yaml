@@ -47,6 +47,8 @@ llm:                          # 仿写用 chat 模型（OpenAI 兼容 /chat/comp
     - glm-5.3                 # fallback 1：最原创 0.027，速度快
     - qwen3.8-max             # fallback 2
     - deepseek-v4-pro         # fallback 3（注意虚构资产风险，仅兜底）
+  vision_model: ""            # 多模态看图模型（v1.2 拆解用，如 qwen-vl-max / glm-4v）；
+                              # 留空则拆解不看图，从正文推断图卡结构（不影响功能）
 
 persona:                      # 人设（SOUL 化属 Phase 1.5，当前作为仿写注入）
   soul: ""                    # 留空读 agent/SOUL.md（v1.1 已落地）

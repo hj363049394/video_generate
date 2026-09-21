@@ -24,6 +24,7 @@ from pipeline import radar as radar_mod
 from pipeline import imagepack
 from pipeline import video as video_mod
 from pipeline import note_fetch as note_fetch_mod  # v1.1：拉模式 - 用户粘贴链接抓取
+from pipeline import note_analyze as note_analyze_mod  # v1.2：爆款显式拆解
 
 logger = logging.getLogger("bot.router")
 
@@ -232,19 +233,30 @@ class Router:
         work_dir = self.workspace / "users" / uid.replace(":", "_") / task_id
         work_dir.mkdir(parents=True, exist_ok=True)  # v1.1：workspace 已含 bot_id 分层
         try:
+            # ⓪ 拆解对标（v1.2：显式拆解爆款结构——文案骨架/图卡结构/风格；
+            #    失败降级为无拆解仿写，不阻断主线）
+            analysis = None
+            try:
+                analysis = await asyncio.to_thread(
+                    note_analyze_mod.run_analyze, topic, str(work_dir),
+                    self.config.get("llm") or {})
+                (work_dir / "analysis.json").write_text(
+                    json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8")
+            except Exception as exc:
+                logger.warning("拆解失败，降级为无拆解仿写: %s", exc)
             # ① 拆解仿写（需 config.llm；未配置则任务失败并给出指引）
             _update("rewriting")
             llm = rewrite_mod.llm_call_factory(self.config.get("llm") or {})
             result = await asyncio.to_thread(
-                rewrite_mod.run_rewrite, llm, topic, self.config.get("persona") or {})
+                rewrite_mod.run_rewrite, llm, topic, self.config.get("persona") or {}, analysis)
             sim = result.get("similarity", 1.0)
             if sim > 0.30:  # 原创度门槛（POC 定稿 0.30）
                 raise RuntimeError(f"原创度自检未通过（相似度 {sim:.2f} > 0.30），需人工复写")
             (work_dir / "rewrite.json").write_text(
                 json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-            # ② 版式编排 + 4 张图文卡片（LLM 编排 → 底图生图 → PIL 排版）
+            # ② 版式编排（拆解驱动卡片 DSL：第 N 张卡对标爆款第 N 张图卡）+ 图文卡片
             _update("imaging")
-            layout = await asyncio.to_thread(imagepack.plan_layout, llm, result)
+            layout = await asyncio.to_thread(imagepack.plan_layout, llm, result, analysis)
             (work_dir / "layout.json").write_text(
                 json.dumps(layout, ensure_ascii=False, indent=2), encoding="utf-8")
             pack = await asyncio.to_thread(

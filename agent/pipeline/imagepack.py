@@ -1,15 +1,14 @@
 """xhs-imagepack · 图文卡片生成 SKILL（Phase 1.5）
 
-两步式（数据驱动，任意选题可复用）：
-  1. plan_layout(llm_call, rewrite_result) -> layout dict
-     LLM 先判断内容类型（itinerary 行程攻略 / narrative 叙事情绪），再编排版式
-     —— 版式跟随正文结构，禁止把叙事型硬套进行程表（2026-09-21 修复）
+拆解驱动卡片 DSL（2026-09-21 v1.2：版式逐项对标爆款，替代固定模板）：
+  1. plan_layout(llm_call, rewrite_result, analysis) -> layout dict
+     输入仿写稿 + 拆解引擎的结构规格（note_analyze 产出），LLM 生成卡片 DSL：
+     第 N 张卡对标爆款第 N 张图卡的 kind/文字排版/风格——版式跟拆解走，不套模板
   2. generate_pack(layout, gen, out_dir, assets_dir) -> [图片路径]
-     底图走 imagegen 双通道；排版用 PIL 版式引擎（移植自 POC gen_images.py，参数化）
+     底图走 imagegen 双通道；渲染器只实现通用块类型（list/rows/lines/cta）
+     + 两种图片模式（full 整页底图 / banner 顶部横幅），任意结构自由组合
 
-产出 4 张 1242x1656（3:4）：
-  itinerary 型：cover / itinerary / spots / stay_hook（+ 5 段分镜）
-  narrative 型：cover / story_1 / story_2 / ending（+ 4 段分镜，整页底图金句杂志风）
+产出 3-6 张 1242x1656（3:4）卡片 + 等长分镜 narrations（视频图文同源）。
 """
 from __future__ import annotations
 
@@ -17,7 +16,7 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Optional
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -37,118 +36,122 @@ LEAF = (77, 124, 15)
 LINE = (233, 222, 206)
 CREAM = (255, 238, 214)
 
+BLOCK_TYPES = ("list", "rows", "lines", "cta")
+IMAGE_MODES = ("full", "banner")
+# 人设服务钩子（最后一张卡缺 cta 块时自动补，保持旅行家人设）
+DEFAULT_CTA = {"line1": "每次出发都值得认真规划",
+               "line2": "评论区报：人数 / 天数 / 预算",
+               "line3": "帮你出定制行程",
+               "account": "关注 @ 行程规划旅行家"}
 
-# ─── 第一步：LLM 版式编排 ───────────────────────────────────────────────
 
-LAYOUT_PROMPT = """你是小红书图文排版师。先判断这篇仿写稿的内容类型，再排版成对应版式。
-版式必须跟随正文实际结构——叙事/观点型内容禁止硬套行程表（这是铁律）。
+# ─── 第一步：LLM 卡片 DSL 编排（拆解驱动） ──────────────────────────────
 
-## 类型判断（note_type 二选一）
-- itinerary：正文按天推进，含交通/住宿/预算/时段等行程规划信息
-- narrative：正文是叙事、感悟、情绪、观点、对比反思（无按天结构，无实用排程信息）
-
-## 铁律
-- 图文同源：第 N 段旁白只讲第 N 张图上承载的内容，不得串图
-- 排版密度参照小红书干货卡：每行不超 22 字，内容行最多 2 行
-- 分镜旁白为口播文案：去书面化、短句、每段 30-60 字
-- 人设是旅行家：ending/收尾卡保留服务钩子（评论区报人数/天数/预算）
+LAYOUT_PROMPT = """你是小红书图文排版师。把仿写稿排成卡片 DSL——每张卡的版式必须对标
+拆解引擎产出的爆款图卡结构（第 N 张对第 N 张），禁止套统一模板，禁止自行发明版式。
 
 ## 仿写稿
 标题：{title}
 正文：{content}
 标签：{tags}
 
-## 输出（严格 JSON，无其他文字；按判断的类型输出对应结构）
+## 爆款图卡结构（对标基准，逐张对齐）
+{analysis_section}
 
-itinerary 型：
+## 卡片 DSL 规格
+- cards 3-6 张；第 N 张对标拆解 image_structure 第 N 张（拆解张数 >6 时合并同类内容项，<3 时按内容需要补足）
+- 每张卡字段：
+  - name：英文短名（cover / day1 / tips / ending 等）
+  - image_mode：full（整页底图：适合封面/金句/情绪页/收尾，文字少而大）
+                banner（顶部横幅 + 白卡内容区：适合清单/路线/要点，信息密度高）
+  - image_prompt：底图提示词（对标该张拆解的 style 与 desc，旅行摄影，无人物无文字）
+  - title：卡主标题；subtitle：副标题（full 模式用）；pill：角标短语（仅封面）
+  - blocks：内容块数组（full 卡最多 lines + cta 两种；banner 卡内容块 1-2 个，cta 最多 1 个）：
+    - {{"type": "list", "items": [{{"tag": "①", "label": "短语（6字内）", "text": "说明（40字内）"}}]}}  条目清单
+    - {{"type": "rows", "items": [{{"label": "标签（6字内）", "text": "内容（22字内）", "image_prompt": "可选：该行配 382px 小图提示词"}}]}}  信息行（带 image_prompt 渲染为图文行，最多 2 行）
+    - {{"type": "lines", "items": ["叙事行/金句（22字内）", "..."]}}  金句/叙事行（最多 3 行）
+    - {{"type": "cta", "line1": "过渡句（16字内）", "line2": "评论区报：人数 / 天数 / 预算", "line3": "钩子（14字内）", "account": "关注 @ 行程规划旅行家"}}
+
+## 铁律
+- narrations 与 cards 等长：第 N 段旁白只讲第 N 张卡上承载的内容（图文同源，不串图）
+- 旁白为口播文案：去书面化、短句、每段 30-60 字
+- 每行不超 22 字；list/rows 的 text 最多 2 行
+- 最后一张卡必须含 cta 块（人设服务钩子）
+- 排版密度参照小红书干货卡：banner 卡全部内容块合计不超 6 个条目
+
+## 输出（严格 JSON，无其他文字）
 ```json
 {{
-  "note_type": "itinerary",
-  "cover": {{"image_prompt": "封面底图提示词（本篇目的地标志性场景，旅行摄影，无人物无文字）",
-             "title": "封面大标题（18字内，含emoji）", "subtitle": "副标题（15字内）"}},
-  "itinerary": {{"image_prompt": "路线卡顶部横幅提示词（本篇核心景观大道/街区，无人物无文字）",
-                 "title": "3 日路线总表", "subtitle": "排法一句话（15字内）",
-                 "days": [
-                   {{"tag": "Day 1", "theme": "当日主题（6字内）", "content": "上午…·下午…（40字内）", "traffic": "地铁/交通一句话（20字内）"}},
-                   {{"tag": "Day 2", "theme": "", "content": "", "traffic": ""}},
-                   {{"tag": "Day 3", "theme": "", "content": "", "traffic": ""}}
-                 ],
-                 "footer": "节奏原则一句话（18字内）"}},
-  "spots": {{"title": "重点点位 · 最佳时段",
-             "spots": [
-               {{"image_prompt": "点位1实景提示词", "name": "点位名（6字内）", "tag": "一句话标签（6字内）",
-                 "rows": [{{"label": "最佳时段", "content": "（22字内）"}}, {{"label": "提醒", "content": "（22字内）"}}]}},
-               {{"image_prompt": "点位2实景提示词", "name": "", "tag": "", "rows": [{{"label": "怎么玩", "content": ""}}, {{"label": "最佳时段", "content": ""}}]}},
-               {{"image_prompt": "点位3实景提示词", "name": "", "tag": "", "rows": [{{"label": "最佳时段", "content": ""}}, {{"label": "提醒", "content": ""}}]}}
-             ]}},
-  "stay_hook": {{"image_prompt": "住宿卡顶部横幅提示词（本篇推荐住宿片区实景，无人物无文字）",
-                 "title": "带娃住宿 · 规划师只看 3 点", "subtitle": "住哪片区一句话（15字内）",
-                 "rules": [
-                   {{"num": "①", "name": "动线", "desc": "为什么重要+怎么选（20字内）"}},
-                   {{"num": "②", "name": "床", "desc": ""}},
-                   {{"num": "③", "name": "退改", "desc": ""}}
-                 ],
-                 "cta": {{"line1": "这份是默认家庭节奏的说明（16字内）",
-                          "line2": "评论区报：人数 / 天数 / 娃年龄",
-                          "line3": "帮你重排一版（14字内）", "account": "关注 @ 行程规划旅行家"}}}},
-  "narrations": ["镜头1旁白（对应封面：钩子开场，30-50字）",
-                  "镜头2旁白（对应路线总表：三天概览，30-60字）",
-                  "镜头3旁白（对应重点点位之一：展开讲透，30-60字）",
-                  "镜头4旁白（对应点位卡：只讲图上时段要点，30-60字）",
-                  "镜头5旁白（对应住宿钩子卡：三原则+服务钩子收尾，40-60字）"]
-}}
-```
-
-narrative 型（整页底图金句杂志风，4 张卡 + 4 段分镜）：
-```json
-{{
-  "note_type": "narrative",
-  "cover": {{"image_prompt": "封面底图提示词（与正文情绪强相关的目的地场景，旅行摄影，无人物无文字）",
-             "title": "封面大标题（18字内，含emoji，保留正文核心观点）", "subtitle": "副标题（15字内）",
-             "pill": "角标短语（10字内，如「我的真实感受」）"}},
-  "story_1": {{"image_prompt": "场景1底图提示词（正文第一个场景/论点对应画面，无人物无文字）",
-               "title": "场景金句（16字内，从正文提炼）",
-               "lines": ["叙事行1（22字内，正文原句或同义改写）", "叙事行2（22字内）", "叙事行3（22字内）"]}},
-  "story_2": {{"image_prompt": "场景2底图提示词（正文第二个场景/论点对应画面，无人物无文字）",
-               "title": "场景金句（16字内）",
-               "lines": ["叙事行1（22字内）", "叙事行2（22字内）", "叙事行3（22字内）"]}},
-  "ending": {{"image_prompt": "收尾底图提示词（开阔/有回味的场景，无人物无文字）",
-              "title": "收尾观点（14字内）",
-              "lines": ["升华行1（22字内）", "升华行2（22字内）"],
-              "cta": {{"line1": "过渡句（16字内）", "line2": "评论区报：人数 / 天数 / 预算",
-                       "line3": "帮你出定制行程（12字内）", "account": "关注 @ 行程规划旅行家"}}}},
-  "narrations": ["镜头1旁白（对应封面：钩子开场，30-50字）",
-                  "镜头2旁白（对应场景页1：讲透第一个场景，30-60字）",
-                  "镜头3旁白（对应场景页2：讲透第二个场景，30-60字）",
-                  "镜头4旁白（对应收尾卡：观点升华+服务钩子，40-60字）"]
+  "cards": [
+    {{"name": "cover", "image_mode": "full", "image_prompt": "...",
+      "title": "...", "subtitle": "...", "pill": "...", "blocks": []}},
+    {{"name": "...", "image_mode": "banner", "image_prompt": "...",
+      "title": "...", "blocks": [{{...}}, {{"type": "cta", ...}}]}}
+  ],
+  "narrations": ["镜头1旁白", "镜头2旁白"]
 }}
 ```"""
 
 
-def plan_layout(llm_call: Callable[[str], str], rewrite_result: dict) -> dict:
-    """LLM 把仿写稿编排成版式数据（先判类型，按类型校验）。返回 layout dict。"""
+def _analysis_section(analysis: Optional[dict]) -> str:
+    """拆解结果 → prompt 的对标基准段。无拆解数据时给降级说明。"""
+    if not analysis:
+        return ("（拆解数据缺失）无对标基准——从仿写稿正文分段推断图卡结构："
+                "正文每个自然段/emoji 分段 ≈ 一张卡；叙事型段落用 full+lines，"
+                "清单型段落用 banner+list/rows。")
+    lines = []
+    for i, im in enumerate(analysis.get("image_structure") or []):
+        lines.append(
+            f"图 {im.get('idx', i + 1)}：kind={im.get('kind', '')}｜role={im.get('role', '')}｜"
+            f"{im.get('desc', '')}｜文字排版：{im.get('text_layout', '')}｜风格：{im.get('style', '')}")
+    lines.append(f"整体调性：{analysis.get('style_summary', '')}")
+    kind_map = ("kind → DSL 映射：full_photo_cover→full+title/subtitle/pill；"
+                "list_card→banner+list；rows_card→banner+rows；"
+                "lines_quote→full+lines；mixed→按内容择优组合")
+    return "\n".join(lines) + "\n" + kind_map
+
+
+def plan_layout(llm_call: Callable[[str], str], rewrite_result: dict,
+                analysis: Optional[dict] = None) -> dict:
+    """LLM 把仿写稿 + 拆解结构编排成卡片 DSL。返回 layout dict。
+
+    校验：cards 3-6 张、image_mode/blocks 类型合法、narrations 等长、
+    末卡含 cta（缺则自动补人设钩子）。
+    """
     prompt = LAYOUT_PROMPT.format(
         title=rewrite_result.get("title", ""),
         content=rewrite_result.get("content", ""),
-        tags=" ".join(rewrite_result.get("tags", [])))
+        tags=" ".join(rewrite_result.get("tags", [])),
+        analysis_section=_analysis_section(analysis))
     raw = llm_call(prompt)
     m = re.search(r"```json\s*(\{.*?\})\s*```", raw, re.S) or re.search(r"(\{.*\})", raw, re.S)
     if not m:
         raise ValueError(f"版式编排输出无 JSON：{raw[:200]}")
     layout = json.loads(m.group(1))
-    note_type = layout.get("note_type") or "itinerary"  # 旧版式数据无类型 → 默认行程
-    if note_type == "narrative":
-        for key in ("cover", "story_1", "story_2", "ending"):
-            if key not in layout:
-                raise ValueError(f"版式数据（narrative）缺 {key} 段")
-        if len(layout.get("narrations") or []) != 4:
-            raise ValueError("narrative 版式 narrations 必须为 4 段（图文同源分镜）")
-    else:
-        for key in ("cover", "itinerary", "spots", "stay_hook"):
-            if key not in layout:
-                raise ValueError(f"版式数据（itinerary）缺 {key} 段")
-        if len(layout.get("narrations") or []) != 5:
-            raise ValueError("itinerary 版式 narrations 必须为 5 段（图文同源分镜）")
+
+    cards = layout.get("cards") or []
+    if not 3 <= len(cards) <= 6:
+        raise ValueError(f"cards 必须为 3-6 张，实际 {len(cards)}")
+    names = set()
+    for c in cards:
+        name = str(c.get("name") or "").strip()
+        if not name or name in names:
+            raise ValueError(f"卡 name 非法或重复：{name!r}")
+        names.add(name)
+        if not c.get("image_prompt"):
+            raise ValueError(f"卡 {name} 缺 image_prompt")
+        if c.get("image_mode") not in IMAGE_MODES:
+            raise ValueError(f"卡 {name} image_mode 非法：{c.get('image_mode')}")
+        for b in c.get("blocks") or []:
+            if b.get("type") not in BLOCK_TYPES:
+                raise ValueError(f"卡 {name} 块类型非法：{b.get('type')}")
+    narrations = layout.get("narrations") or []
+    if len(narrations) != len(cards):
+        raise ValueError(f"narrations 必须与 cards 等长（{len(cards)}），实际 {len(narrations)}")
+    # 末卡缺 cta → 自动补人设钩子（软校验，不因 LLM 漏输出而失败）
+    last = cards[-1]
+    if not any(b.get("type") == "cta" for b in last.get("blocks") or []):
+        last.setdefault("blocks", []).append({"type": "cta", **DEFAULT_CTA})
     return layout
 
 
@@ -216,24 +219,7 @@ class Renderer:
             d.text((x, y + i * (font.size + line_gap)), ln, font=font, fill=fill)
         return y + min(len(lines), max_lines) * (font.size + line_gap)
 
-    # ── 4 张卡的版式（数据驱动） ──
-
-    def gen_cover(self, layout: dict, bg_path: str, out: str):
-        c = layout["cover"]
-        img = Image.new("RGB", (W, H), BG)
-        self.paste_banner(img, bg_path, 1656)  # 全幅底图
-        d = ImageDraw.Draw(img, "RGBA")
-        for y in range(1656):  # 下半部渐变压暗保可读
-            t = max(0.0, (y - 700) / 956)
-            d.line([(0, y), (W, y)], fill=(20, 14, 8, int(150 * t)))
-        self.banner_text(d, (MARGIN, 1080), c.get("title", ""), self.F(88))
-        self.banner_text(d, (MARGIN, 1230), c.get("subtitle", ""), self.F(50, False))
-        # 角标/署名数据驱动（narrative 型可配「我的真实感受」等，缺省沿用攻略号文案）
-        self.pill(d, MARGIN, 1360, c.get("pill", "保姆级 · 可直接抄"),
-                  self.F(40, True), (255, 255, 255), MAPLE)
-        d.text((W - MARGIN, 1392), c.get("account", "行程规划旅行家"), font=self.F(38, False),
-               fill=CREAM, anchor="rm")
-        img.save(out, quality=92)
+    # ── 卡片 DSL 渲染（通用：full / banner × list / rows / lines / cta） ──
 
     def _dip(self, d, y0, y1, a0, a1):
         """纵向渐变压暗带（y0→y1，透明度 a0→a1），整页底图上保文字可读。"""
@@ -242,174 +228,194 @@ class Renderer:
             t = (y - y0) / span
             d.line([(0, y), (W, y)], fill=(15, 10, 6, int(a0 + (a1 - a0) * t)))
 
-    def gen_story(self, page: dict, bg_path: str, out: str):
-        """叙事场景页（narrative）：整页底图 + 金句标题 + 叙事行，杂志风。"""
+    def render_card(self, spec: dict, bg_path: str,
+                    row_imgs: List[Optional[str]], out: str) -> None:
+        """渲染一张卡片 DSL。
+
+        row_imgs：rows 块行级小图路径（按行序展平，无图的行传 None）。
+        full 模式只消费 lines/cta 块；banner 模式消费全部块类型。
+        """
+        if spec.get("image_mode") == "full":
+            self._render_full(spec, bg_path, out)
+        else:
+            self._render_banner(spec, bg_path, row_imgs, out)
+
+    def _render_full(self, spec: dict, bg_path: str, out: str) -> None:
+        """整页底图卡：pill 角标 + 顶部 title/subtitle + 中部 cta 色块 + 底部 lines。"""
         img = Image.new("RGB", (W, H), BG)
-        self.paste_banner(img, bg_path, 1656)
+        self.paste_banner(img, bg_path, H)
         d = ImageDraw.Draw(img, "RGBA")
-        self._dip(d, 0, 520, 175, 0)        # 顶部压暗（金句区）
-        self._dip(d, 960, 1656, 0, 165)     # 底部压暗（叙事行区）
-        self.banner_text(d, (MARGIN, 150), page.get("title", ""), self.F(76))
-        y = 1030
-        for ln in page.get("lines", [])[:3]:
-            self.banner_text(d, (MARGIN, y), ln, self.F(46, False))
-            y += 96
+        blocks = spec.get("blocks") or []
+        cta = next((b for b in blocks if b.get("type") == "cta"), None)
+
+        self._dip(d, 0, 560, 175, 0)  # 顶部压暗（标题区）
+        if spec.get("pill"):
+            self.pill(d, MARGIN, 88, spec["pill"], self.F(38), (255, 255, 255), MAPLE)
+        ty = 160
+        if spec.get("title"):
+            self.banner_text(d, (MARGIN, ty), spec["title"], self.F(78))
+            ty += 134
+        if spec.get("subtitle"):
+            self.banner_text(d, (MARGIN, ty), spec["subtitle"], self.F(46, False))
+
+        if cta:  # 中部服务钩子色块（原 gen_ending 样式）
+            self._dip(d, 700, 1190, 0, 120)
+            y0 = 760
+            d.rounded_rectangle([MARGIN, y0, W - MARGIN, y0 + 420], radius=32, fill=MAPLE)
+            d.text((W / 2, y0 + 70), cta.get("line1", ""), font=self.F(42, False),
+                   fill=(255, 226, 214), anchor="mm")
+            d.text((W / 2, y0 + 148), cta.get("line2", ""), font=self.F(52),
+                   fill=(255, 255, 255), anchor="mm")
+            d.text((W / 2, y0 + 220), cta.get("line3", ""), font=self.F(46, False),
+                   fill=(255, 255, 255), anchor="mm")
+            d.rounded_rectangle([W / 2 - 190, y0 + 270, W / 2 + 190, y0 + 330],
+                                radius=30, fill=(255, 255, 255, 40))
+            d.text((W / 2, y0 + 300), cta.get("account", ""), font=self.F(38),
+                   fill=(255, 255, 255), anchor="mm")
+
+        ly = 1240 if cta else 1030  # 底部叙事行区
+        lines_items = [ln for b in blocks if b.get("type") == "lines"
+                       for ln in (b.get("items") or [])][:3]
+        if lines_items:
+            self._dip(d, max(ly - 70, 0), H, 0, 165)
+            for ln in lines_items:
+                self.banner_text(d, (MARGIN, ly), ln, self.F(44, False))
+                ly += 92
         img.save(out, quality=92)
 
-    def gen_ending(self, page: dict, bg_path: str, out: str):
-        """收尾卡（narrative）：整页底图 + 升华观点 + CTA 服务钩子。"""
+    def _render_banner(self, spec: dict, bg_path: str,
+                       row_imgs: List[Optional[str]], out: str) -> None:
+        """横幅卡：顶部 560 底图横幅 + title/subtitle + 内容块垂直排布 + 底部 cta。"""
         img = Image.new("RGB", (W, H), BG)
-        self.paste_banner(img, bg_path, 1656)
+        self.paste_banner(img, bg_path, 560)
         d = ImageDraw.Draw(img, "RGBA")
-        self._dip(d, 0, 700, 165, 0)
-        self.banner_text(d, (MARGIN, 130), page.get("title", ""), self.F(72))
-        y = 330
-        for ln in page.get("lines", [])[:2]:
-            self.banner_text(d, (MARGIN, y), ln, self.F(48, False))
+        self.banner_text(d, (MARGIN, 92), spec.get("title", ""), self.F(62))
+        if spec.get("subtitle"):
+            self.banner_text(d, (MARGIN, 180), spec["subtitle"], self.F(42, False))
+
+        y, ri = 620, 0  # ri：row_imgs 游标
+        for b in spec.get("blocks") or []:
+            t = b.get("type")
+            if t == "list":
+                y = self._render_list(d, b, y)
+            elif t == "rows":
+                n_img = sum(1 for it in (b.get("items") or []) if it.get("image_prompt"))
+                imgs = row_imgs[ri:ri + n_img] if n_img else []
+                ri += n_img
+                y = self._render_rows(img, d, b, y, imgs)
+            elif t == "lines":
+                y = self._render_lines(d, b, y)
+            y += 24
+
+        cta = next((b for b in spec.get("blocks") or [] if b.get("type") == "cta"), None)
+        if cta:  # 底部服务钩子（原 gen_stay_hook 样式），跟在内容后但不低于 1080
+            yc = min(max(y, 1080), 1140)
+            d.rounded_rectangle([MARGIN, yc, W - MARGIN, yc + 380], radius=32, fill=MAPLE)
+            d.text((W / 2, yc + 70), cta.get("line1", ""), font=self.F(42, False),
+                   fill=(255, 226, 214), anchor="mm")
+            d.text((W / 2, yc + 148), cta.get("line2", ""), font=self.F(52),
+                   fill=(255, 255, 255), anchor="mm")
+            d.text((W / 2, yc + 220), cta.get("line3", ""), font=self.F(46, False),
+                   fill=(255, 255, 255), anchor="mm")
+            d.rounded_rectangle([W / 2 - 190, yc + 270, W / 2 + 190, yc + 330],
+                                radius=30, fill=(255, 255, 255, 40))
+            d.text((W / 2, yc + 300), cta.get("account", ""), font=self.F(38),
+                   fill=(255, 255, 255), anchor="mm")
+        d.text((W / 2, 1608), "· 出发这件事，永远不亏 ·", font=self.F(34),
+               fill=AMBER, anchor="mm")
+        img.save(out, quality=92)
+
+    def _render_list(self, d, block: dict, y: int) -> int:
+        """条目清单块：白卡 + (tag pill + label + text) × N。返回下一块起始 y。"""
+        items = [it for it in (block.get("items") or []) if it][:4]
+        if not items:
+            return y
+        ch = 30 + len(items) * 190 + 16
+        d.rounded_rectangle([MARGIN, y, W - MARGIN, y + ch], radius=26,
+                            fill=CARD, outline=LINE, width=2)
+        iy = y + 24
+        for it in items:
+            pw = self.pill(d, MARGIN + 34, iy, str(it.get("tag", "·")), self.F(36),
+                           (255, 255, 255), MAPLE)
+            d.text((MARGIN + 34 + pw + 24, iy + 2), it.get("label", ""),
+                   font=self.F(50), fill=DARK)
+            self.wrap(d, MARGIN + 34, iy + 84, it.get("text", ""), self.F(40, False),
+                     DARK, W - MARGIN * 2 - 68, max_lines=2)
+            iy += 190
+        return y + ch + 20
+
+    def _render_rows(self, canvas, d, block: dict, y: int,
+                     imgs: List[Optional[str]]) -> int:
+        """信息行块：白卡；有小图的行渲染 382px 图文行，无图渲染纯文字行。"""
+        items = [it for it in (block.get("items") or []) if it][:4]
+        if not items:
+            return y
+        heights = [464 if (imgs and k < len(imgs) and imgs[k]) else 140
+                   for k in range(len(items))]
+        ch = 30 + sum(heights) + 16
+        d.rounded_rectangle([MARGIN, y, W - MARGIN, y + ch], radius=26,
+                            fill=CARD, outline=LINE, width=2)
+        iy = y + 24
+        for k, it in enumerate(items):
+            img_path = imgs[k] if (imgs and k < len(imgs)) else None
+            if img_path:  # 图文行（原 gen_spots 样式）
+                self.paste_rounded(canvas, self.load_crop(img_path, 382, 382),
+                                   (MARGIN + 34, iy + 40), radius=20)
+                tx = MARGIN + 456
+                d.text((tx, iy + 36), it.get("label", ""), font=self.F(48), fill=DARK)
+                self.wrap(d, tx, iy + 108, it.get("text", ""), self.F(38, False),
+                          DARK, W - MARGIN - 34 - tx, max_lines=3)
+            else:  # 纯文字行
+                d.text((MARGIN + 34, iy), it.get("label", ""), font=self.F(38), fill=GOLD)
+                self.wrap(d, MARGIN + 34, iy + 52, it.get("text", ""), self.F(40, False),
+                          DARK, W - MARGIN * 2 - 68, max_lines=2)
+            iy += heights[k]
+        return y + ch + 20
+
+    def _render_lines(self, d, block: dict, y: int) -> int:
+        """金句/叙事行块：无卡纯文字（banner 模式下）。"""
+        for ln in (block.get("items") or [])[:3]:
+            d.text((MARGIN, y), ln, font=self.F(44), fill=DARK)
             y += 92
-        cta = page.get("cta", {})
-        d.rounded_rectangle([MARGIN, 760, W - MARGIN, 1180], radius=32, fill=MAPLE)
-        d.text((W / 2, 830), cta.get("line1", "每次出发都值得认真规划"), font=self.F(42, False),
-               fill=(255, 226, 214), anchor="mm")
-        d.text((W / 2, 910), cta.get("line2", "评论区报：人数 / 天数 / 预算"),
-               font=self.F(52), fill=(255, 255, 255), anchor="mm")
-        d.text((W / 2, 982), cta.get("line3", "帮你出定制行程"), font=self.F(46, False),
-               fill=(255, 255, 255), anchor="mm")
-        d.rounded_rectangle([W / 2 - 190, 1030, W / 2 + 190, 1090], radius=30, fill=(255, 255, 255, 40))
-        d.text((W / 2, 1060), cta.get("account", "关注 @ 行程规划旅行家"),
-               font=self.F(38), fill=(255, 255, 255), anchor="mm")
-        d.text((W / 2, 1580), "· 出发这件事，永远不亏 ·", font=self.F(36), fill=AMBER, anchor="mm")
-        img.save(out, quality=92)
-
-    def gen_itinerary(self, layout: dict, banner_path: str, out: str):
-        it = layout["itinerary"]
-        img = Image.new("RGB", (W, H), BG)
-        self.paste_banner(img, banner_path, 580)
-        d = ImageDraw.Draw(img, "RGBA")
-        self.banner_text(d, (MARGIN, 96), it.get("title", "3 日路线总表"), self.F(66))
-        self.banner_text(d, (MARGIN, 186), it.get("subtitle", ""), self.F(42, False))
-        y = 616
-        for day in it.get("days", [])[:3]:
-            d.rounded_rectangle([MARGIN, y, W - MARGIN, y + 306], radius=26,
-                                fill=CARD, outline=LINE, width=2)
-            self.pill(d, MARGIN + 34, y + 28, day.get("tag", ""), self.F(38), (255, 255, 255), MAPLE)
-            d.text((MARGIN + 200, y + 32), day.get("theme", ""), font=self.F(52), fill=DARK)
-            self.wrap(d, MARGIN + 34, y + 118, day.get("content", ""), self.F(42, False),
-                      DARK, W - MARGIN * 2 - 68, max_lines=2)
-            d.text((MARGIN + 34, y + 248), "· ", font=self.F(36), fill=GOLD)
-            d.text((MARGIN + 58, y + 246), day.get("traffic", ""), font=self.F(36), fill=GRAY)
-            y += 324
-        d.rounded_rectangle([MARGIN, 1590, W - MARGIN, 1650], radius=20, fill=(240, 247, 228))
-        d.text((W / 2, 1620), it.get("footer", ""), font=self.F(40), fill=LEAF, anchor="mm")
-        img.save(out, quality=92)
-
-    def gen_spots(self, layout: dict, img_paths: List[str], out: str):
-        sp = layout["spots"]
-        img = Image.new("RGB", (W, H), BG)
-        d = ImageDraw.Draw(img, "RGBA")
-        d.rounded_rectangle([MARGIN, 66, W - MARGIN, 170], radius=26, fill=AMBER)
-        d.text((W / 2, 118), sp.get("title", "重点点位 · 最佳时段"),
-               font=self.F(56), fill=(255, 255, 255), anchor="mm")
-        y = 204
-        for i, spot in enumerate(sp.get("spots", [])[:3]):
-            d.rounded_rectangle([MARGIN, y, W - MARGIN, y + 464], radius=26,
-                                fill=CARD, outline=LINE, width=2)
-            if i < len(img_paths):
-                self.paste_rounded(img, self.load_crop(img_paths[i], 382, 382),
-                                   (MARGIN + 34, y + 41), radius=20)
-            tx = MARGIN + 456
-            name = spot.get("name", "")
-            d.text((tx, y + 38), name, font=self.F(52), fill=DARK)
-            self.pill(d, tx + self.F(52).getlength(name) + 22, y + 42,
-                      spot.get("tag", ""), self.F(34, True), AMBER, (253, 236, 213))
-            ry = y + 130
-            for row in spot.get("rows", [])[:2]:
-                d.text((tx, ry), row.get("label", ""), font=self.F(36), fill=GOLD)
-                ry = self.wrap(d, tx, ry + 48, row.get("content", ""), self.F(40, False),
-                               DARK, W - MARGIN - 34 - tx, max_lines=2) + 20
-            y += 478
-        img.save(out, quality=92)
-
-    def gen_stay_hook(self, layout: dict, banner_path: str, out: str):
-        sh = layout["stay_hook"]
-        img = Image.new("RGB", (W, H), BG)
-        self.paste_banner(img, banner_path, 560)
-        d = ImageDraw.Draw(img, "RGBA")
-        self.banner_text(d, (MARGIN, 92), sh.get("title", ""), self.F(62))
-        self.banner_text(d, (MARGIN, 180), sh.get("subtitle", ""), self.F(42, False))
-        cw = (W - MARGIN * 2 - 48) // 3
-        y = 620
-        for i, rule in enumerate(sh.get("rules", [])[:3]):
-            x = MARGIN + i * (cw + 24)
-            d.rounded_rectangle([x, y, x + cw, y + 460], radius=26,
-                                fill=CARD, outline=LINE, width=2)
-            d.ellipse([x + cw / 2 - 44, y + 36, x + cw / 2 + 44, y + 124], fill=(253, 236, 213))
-            d.text((x + cw / 2, y + 80), rule.get("num", ""), font=self.F(46), fill=AMBER, anchor="mm")
-            d.text((x + cw / 2, y + 152), rule.get("name", ""), font=self.F(48), fill=DARK, anchor="mm")
-            self.wrap(d, x + 34, y + 232, rule.get("desc", ""), self.F(36, False), GRAY, cw - 68)
-        cta = sh.get("cta", {})
-        d.rounded_rectangle([MARGIN, 1120, W - MARGIN, 1500], radius=32, fill=MAPLE)
-        d.text((W / 2, 1190), cta.get("line1", ""), font=self.F(42, False), fill=(255, 226, 214), anchor="mm")
-        d.text((W / 2, 1268), cta.get("line2", "评论区报：人数 / 天数 / 娃年龄"),
-               font=self.F(52), fill=(255, 255, 255), anchor="mm")
-        d.text((W / 2, 1340), cta.get("line3", ""), font=self.F(46, False), fill=(255, 255, 255), anchor="mm")
-        d.rounded_rectangle([W / 2 - 190, 1390, W / 2 + 190, 1450], radius=30, fill=(255, 255, 255, 40))
-        d.text((W / 2, 1420), cta.get("account", "关注 @ 行程规划旅行家"),
-               font=self.F(38), fill=(255, 255, 255), anchor="mm")
-        d.text((W / 2, 1580), "· 排程不踩坑 ·", font=self.F(36), fill=AMBER, anchor="mm")
-        img.save(out, quality=92)
+        return y
 
 
 # ─── 第二步：底图生成 + 渲染 ────────────────────────────────────────────
 
 def generate_pack(layout: dict, gen: ImageGenRouter, out_dir: str,
                   assets_dir: str, base_dir: str = "") -> Dict[str, List[str]]:
-    """生成 4 张图文卡片。返回 {"cards": [4 卡路径], "video_frames": [帧路径]}。
+    """按卡片 DSL 生成 3-6 张图文卡片。
 
-    video_frames 与 narrations 严格等长：
-      itinerary 型 5 帧：封面卡 / 路线卡 / 点位底图 / 点位卡 / 住宿卡（继承 POC 分镜）
-      narrative 型 4 帧：封面卡 / 场景1 / 场景2 / 收尾卡（4 卡即 4 镜头）"""
+    返回 {"cards": [卡路径], "video_frames": [帧路径]}——cards 即 video_frames
+    （narrations 与 cards 等长，由 plan_layout 校验保证，视频图文同源）。
+    """
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     raw = out / "raw"
     raw.mkdir(exist_ok=True)
     r = Renderer(assets_dir)
-    note_type = layout.get("note_type") or "itinerary"  # 旧数据默认行程（向后兼容）
+    outs: List[str] = []
 
-    if note_type == "narrative":
-        jobs = {name: (layout[name].get("image_prompt", ""), "portrait")
-                for name in ("cover", "story_1", "story_2", "ending")}
-        paths = {}
-        for name, (prompt, orient) in jobs.items():
-            if not prompt:
-                raise ValueError(f"版式数据缺底图提示词: {name}")
-            paths[name], _ = gen.generate(prompt, str(raw / f"{name}.jpg"), orient)
-        r.gen_cover(layout, paths["cover"], str(out / "1_cover.jpg"))
-        r.gen_story(layout["story_1"], paths["story_1"], str(out / "2_story.jpg"))
-        r.gen_story(layout["story_2"], paths["story_2"], str(out / "3_story.jpg"))
-        r.gen_ending(layout["ending"], paths["ending"], str(out / "4_ending.jpg"))
-        cards = [str(out / n) for n in
-                 ("1_cover.jpg", "2_story.jpg", "3_story.jpg", "4_ending.jpg")]
-        return {"cards": cards, "video_frames": cards}
-
-    # ── itinerary 型（原版式） ──
-    jobs = {
-        "cover_bg": (layout["cover"].get("image_prompt", ""), "portrait"),
-        "it_banner": (layout["itinerary"].get("image_prompt", ""), "landscape"),
-        "st_banner": (layout["stay_hook"].get("image_prompt", ""), "landscape"),
-    }
-    for i, spot in enumerate(layout["spots"].get("spots", [])[:3]):
-        jobs[f"spot_{i}"] = (spot.get("image_prompt", ""), "portrait")
-    paths = {}
-    for name, (prompt, orient) in jobs.items():
-        if not prompt:
-            raise ValueError(f"版式数据缺底图提示词: {name}")
-        paths[name], _ = gen.generate(prompt, str(raw / f"{name}.jpg"), orient)
-
-    r.gen_cover(layout, paths["cover_bg"], str(out / "1_cover.jpg"))
-    r.gen_itinerary(layout, paths["it_banner"], str(out / "2_itinerary.jpg"))
-    r.gen_spots(layout, [paths[f"spot_{i}"] for i in range(3)], str(out / "3_spots.jpg"))
-    r.gen_stay_hook(layout, paths["st_banner"], str(out / "4_stay_hook.jpg"))
-    cards = [str(out / n) for n in ("1_cover.jpg", "2_itinerary.jpg", "3_spots.jpg", "4_stay_hook.jpg")]
-    video_frames = [cards[0], cards[1], paths["spot_0"], cards[2], cards[3]]
-    return {"cards": cards, "video_frames": video_frames}
+    for i, spec in enumerate(layout["cards"]):
+        name = spec["name"]
+        # ① 卡级底图：full 竖版 / banner 横幅
+        orient = "portrait" if spec["image_mode"] == "full" else "landscape"
+        bg, _ = gen.generate(spec["image_prompt"], str(raw / f"{name}.jpg"), orient)
+        # ② rows 块行级小图（图文行）
+        row_imgs: List[Optional[str]] = []
+        for b in spec.get("blocks") or []:
+            if b.get("type") != "rows":
+                continue
+            for it in b.get("items") or []:
+                ip = it.get("image_prompt")
+                if ip:
+                    p, _ = gen.generate(ip, str(raw / f"{name}_row{len(row_imgs)}.jpg"),
+                                        "portrait")
+                    row_imgs.append(p)
+                else:
+                    row_imgs.append(None)
+        # ③ 渲染（文件名 {序号}_{name}.jpg，序号保证图集顺序）
+        dst = str(out / f"{i + 1}_{name}.jpg")
+        r.render_card(spec, bg, row_imgs, dst)
+        outs.append(dst)
+    return {"cards": outs, "video_frames": outs}

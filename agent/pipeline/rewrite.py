@@ -9,7 +9,7 @@ import json
 import os
 import re
 import urllib.request
-from typing import Callable, Dict
+from typing import Callable, Dict, Optional
 
 # 原创度门槛：字符 3-gram Jaccard 相似度（POC 定稿 0.30，验收样例 0.014）
 ORIGINALITY_THRESHOLD = 0.30
@@ -29,11 +29,32 @@ def jaccard_ngram(a: str, b: str, n: int = 3) -> float:
 
 # ─── 提示词（xhs-standard-prompts.md 的执行版） ────────────────────────
 
-def build_rewrite_prompt(benchmark: dict, persona: dict) -> str:
+def build_rewrite_prompt(benchmark: dict, persona: dict, analysis: Optional[dict] = None) -> str:
     persona = persona or {}
+    analysis_section = ""
+    if analysis:
+        cs = analysis.get("content_structure", {})
+        skeleton = cs.get("skeleton") or []
+        skeleton_text = "\n".join(
+            f"  {i + 1}. {u.get('unit', '')}——{u.get('desc', '')}"
+            for i, u in enumerate(skeleton))
+        img_text = "\n".join(
+            f"  图 {im.get('idx', i + 1)}：{im.get('kind', '')}｜{im.get('text_layout', '')}"
+            f"｜{im.get('style', '')}"
+            for i, im in enumerate(analysis.get("image_structure") or []))
+        analysis_section = f"""
+## 对标结构拆解（已由拆解引擎产出，仿写必须逐项对标）
+标题公式：{cs.get('title_pattern', '')}
+正文骨架（仿写正文按此逐单元同构，单元数保持一致）：
+{skeleton_text or '（无骨架数据）'}
+口吻：{cs.get('tone', '')}
+图卡结构（仿写 image_units 数量与之一致，每张对标其 kind/风格）：
+{img_text or '（无图卡数据）'}
+整体调性：{analysis.get('style_summary', '')}
+"""
     return f"""你是小红书爆款拆解仿写专家。先对对标笔记做五层拆解（选题/标题/正文/视觉/数据层），
 再用「同构异题」策略仿写：保留结构骨架、钩子模式、排版节奏、标签策略；替换主题细节、案例、数据、口吻。
-
+{analysis_section}
 ## 对标笔记
 标题：{benchmark.get('title', '')}
 正文：{benchmark.get('description') or benchmark.get('content') or ''}
@@ -68,9 +89,14 @@ def parse_llm_output(text: str) -> dict:
     return json.loads(m.group(1))
 
 
-def run_rewrite(llm_call: Callable[[str], str], benchmark: dict, persona: dict) -> dict:
-    """执行仿写并自检原创度。返回 {title, content, tags, image_units, similarity}。"""
-    raw = llm_call(build_rewrite_prompt(benchmark, persona))
+def run_rewrite(llm_call: Callable[[str], str], benchmark: dict, persona: dict,
+                analysis: Optional[dict] = None) -> dict:
+    """执行仿写并自检原创度。返回 {title, content, tags, image_units, similarity}。
+
+    analysis（可选）：note_analyze 产出的结构规格——有则仿写按骨架逐单元同构、
+    image_units 数量对标图卡结构；无则维持隐式拆解（向后兼容）。
+    """
+    raw = llm_call(build_rewrite_prompt(benchmark, persona, analysis))
     result = parse_llm_output(raw)
     original = (benchmark.get("description") or benchmark.get("content") or "")
     result["similarity"] = round(
@@ -116,26 +142,43 @@ def format_xhs_copy(llm_call: Callable[[str], str], result: dict) -> str:
 
 # ─── LLM 调用（OpenAI 兼容接口，config.llm 注入） ──────────────────────
 
+def _post_chat(base_url: str, api_key: str, model: str, messages: list,
+               temperature: float | None = 0.7, timeout: int = 300) -> str:
+    """POST chat/completions（messages 任意结构，文本/多模态共用；temperature=None 不传）。"""
+    payload = {"model": model, "messages": messages}
+    if temperature is not None:
+        payload["temperature"] = temperature
+    body = json.dumps(payload).encode()
+    req = urllib.request.Request(
+        f"{base_url}/chat/completions", data=body, method="POST",
+        headers={"Authorization": f"Bearer {api_key}",
+                 "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        data = json.loads(resp.read())
+    return data["choices"][0]["message"]["content"]
+
+
 def _chat_once(base_url: str, api_key: str, model: str, prompt: str, timeout: int = 300) -> str:
     """单模型一次对话调用。部分模型（如 kimi-k3）不支持 temperature 参数，自动去参重试。"""
-    def _post(payload: dict) -> str:
-        body = json.dumps(payload).encode()
-        req = urllib.request.Request(
-            f"{base_url}/chat/completions", data=body, method="POST",
-            headers={"Authorization": f"Bearer {api_key}",
-                     "Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            data = json.loads(resp.read())
-        return data["choices"][0]["message"]["content"]
-
-    base_payload = {"model": model, "messages": [{"role": "user", "content": prompt}]}
+    messages = [{"role": "user", "content": prompt}]
     try:
-        return _post({**base_payload, "temperature": 0.7})
+        return _post_chat(base_url, api_key, model, messages, temperature=0.7)
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="ignore") if exc.fp else ""
         if "temperature" in detail:  # 该模型不支持 temperature，去参重试
-            return _post(base_payload)
+            return _post_chat(base_url, api_key, model, messages, temperature=None)
         raise
+
+
+def _chat_once_vision(base_url: str, api_key: str, model: str,
+                      prompt: str, images_b64: list, timeout: int = 300) -> str:
+    """多模态调用：文本 prompt + base64 图片列表（OpenAI 兼容 image_url 格式）。"""
+    content = [{"type": "text", "text": prompt}] + [
+        {"type": "image_url",
+         "image_url": {"url": f"data:image/jpeg;base64,{b64}"}}
+        for b64 in images_b64]
+    return _post_chat(base_url, api_key, model,
+                      [{"role": "user", "content": content}])
 
 
 def llm_call_factory(llm_config: dict) -> Callable[[str], str]:
@@ -164,3 +207,22 @@ def llm_call_factory(llm_config: dict) -> Callable[[str], str]:
         raise RuntimeError("全部 LLM 模型失败 -> " + " | ".join(errors))
 
     return llm_call
+
+
+def llm_vision_call_factory(llm_config: dict) -> Optional[Callable[[str, list], str]]:
+    """构建多模态 vision_call(prompt, [图片b64]) -> str。
+
+    读取 config.llm.vision_model（须为多模态模型，如 qwen-vl / glm-4v / kimi-vision 系）。
+    未配置返回 None——调用方降级为纯文字拆解，不阻断。
+    """
+    cfg = llm_config or {}
+    base_url = (cfg.get("base_url") or "").rstrip("/")
+    api_key = cfg.get("api_key") or os.environ.get("LLM_API_KEY", "")
+    model = cfg.get("vision_model") or ""
+    if not (base_url and api_key and model):
+        return None
+
+    def vision_call(prompt: str, images_b64: list) -> str:
+        return _chat_once_vision(base_url, api_key, model, prompt, images_b64)
+
+    return vision_call
