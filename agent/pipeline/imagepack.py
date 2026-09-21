@@ -2,11 +2,14 @@
 
 两步式（数据驱动，任意选题可复用）：
   1. plan_layout(llm_call, rewrite_result) -> layout dict
-     LLM 把仿写稿编排成 4 张卡的版式数据 + 5 段分镜旁白（图文同源铁律在此保证）
+     LLM 先判断内容类型（itinerary 行程攻略 / narrative 叙事情绪），再编排版式
+     —— 版式跟随正文结构，禁止把叙事型硬套进行程表（2026-09-21 修复）
   2. generate_pack(layout, gen, out_dir, assets_dir) -> [图片路径]
      底图走 imagegen 双通道；排版用 PIL 版式引擎（移植自 POC gen_images.py，参数化）
 
-产出 4 张 1242x1656（3:4）：cover / itinerary / spots / stay_hook
+产出 4 张 1242x1656（3:4）：
+  itinerary 型：cover / itinerary / spots / stay_hook（+ 5 段分镜）
+  narrative 型：cover / story_1 / story_2 / ending（+ 4 段分镜，整页底图金句杂志风）
 """
 from __future__ import annotations
 
@@ -37,21 +40,30 @@ CREAM = (255, 238, 214)
 
 # ─── 第一步：LLM 版式编排 ───────────────────────────────────────────────
 
-LAYOUT_PROMPT = """你是小红书图文排版师。把下面的仿写稿编排成 4 张卡片的版式数据 + 5 段视频分镜旁白。
+LAYOUT_PROMPT = """你是小红书图文排版师。先判断这篇仿写稿的内容类型，再排版成对应版式。
+版式必须跟随正文实际结构——叙事/观点型内容禁止硬套行程表（这是铁律）。
+
+## 类型判断（note_type 二选一）
+- itinerary：正文按天推进，含交通/住宿/预算/时段等行程规划信息
+- narrative：正文是叙事、感悟、情绪、观点、对比反思（无按天结构，无实用排程信息）
 
 ## 铁律
 - 图文同源：第 N 段旁白只讲第 N 张图上承载的内容，不得串图
 - 排版密度参照小红书干货卡：每行不超 22 字，内容行最多 2 行
 - 分镜旁白为口播文案：去书面化、短句、每段 30-60 字
+- 人设是旅行家：ending/收尾卡保留服务钩子（评论区报人数/天数/预算）
 
 ## 仿写稿
 标题：{title}
 正文：{content}
 标签：{tags}
 
-## 输出（严格 JSON，无其他文字）
+## 输出（严格 JSON，无其他文字；按判断的类型输出对应结构）
+
+itinerary 型：
 ```json
 {{
+  "note_type": "itinerary",
   "cover": {{"image_prompt": "封面底图提示词（本篇目的地标志性场景，旅行摄影，无人物无文字）",
              "title": "封面大标题（18字内，含emoji）", "subtitle": "副标题（15字内）"}},
   "itinerary": {{"image_prompt": "路线卡顶部横幅提示词（本篇核心景观大道/街区，无人物无文字）",
@@ -85,11 +97,36 @@ LAYOUT_PROMPT = """你是小红书图文排版师。把下面的仿写稿编排�
                   "镜头4旁白（对应点位卡：只讲图上时段要点，30-60字）",
                   "镜头5旁白（对应住宿钩子卡：三原则+服务钩子收尾，40-60字）"]
 }}
+```
+
+narrative 型（整页底图金句杂志风，4 张卡 + 4 段分镜）：
+```json
+{{
+  "note_type": "narrative",
+  "cover": {{"image_prompt": "封面底图提示词（与正文情绪强相关的目的地场景，旅行摄影，无人物无文字）",
+             "title": "封面大标题（18字内，含emoji，保留正文核心观点）", "subtitle": "副标题（15字内）",
+             "pill": "角标短语（10字内，如「我的真实感受」）"}},
+  "story_1": {{"image_prompt": "场景1底图提示词（正文第一个场景/论点对应画面，无人物无文字）",
+               "title": "场景金句（16字内，从正文提炼）",
+               "lines": ["叙事行1（22字内，正文原句或同义改写）", "叙事行2（22字内）", "叙事行3（22字内）"]}},
+  "story_2": {{"image_prompt": "场景2底图提示词（正文第二个场景/论点对应画面，无人物无文字）",
+               "title": "场景金句（16字内）",
+               "lines": ["叙事行1（22字内）", "叙事行2（22字内）", "叙事行3（22字内）"]}},
+  "ending": {{"image_prompt": "收尾底图提示词（开阔/有回味的场景，无人物无文字）",
+              "title": "收尾观点（14字内）",
+              "lines": ["升华行1（22字内）", "升华行2（22字内）"],
+              "cta": {{"line1": "过渡句（16字内）", "line2": "评论区报：人数 / 天数 / 预算",
+                       "line3": "帮你出定制行程（12字内）", "account": "关注 @ 行程规划旅行家"}}}},
+  "narrations": ["镜头1旁白（对应封面：钩子开场，30-50字）",
+                  "镜头2旁白（对应场景页1：讲透第一个场景，30-60字）",
+                  "镜头3旁白（对应场景页2：讲透第二个场景，30-60字）",
+                  "镜头4旁白（对应收尾卡：观点升华+服务钩子，40-60字）"]
+}}
 ```"""
 
 
 def plan_layout(llm_call: Callable[[str], str], rewrite_result: dict) -> dict:
-    """LLM 把仿写稿编排成版式数据。返回 layout dict（含 narrations）。"""
+    """LLM 把仿写稿编排成版式数据（先判类型，按类型校验）。返回 layout dict。"""
     prompt = LAYOUT_PROMPT.format(
         title=rewrite_result.get("title", ""),
         content=rewrite_result.get("content", ""),
@@ -99,11 +136,19 @@ def plan_layout(llm_call: Callable[[str], str], rewrite_result: dict) -> dict:
     if not m:
         raise ValueError(f"版式编排输出无 JSON：{raw[:200]}")
     layout = json.loads(m.group(1))
-    for key in ("cover", "itinerary", "spots", "stay_hook"):
-        if key not in layout:
-            raise ValueError(f"版式数据缺 {key} 段")
-    if len(layout.get("narrations") or []) != 5:
-        raise ValueError("narrations 必须为 5 段（图文同源分镜）")
+    note_type = layout.get("note_type") or "itinerary"  # 旧版式数据无类型 → 默认行程
+    if note_type == "narrative":
+        for key in ("cover", "story_1", "story_2", "ending"):
+            if key not in layout:
+                raise ValueError(f"版式数据（narrative）缺 {key} 段")
+        if len(layout.get("narrations") or []) != 4:
+            raise ValueError("narrative 版式 narrations 必须为 4 段（图文同源分镜）")
+    else:
+        for key in ("cover", "itinerary", "spots", "stay_hook"):
+            if key not in layout:
+                raise ValueError(f"版式数据（itinerary）缺 {key} 段")
+        if len(layout.get("narrations") or []) != 5:
+            raise ValueError("itinerary 版式 narrations 必须为 5 段（图文同源分镜）")
     return layout
 
 
@@ -183,9 +228,57 @@ class Renderer:
             d.line([(0, y), (W, y)], fill=(20, 14, 8, int(150 * t)))
         self.banner_text(d, (MARGIN, 1080), c.get("title", ""), self.F(88))
         self.banner_text(d, (MARGIN, 1230), c.get("subtitle", ""), self.F(50, False))
-        self.pill(d, MARGIN, 1360, "保姆级 · 可直接抄", self.F(40, True), (255, 255, 255), MAPLE)
-        d.text((W - MARGIN, 1392), "行程规划旅行家", font=self.F(38, False),
+        # 角标/署名数据驱动（narrative 型可配「我的真实感受」等，缺省沿用攻略号文案）
+        self.pill(d, MARGIN, 1360, c.get("pill", "保姆级 · 可直接抄"),
+                  self.F(40, True), (255, 255, 255), MAPLE)
+        d.text((W - MARGIN, 1392), c.get("account", "行程规划旅行家"), font=self.F(38, False),
                fill=CREAM, anchor="rm")
+        img.save(out, quality=92)
+
+    def _dip(self, d, y0, y1, a0, a1):
+        """纵向渐变压暗带（y0→y1，透明度 a0→a1），整页底图上保文字可读。"""
+        span = max(y1 - y0, 1)
+        for y in range(y0, y1):
+            t = (y - y0) / span
+            d.line([(0, y), (W, y)], fill=(15, 10, 6, int(a0 + (a1 - a0) * t)))
+
+    def gen_story(self, page: dict, bg_path: str, out: str):
+        """叙事场景页（narrative）：整页底图 + 金句标题 + 叙事行，杂志风。"""
+        img = Image.new("RGB", (W, H), BG)
+        self.paste_banner(img, bg_path, 1656)
+        d = ImageDraw.Draw(img, "RGBA")
+        self._dip(d, 0, 520, 175, 0)        # 顶部压暗（金句区）
+        self._dip(d, 960, 1656, 0, 165)     # 底部压暗（叙事行区）
+        self.banner_text(d, (MARGIN, 150), page.get("title", ""), self.F(76))
+        y = 1030
+        for ln in page.get("lines", [])[:3]:
+            self.banner_text(d, (MARGIN, y), ln, self.F(46, False))
+            y += 96
+        img.save(out, quality=92)
+
+    def gen_ending(self, page: dict, bg_path: str, out: str):
+        """收尾卡（narrative）：整页底图 + 升华观点 + CTA 服务钩子。"""
+        img = Image.new("RGB", (W, H), BG)
+        self.paste_banner(img, bg_path, 1656)
+        d = ImageDraw.Draw(img, "RGBA")
+        self._dip(d, 0, 700, 165, 0)
+        self.banner_text(d, (MARGIN, 130), page.get("title", ""), self.F(72))
+        y = 330
+        for ln in page.get("lines", [])[:2]:
+            self.banner_text(d, (MARGIN, y), ln, self.F(48, False))
+            y += 92
+        cta = page.get("cta", {})
+        d.rounded_rectangle([MARGIN, 760, W - MARGIN, 1180], radius=32, fill=MAPLE)
+        d.text((W / 2, 830), cta.get("line1", "每次出发都值得认真规划"), font=self.F(42, False),
+               fill=(255, 226, 214), anchor="mm")
+        d.text((W / 2, 910), cta.get("line2", "评论区报：人数 / 天数 / 预算"),
+               font=self.F(52), fill=(255, 255, 255), anchor="mm")
+        d.text((W / 2, 982), cta.get("line3", "帮你出定制行程"), font=self.F(46, False),
+               fill=(255, 255, 255), anchor="mm")
+        d.rounded_rectangle([W / 2 - 190, 1030, W / 2 + 190, 1090], radius=30, fill=(255, 255, 255, 40))
+        d.text((W / 2, 1060), cta.get("account", "关注 @ 行程规划旅行家"),
+               font=self.F(38), fill=(255, 255, 255), anchor="mm")
+        d.text((W / 2, 1580), "· 出发这件事，永远不亏 ·", font=self.F(36), fill=AMBER, anchor="mm")
         img.save(out, quality=92)
 
     def gen_itinerary(self, layout: dict, banner_path: str, out: str):
@@ -271,17 +364,35 @@ class Renderer:
 
 def generate_pack(layout: dict, gen: ImageGenRouter, out_dir: str,
                   assets_dir: str, base_dir: str = "") -> Dict[str, List[str]]:
-    """生成 4 张图文卡片。返回 {"cards": [4 卡路径], "video_frames": [5 帧路径]}。
+    """生成 4 张图文卡片。返回 {"cards": [4 卡路径], "video_frames": [帧路径]}。
 
-    video_frames 与 narrations（5 段）严格对应：封面卡 / 路线卡 / 点位底图 / 点位卡 / 住宿卡
-    （继承 POC 5 镜头分镜：镜头 3 为点位实景展开）。"""
+    video_frames 与 narrations 严格等长：
+      itinerary 型 5 帧：封面卡 / 路线卡 / 点位底图 / 点位卡 / 住宿卡（继承 POC 分镜）
+      narrative 型 4 帧：封面卡 / 场景1 / 场景2 / 收尾卡（4 卡即 4 镜头）"""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     raw = out / "raw"
     raw.mkdir(exist_ok=True)
     r = Renderer(assets_dir)
+    note_type = layout.get("note_type") or "itinerary"  # 旧数据默认行程（向后兼容）
 
-    # 底图（横幅 landscape / 点位竖图 portrait；imagegen 内部自动建目录）
+    if note_type == "narrative":
+        jobs = {name: (layout[name].get("image_prompt", ""), "portrait")
+                for name in ("cover", "story_1", "story_2", "ending")}
+        paths = {}
+        for name, (prompt, orient) in jobs.items():
+            if not prompt:
+                raise ValueError(f"版式数据缺底图提示词: {name}")
+            paths[name], _ = gen.generate(prompt, str(raw / f"{name}.jpg"), orient)
+        r.gen_cover(layout, paths["cover"], str(out / "1_cover.jpg"))
+        r.gen_story(layout["story_1"], paths["story_1"], str(out / "2_story.jpg"))
+        r.gen_story(layout["story_2"], paths["story_2"], str(out / "3_story.jpg"))
+        r.gen_ending(layout["ending"], paths["ending"], str(out / "4_ending.jpg"))
+        cards = [str(out / n) for n in
+                 ("1_cover.jpg", "2_story.jpg", "3_story.jpg", "4_ending.jpg")]
+        return {"cards": cards, "video_frames": cards}
+
+    # ── itinerary 型（原版式） ──
     jobs = {
         "cover_bg": (layout["cover"].get("image_prompt", ""), "portrait"),
         "it_banner": (layout["itinerary"].get("image_prompt", ""), "landscape"),
@@ -295,7 +406,6 @@ def generate_pack(layout: dict, gen: ImageGenRouter, out_dir: str,
             raise ValueError(f"版式数据缺底图提示词: {name}")
         paths[name], _ = gen.generate(prompt, str(raw / f"{name}.jpg"), orient)
 
-    # 渲染 4 张卡
     r.gen_cover(layout, paths["cover_bg"], str(out / "1_cover.jpg"))
     r.gen_itinerary(layout, paths["it_banner"], str(out / "2_itinerary.jpg"))
     r.gen_spots(layout, [paths[f"spot_{i}"] for i in range(3)], str(out / "3_spots.jpg"))

@@ -73,6 +73,18 @@ def _split_lines(text: str, width: int = 15) -> List[str]:
     return [text[:width]] + _split_lines(text[width:], width)
 
 
+def ff_filter_path(p: str) -> str:
+    """路径 → filter_complex 内可安全解析的形式（修复 Windows 路径，2026-09-21）。
+
+    Windows 路径 D:\\My Project\\x.otf 直拼会被 ffmpeg 两层解析吃掉：
+      \\ 是转义符（分隔符被吞）、D: 的冒号是选项分隔符（值截断成 D）、空格破坏解析。
+    实测（ffmpeg 6.1，盘符+空格路径字面模拟）：须转为 D\\:/My Project/x.otf
+    并单引号包裹（引号同时保护空格/逗号等），字形渲染验证通过。"""
+    p = p.replace("\\", "/").replace("'", "")
+    p = p.replace(":", "\\:")
+    return f"'{p}'"
+
+
 def _make_clip(idx: int, img: str, mp3: str, dur: float, narration: str,
                font: str, out: str) -> None:
     frames = int(round(dur * FPS))
@@ -81,7 +93,8 @@ def _make_clip(idx: int, img: str, mp3: str, dur: float, narration: str,
     for i, ln in enumerate(_split_lines(narration)):
         safe = ln.replace(":", "").replace("'", "")
         draws.append(
-            f"drawtext=fontfile={font}:text='{safe}':fontcolor=white:"
+            f"drawtext=fontfile={ff_filter_path(font)}:text='{safe}':"
+            f"fontcolor=white:expansion=none:"
             f"borderw=5:bordercolor=black@0.75:fontsize=56:x=(w-text_w)/2:y=h-{300 - i * 78}")
     vf = (f"scale=2160:-2,crop=2160:2880,"
           f"zoompan=z='{z}':x='iw/2-(iw/zoom)/2':y='ih/2-(ih/zoom)/2':"
