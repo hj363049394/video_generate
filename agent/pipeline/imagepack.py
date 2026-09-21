@@ -21,7 +21,8 @@ from typing import Callable, Dict, List, Optional
 from PIL import Image, ImageDraw, ImageFont
 
 from pipeline.imagegen import ImageGenRouter
-from pipeline.promptkit import load_prompt
+from pipeline.promptkit import load_prompt, load_cta
+from pipeline.rewrite import contains_benchmark_url
 
 # ─── 版式常量（继承 POC 定稿视觉规范） ───────────────────────────────────
 W, H = 1242, 1656
@@ -39,11 +40,8 @@ CREAM = (255, 238, 214)
 
 BLOCK_TYPES = ("list", "rows", "lines", "cta")
 IMAGE_MODES = ("full", "banner")
-# 人设服务钩子（最后一张卡缺 cta 块时自动补，保持旅行家人设）
-DEFAULT_CTA = {"line1": "每次出发都值得认真规划",
-               "line2": "评论区报：人数 / 天数 / 预算",
-               "line3": "帮你出定制行程",
-               "account": "关注 @ 行程规划旅行家"}
+# 末卡 CTA 兜底值经 promptkit.load_cta 单一来源化（P1-2）：
+# config persona.cta > agent/SOUL.md「默认 CTA」段 > promptkit 内置兜底
 
 
 # ─── 第一步：LLM 卡片 DSL 编排（拆解驱动） ──────────────────────────────
@@ -71,11 +69,12 @@ def _analysis_section(analysis: Optional[dict]) -> str:
 
 
 def plan_layout(llm_call: Callable[[str], str], rewrite_result: dict,
-                analysis: Optional[dict] = None) -> dict:
+                analysis: Optional[dict] = None, cta: Optional[dict] = None) -> dict:
     """LLM 把仿写稿 + 拆解结构编排成卡片 DSL。返回 layout dict。
 
     校验：cards 3-6 张、image_mode/blocks 类型合法、narrations 等长、
-    末卡含 cta（缺则自动补人设钩子）。
+    末卡含 cta（缺则用 load_cta 单一来源值自动补）、
+    全部生图提示词不引对标图床（P0-3 不复用原图）。
     """
     prompt = LAYOUT_PROMPT.format(
         title=rewrite_result.get("title", ""),
@@ -92,6 +91,7 @@ def plan_layout(llm_call: Callable[[str], str], rewrite_result: dict,
     if not 3 <= len(cards) <= 6:
         raise ValueError(f"cards 必须为 3-6 张，实际 {len(cards)}")
     names = set()
+    gen_prompts: List[str] = []   # 全部生图提示词（P0-3 原图引用检查用）
     for c in cards:
         name = str(c.get("name") or "").strip()
         if not name or name in names:
@@ -101,16 +101,25 @@ def plan_layout(llm_call: Callable[[str], str], rewrite_result: dict,
             raise ValueError(f"卡 {name} 缺 image_prompt")
         if c.get("image_mode") not in IMAGE_MODES:
             raise ValueError(f"卡 {name} image_mode 非法：{c.get('image_mode')}")
+        gen_prompts.append(str(c.get("image_prompt")))
         for b in c.get("blocks") or []:
             if b.get("type") not in BLOCK_TYPES:
                 raise ValueError(f"卡 {name} 块类型非法：{b.get('type')}")
+            if b.get("type") == "rows":
+                gen_prompts += [str((it or {}).get("image_prompt") or "")
+                                for it in (b.get("items") or [])]
     narrations = layout.get("narrations") or []
     if len(narrations) != len(cards):
         raise ValueError(f"narrations 必须与 cards 等长（{len(cards)}），实际 {len(narrations)}")
-    # 末卡缺 cta → 自动补人设钩子（软校验，不因 LLM 漏输出而失败）
+    # P0-3：不复用对标原图——生图提示词禁引小红书图床/链接域名（CHECKLIST #2）
+    hit = contains_benchmark_url(*gen_prompts)
+    if hit:
+        raise ValueError(f"版式编排生图提示词引用对标图床（{hit}），禁止复用原图")
+    # 末卡缺 cta → 自动补人设钩子（软校验，不因 LLM 漏输出而失败；值来自 load_cta 单一来源）
     last = cards[-1]
     if not any(b.get("type") == "cta" for b in last.get("blocks") or []):
-        last.setdefault("blocks", []).append({"type": "cta", **DEFAULT_CTA})
+        last.setdefault("blocks", []).append(
+            {"type": "cta", **(cta or load_cta())})
     return layout
 
 

@@ -1,13 +1,14 @@
 <!--
 rewrite.md · 同构异题仿写提示词（rewrite.py 消费）
-占位符：{analysis_section} {benchmark_title} {benchmark_content} {likes} {collects} {comments} {heat} {persona_soul}
+占位符：{analysis_section} {angle_section} {benchmark_title} {benchmark_content} {likes} {collects} {comments} {heat} {persona_soul}
 注意：字面花括号须写双份 {{ }}（str.format 语法）；调提示词只改本文件，重启生效。
   · analysis_section：note_analyze 拆解结果注入段（无拆解数据时为空 → LLM 隐式拆解）
-  · persona_soul：人设全文（config persona.soul > agent/SOUL.md，由 promptkit.load_soul 组装）
+  · angle_section：指定仿写角度注入段（/换角度 或语义评分产出的 rewrite_angle/persona_hook；无则为空）
+  · persona_soul：人设全文（用户 /定位 > config persona.soul > agent/SOUL.md，由 promptkit.load_soul 组装）
 -->
 你是小红书爆款拆解仿写专家。先对对标笔记做五层拆解（选题/标题/正文/视觉/数据层），
 再用「同构异题」策略仿写：保留结构骨架、钩子模式、排版节奏、标签策略；替换主题细节、案例、数据、口吻。
-{analysis_section}
+{analysis_section}{angle_section}
 ## 对标笔记
 标题：{benchmark_title}
 正文：{benchmark_content}

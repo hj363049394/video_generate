@@ -35,7 +35,8 @@ def jaccard_ngram(a: str, b: str, n: int = 3) -> float:
 REWRITE_PROMPT = load_prompt("rewrite")
 
 
-def build_rewrite_prompt(benchmark: dict, persona: dict, analysis: Optional[dict] = None) -> str:
+def build_rewrite_prompt(benchmark: dict, persona: dict, analysis: Optional[dict] = None,
+                         angle: Optional[str] = None) -> str:
     persona = persona or {}
     analysis_section = ""
     if analysis:
@@ -58,8 +59,15 @@ def build_rewrite_prompt(benchmark: dict, persona: dict, analysis: Optional[dict
 {img_text or '（无图卡数据）'}
 整体调性：{analysis.get('style_summary', '')}
 """
+    angle_section = ""
+    if angle and str(angle).strip():
+        angle_section = f"""
+## 指定仿写角度（用户 /换角度 或语义评分指定，优先级高于默认差异化策略）
+{str(angle).strip()}
+"""
     return REWRITE_PROMPT.format(
         analysis_section=analysis_section,
+        angle_section=angle_section,
         benchmark_title=benchmark.get("title", ""),
         benchmark_content=benchmark.get("description") or benchmark.get("content") or "",
         likes=benchmark.get("likes", 0), collects=benchmark.get("collects", 0),
@@ -75,19 +83,76 @@ def parse_llm_output(text: str) -> dict:
     return json.loads(m.group(1))
 
 
-def run_rewrite(llm_call: Callable[[str], str], benchmark: dict, persona: dict,
-                analysis: Optional[dict] = None) -> dict:
-    """执行仿写并自检原创度。返回 {title, content, tags, image_units, similarity}。
+# ─── 输出质量校验（P0-2/P0-3：schema 硬校验 + 对标原图引用拦截） ────────
 
-    analysis（可选）：note_analyze 产出的结构规格——有则仿写按骨架逐单元同构、
-    image_units 数量对标图卡结构；无则维持隐式拆解（向后兼容）。
+# 对标图床/链接域名——生图提示词中出现即判"复用原图"（CHECKLIST #2 的代码实现）
+_BENCH_URL_RE = re.compile(r"xiaohongshu\.com|xhslink\.com|xhscdn\.com|sns-img", re.I)
+
+
+def contains_benchmark_url(*texts: str) -> Optional[str]:
+    """返回首个命中的对标图床 URL 片段；全部干净则 None。rewrite 与 imagepack 共用。"""
+    for t in texts:
+        if t:
+            m = _BENCH_URL_RE.search(str(t))
+            if m:
+                return m.group(0)
+    return None
+
+
+def validate_rewrite_output(result: dict) -> tuple:
+    """仿写输出 schema 校验（CHECKLIST #3 的代码实现）。
+
+    返回 (errors, warnings)：errors 非空 = 硬失败（run_rewrite 自动重试一次，
+    仍失败则任务失败）；warnings 仅提示（进质量报告，不阻断）。
     """
-    raw = llm_call(build_rewrite_prompt(benchmark, persona, analysis))
-    result = parse_llm_output(raw)
-    original = (benchmark.get("description") or benchmark.get("content") or "")
-    result["similarity"] = round(
-        jaccard_ngram(original, result.get("content", "")), 3)
-    return result
+    errors, warnings = [], []
+    title = str(result.get("title") or "").strip()
+    content = str(result.get("content") or "").strip()
+    tags = [str(t).strip() for t in (result.get("tags") or []) if str(t).strip()]
+    units = result.get("image_units") or []
+
+    if not title:
+        errors.append("标题为空")
+    elif len(title) > 20:
+        warnings.append(f"标题 {len(title)} 字超 20（小红书标题栏会截断）")
+    if len(content) < 50:
+        errors.append(f"正文过短（{len(content)} 字 < 50）")
+    if len(tags) < 3:
+        errors.append(f"标签仅 {len(tags)} 个 < 3")
+    if len(units) < 2:
+        errors.append(f"图片单元仅 {len(units)} 个 < 2")
+    for i, u in enumerate(units):
+        if not str((u or {}).get("prompt") or "").strip():
+            errors.append(f"图片单元 {i + 1} 缺生图提示词")
+    hit = contains_benchmark_url(*[str((u or {}).get("prompt") or "") for u in units])
+    if hit:
+        errors.append(f"图片单元提示词引用对标图床（{hit}），禁止复用原图")
+    return errors, warnings
+
+
+def run_rewrite(llm_call: Callable[[str], str], benchmark: dict, persona: dict,
+                analysis: Optional[dict] = None, angle: Optional[str] = None) -> dict:
+    """执行仿写 + schema 校验（失败自动重试一次）+ 原创度自检。
+
+    返回 {title, content, tags, image_units, similarity, warnings}。
+    analysis（可选）：note_analyze 拆解产出的结构规格——有则仿写按骨架逐单元同构、
+    image_units 数量对标图卡结构；无则维持隐式拆解（向后兼容）。
+    angle（可选）：指定仿写角度（/换角度 或语义评分 rewrite_angle/persona_hook）。
+    """
+    last_err: Optional[Exception] = None
+    for _attempt in range(2):  # schema 失败重试一次（LLM 非确定性，重试显著提升通过率）
+        raw = llm_call(build_rewrite_prompt(benchmark, persona, analysis, angle))
+        result = parse_llm_output(raw)
+        errors, warnings = validate_rewrite_output(result)
+        if errors:
+            last_err = ValueError("仿写输出未过 schema 校验：" + "；".join(errors))
+            continue
+        result["warnings"] = warnings
+        original = (benchmark.get("description") or benchmark.get("content") or "")
+        result["similarity"] = round(
+            jaccard_ngram(original, result.get("content", "")), 3)
+        return result
+    raise last_err  # type: ignore[misc] —— 两轮均失败，向上抛详细原因
 
 
 # ─── 小红书发布文案（LLM 排版，手机阅读习惯） ──────────────────────────

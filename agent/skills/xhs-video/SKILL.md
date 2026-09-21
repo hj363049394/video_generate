@@ -21,7 +21,7 @@ tags:
 
 | 触发源 | 触发动作 |
 |---|---|
-| Router `_run_task` | xhs-imagepack 完成后顺序调用，传 video_frames + narrations |
+| Router `_cmd_video` | 用户发送 `/视频 任务ID`（v1.3 场景2b：图文先行交付，视频按需补生成，不再自动合成） |
 
 ## 职责
 

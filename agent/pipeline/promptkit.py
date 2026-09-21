@@ -33,6 +33,15 @@ _FALLBACK_SOUL = (
     "\"评论区留言人数/天数/预算，帮你出定制行程\"，口吻专业但不端着，像懂行的朋友给建议。")
 
 
+# 兜底：SOUL.md 也缺失时的末卡 CTA（与 SOUL.md「默认 CTA」段保持一致，仅最后防线）
+_FALLBACK_CTA = {"line1": "每次出发都值得认真规划",
+                 "line2": "评论区报：人数 / 天数 / 预算",
+                 "line3": "帮你出定制行程",
+                 "account": "关注 @ 行程规划旅行家"}
+_CTA_LINE_RE = re.compile(r"^-\s*(line1|line2|line3|account)\s*[:：]\s*(.+?)\s*$", re.M)
+_CTA_SECTION_RE = re.compile(r"##\s*默认\s*CTA.*?\n(.*?)(?=\n##\s|\Z)", re.S)
+
+
 def _read_text(path: Path) -> str:
     """读文件（utf-8-sig 兼容 BOM），剥离 <!-- --> 说明注释，返回净模板。"""
     text = path.read_text(encoding="utf-8-sig")
@@ -59,7 +68,8 @@ def load_prompt(name: str) -> str:
 def load_soul(persona: dict | None = None) -> str:
     """人设单一来源：persona.soul（config）> agent/SOUL.md > 内置兜底。
 
-    SOUL.md 头部说明行（> 引用块）对人设注入无害，全文注入。
+    SOUL.md 头部说明行（> 引用块）对人设注入无害，全文注入；
+    「## 默认 CTA」段属排版层兜底数据（load_cta 消费），注入前剥离避免噪音。
     """
     explicit = ((persona or {}).get("soul") or "").strip()
     if explicit:
@@ -67,5 +77,29 @@ def load_soul(persona: dict | None = None) -> str:
     if SOUL_FILE.exists():
         text = SOUL_FILE.read_text(encoding="utf-8-sig").strip()
         if text:
-            return text
+            return _CTA_SECTION_RE.sub("", text).strip()
     return _FALLBACK_SOUL
+
+
+def load_cta(persona: dict | None = None) -> dict:
+    """末卡 CTA 兜底值单一来源（P1-2）：config persona.cta > SOUL.md「默认 CTA」段 > 内置兜底。
+
+    imagepack.plan_layout 末卡缺 cta 时用此值补全——改 CTA 文案只改 SOUL.md 或 config，
+    不再动 imagepack.py 代码（v1.2.1 前的 DEFAULT_CTA 代码副本已移除）。
+    """
+    explicit = (persona or {}).get("cta")
+    if isinstance(explicit, dict):
+        merged = dict(_FALLBACK_CTA)
+        merged.update({k: str(v).strip() for k, v in explicit.items()
+                       if k in _FALLBACK_CTA and str(v).strip()})
+        if merged.get("line1") and merged.get("line2"):
+            return merged
+    if SOUL_FILE.exists():
+        m = _CTA_SECTION_RE.search(SOUL_FILE.read_text(encoding="utf-8-sig"))
+        if m:
+            pairs = dict(_CTA_LINE_RE.findall(m.group(1)))
+            if pairs.get("line1") and pairs.get("line2"):
+                merged = dict(_FALLBACK_CTA)
+                merged.update(pairs)
+                return merged
+    return dict(_FALLBACK_CTA)

@@ -52,9 +52,20 @@ llm:                          # 仿写用 chat 模型（OpenAI 兼容 /chat/comp
 
 persona:                      # 人设（v1.2.1 起经 promptkit.load_soul 组装进仿写提示词）
   soul: ""                    # 留空读 agent/SOUL.md（已真实接线：config 显式值 > SOUL.md）
+  # cta:                      # 末卡服务钩子兜底（P1-2 单一来源：此处 > SOUL.md「默认 CTA」段；
+  #   line1: 过渡句            #   一般留空走 SOUL.md 即可，改文案去 SOUL.md）
+  #   line3: 钩子
+  #   account: 关注 @ xxx
+
+pipeline:
+  # 排版/TTS/视频共享资产（字体/BGM）。优先级：此处 > agent/assets（v1.3 已收编）> poc 兜底
+  assets_dir: ""
 
 radar:
   daily_hour: 8               # 每日推送时刻（本地时间整点）
+  # 语义四维评分（P0-1）：配置 llm 后自动启用（relevance/virality/persona_fit/conversion
+  # + 仿写角度/人设钩子产出）；未配置 llm 或评分失败自动降级数值排序。评分口径调
+  # agent/prompts/topic-scoring.md（硬门槛/权重在文件内）
   # 关键词按账号定位配置（2026-09-20 定位调整：旅游产品自媒体，五大内容方向）
   #   方向1 行程规划：行程规划 / 旅游攻略 / 团建
   #   方向2 旅行知识：旅行避坑 / 旅行注意事项

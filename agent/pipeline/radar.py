@@ -1,64 +1,252 @@
-"""选题雷达编排：红狐抓取 → 数值评分 → 当日选题清单落盘（供 /选题 与每日推送）
+"""选题雷达编排（v1.3：收编 POC + 语义四维评分接线）
 
-包装 poc/radar 的 fetch_redfox.py 与 score_topics.py（改造清单 4.4）。
-语义评分（四维 LLM 评分）属 Phase 1.5；当前清单按数值热度排序。
+链路：
+  ① 红狐关键词搜索（收编自 poc/radar/fetch_redfox.py，改造清单 4.4 完成，
+     公式/字段映射不变，摆脱 poc 目录 subprocess 依赖）
+  ② 数值热度评分（收编自 poc/radar/score_topics.py：
+     E = 赞 + 藏×2 + 评×3 + 享×2；H = log10(E+1)×10×时间衰减；默认 H≥25 且赞≥500）
+  ③ LLM 语义四维评分（P0-1：agent/prompts/topic-scoring.md——relevance/virality/
+     persona_fit/conversion 四维 + 硬门槛淘汰 + 机会分排序，产出 rewrite_angle
+     仿写角度与 persona_hook 人设钩子；未配置 llm 或评分失败自动降级数值排序）
+  ④ topic_list 落盘（供 /选题 与每日推送；rewrite_angle 在清单中展示，
+     /确认 N 后注入仿写提示词，/换角度 N 可改）
 """
 from __future__ import annotations
 
 import glob
 import json
+import logging
+import math
 import os
 import re
-import subprocess
-import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
-RADAR_DIR = Path(__file__).resolve().parents[2] / "poc" / "radar"
+logger = logging.getLogger("pipeline.radar")
 
 # 笔记详情页前缀（note_id → 可点开/可粘贴触发拉模式的链接）
 XHS_NOTE_URL = "https://www.xiaohongshu.com/explore/"
 
+DEFAULT_HEAT_THRESHOLD = 25.0
+DEFAULT_MIN_LIKES = 500
+_DATE_FORMATS = ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d")
+
+
+# ─── ① 红狐搜索（收编自 poc/radar/fetch_redfox.py） ────────────────────
+
+_client_cache: dict = {}
+
+
+def _get_client(api_key: str):
+    """延迟创建 RedFoxClient（无 key 时明确报错，不崩整个模块）。"""
+    if not api_key:
+        raise RuntimeError("未配置 REDFOX_API_KEY（雷达抓取必需）")
+    if api_key in _client_cache:
+        return _client_cache[api_key]
+    from redfox import RedFoxClient
+    client = RedFoxClient(api_key=api_key)
+    _client_cache[api_key] = client
+    return client
+
+
+def _normalize_search(item: dict, keyword: str) -> dict:
+    """search_articles 响应 → 内部 topic Schema（与 note_fetch.fetch_note_detail 同构）。"""
+    return {
+        "note_id": item.get("workId", ""),
+        "url": item.get("workUrl", ""),
+        "type": "video" if item.get("workType") == "video" else "image",
+        "title": item.get("workTitle", ""),
+        "description": item.get("workDesc", ""),
+        "cover_image": item.get("coverUrl", ""),
+        "likes": item.get("workLikedCount") or 0,
+        "collects": item.get("workCollectedCount") or 0,
+        "comments": item.get("workCommentsCount") or 0,
+        "shares": item.get("workSharedCount") or 0,
+        "published_at": item.get("workPublishTime", ""),
+        "author": {"nickname": item.get("accountNickname", "")},
+        "source_keyword": keyword,
+        "data_source": "redfox",
+    }
+
+
+def fetch_search_notes(keyword: str, max_items: int, api_key: str) -> list:
+    """关键词搜索笔记（sort_type='2' 最热排序，自动翻页），返回内部 Schema 列表。"""
+    client = _get_client(api_key)
+    raw, offset = [], 0
+    while len(raw) < max_items:
+        r = client.xiaohongshu.search_articles(keyword=keyword, offset=offset, sort_type="2")
+        lst = r.get("list", [])
+        if not lst or not r.get("hasMore"):
+            raw.extend(lst)
+            break
+        raw.extend(lst)
+        offset += len(lst)
+    return [_normalize_search(n, keyword) for n in raw[:max_items]]
+
+
+# ─── ② 数值热度评分（收编自 poc/radar/score_topics.py，公式不变） ───────
+
+def weighted_engagement(n: dict) -> int:
+    return (n.get("likes", 0) + n.get("collects", 0) * 2
+            + n.get("comments", 0) * 3 + n.get("shares", 0) * 2)
+
+
+def _parse_published(s) -> datetime | None:
+    if isinstance(s, (int, float)):
+        return datetime.fromtimestamp(s)
+    if isinstance(s, str):
+        for fmt in _DATE_FORMATS:
+            try:
+                return datetime.strptime(s, fmt)
+            except ValueError:
+                continue
+    return None
+
+
+def time_decay(published: datetime | None) -> float:
+    if published is None:
+        return 1.0
+    days = (date.today() - published.date()).days
+    if days <= 7:
+        return 1.2
+    if days <= 30:
+        return 1.0
+    if days <= 90:
+        return 0.8
+    return 0.5
+
+
+def compute_heat(n: dict) -> dict:
+    e = weighted_engagement(n)
+    h_raw = math.log10(e + 1) * 10
+    decay = time_decay(_parse_published(n.get("published_at")))
+    return {"weighted_engagement": e, "heat": round(h_raw * decay, 1), "decay": decay}
+
+
+def score_numeric(notes: list, heat_threshold: float, min_likes: int) -> list:
+    """数值评分 + 过门槛，返回按热度降序的通过列表。"""
+    scored = [{**n, **compute_heat(n)} for n in notes]
+    return sorted([n for n in scored
+                   if n["heat"] >= heat_threshold and n.get("likes", 0) >= min_likes],
+                  key=lambda x: x["heat"], reverse=True)
+
+
+# ─── ③ 语义四维评分（P0-1：topic-scoring.md 驱动） ─────────────────────
+
+def _parse_json_array(text: str) -> list:
+    """从 LLM 回复提取 JSON 数组（容忍 ```json 围栏与前后杂文字）。"""
+    m = (re.search(r"```(?:json)?\s*(\[.*?\])\s*```", text, re.S)
+         or re.search(r"(\[.*\])", text, re.S))
+    if not m:
+        raise ValueError(f"语义评分输出无 JSON 数组：{text[:200]}")
+    return json.loads(m.group(1))
+
+
+def semantic_score(topics: list, llm_config: dict, persona: dict | None = None) -> list:
+    """对过数值门槛的候选做 LLM 四维评分。
+
+    返回通过硬门槛（relevance≥6 且 virality≥5）的列表，按机会分降序；
+    每条附 opportunity_score/sub_scores/rewrite_angle/persona_hook。
+    评分失败向上抛（run_radar 捕获后降级数值排序）。
+    """
+    from pipeline.promptkit import load_prompt, load_soul
+    from pipeline.rewrite import llm_call_factory
+
+    slim = []
+    for t in topics:
+        slim.append({
+            "note_id": t.get("note_id", ""),
+            "title": t.get("title", ""),
+            "description": (t.get("description") or "")[:200],
+            "likes": t.get("likes", 0), "collects": t.get("collects", 0),
+            "comments": t.get("comments", 0), "heat": t.get("heat"),
+            "source_keyword": t.get("source_keyword", ""),
+        })
+    prompt = load_prompt("topic-scoring").format(
+        persona_section=load_soul(persona),
+        candidates_json=json.dumps(slim, ensure_ascii=False))
+    llm = llm_call_factory(llm_config or {})
+    arr = _parse_json_array(llm(prompt))
+
+    by_id = {str(e.get("note_id")): e for e in arr
+             if isinstance(e, dict) and e.get("note_id")}
+    selected = []
+    for t in topics:
+        e = by_id.get(str(t.get("note_id")))
+        if not e or str(e.get("status")) != "selected":
+            continue
+        selected.append({**t,
+                         "opportunity_score": e.get("opportunity_score"),
+                         "sub_scores": e.get("sub_scores") or {},
+                         "rewrite_angle": (e.get("rewrite_angle") or "").strip(),
+                         "persona_hook": (e.get("persona_hook") or "").strip()})
+    # LLM 漏评的候选保留在尾部（不因漏评丢选题）
+    missed = [t for t in topics if str(t.get("note_id")) not in by_id]
+    selected.extend(missed)
+    selected.sort(key=lambda t: (t.get("opportunity_score") or 0), reverse=True)
+    return selected
+
+
+# ─── ④ 主入口：抓取 → 数值 → 语义 → 落盘 ──────────────────────────────
 
 def run_radar(keywords: list, max_items: int = 20,
               heat_threshold: float | None = None, min_likes: int | None = None,
-              bot_id: str = "default") -> str:
-    """跑一轮雷达：逐关键词抓取 + 数值评分，产出 agent/workspace/<bot_id>/topic_list_YYYY-MM-DD.json。
-    返回清单路径。门槛不传时用 score_topics.py 默认值（H≥25 且 赞≥500）。
-    bot_id 与 Router.workspace 的分层一致（v1.1 多 Bot 隔离）。"""
+              bot_id: str = "default", llm_config: dict | None = None,
+              persona: dict | None = None, api_key: str = "") -> str:
+    """跑一轮雷达，产出 agent/workspace/<bot_id>/topic_list_YYYY-MM-DD.json，返回清单路径。
+
+    llm_config/persona 传入时启用语义四维评分（产出仿写角度/人设钩子）；
+    未配置或评分失败自动降级数值排序，不阻断。
+    """
     if not keywords:
         raise ValueError("radar.keywords 未配置")
-    env = dict(os.environ)
-    # 每轮独立输出，避免旧 search_results 干扰本轮 input 集合
-    result_files = []
+    api_key = api_key or os.environ.get("REDFOX_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("未配置 REDFOX_API_KEY（雷达抓取必需）")
+
+    notes = []
     for kw in keywords:
-        subprocess.run(
-            [sys.executable, str(RADAR_DIR / "fetch_redfox.py"),
-             "--keyword", kw, "--max-items", str(max_items)],
-            check=True, cwd=str(RADAR_DIR), env=env)
-        hits = sorted(glob.glob(str(RADAR_DIR / "output" / f"search_results_redfox_search_*{kw}*.json")))
-        if hits:
-            result_files.append(hits[-1])
-    if not result_files:
+        try:
+            notes.extend(fetch_search_notes(kw, max_items, api_key))
+        except Exception as exc:  # noqa: BLE001 —— 单关键词失败不拖垮整轮
+            logger.warning("关键词「%s」抓取失败（跳过）: %s", kw, exc)
+    if not notes:
         raise RuntimeError("红狐抓取无输出（检查 REDFOX_API_KEY 与网络）")
-    cmd = [sys.executable, str(RADAR_DIR / "score_topics.py"), "--input", *result_files]
-    if heat_threshold is not None:
-        cmd += ["--heat-threshold", str(heat_threshold)]
-    if min_likes is not None:
-        cmd += ["--min-likes", str(min_likes)]
-    subprocess.run(cmd, check=True, cwd=str(RADAR_DIR), env=env)
-    candidates = json.loads((RADAR_DIR / "output" / "candidates.json").read_text(encoding="utf-8"))
-    passed = candidates.get("passed", [])[:10]  # 数值热度 Top 10（语义评分 Phase 1.5）
+
+    seen, deduped = set(), []          # 多关键词去重（同笔记保留首条）
+    for n in notes:
+        nid = n.get("note_id")
+        if nid and nid in seen:
+            continue
+        seen.add(nid)
+        deduped.append(n)
+
+    passed = score_numeric(deduped,
+                           DEFAULT_HEAT_THRESHOLD if heat_threshold is None else heat_threshold,
+                           DEFAULT_MIN_LIKES if min_likes is None else min_likes)
+
+    selected = passed[:10]
+    note = "数值热度排序（语义评分未启用：未配置 llm）"
+    if passed and llm_config:
+        try:
+            selected = semantic_score(passed[:10], llm_config, persona)
+            note = "语义四维评分排序（relevance/virality/persona_fit/conversion，含仿写角度）"
+        except Exception as exc:  # noqa: BLE001 —— 降级不阻断
+            logger.warning("语义评分失败，降级数值排序: %s", exc)
+            note = f"数值热度排序（语义评分失败降级）"
+
     out_dir = Path(__file__).resolve().parents[1] / "workspace" / bot_id
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"topic_list_{date.today().isoformat()}.json"
     out_path.write_text(json.dumps({
         "date": date.today().isoformat(),
-        "note": "数值热度排序（LLM 语义评分 Phase 1.5 接入）",
-        "topic_list": passed,
+        "note": note,
+        "topic_list": selected,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     return str(out_path)
 
+
+# ─── 清单读取（/选题 指令与每日推送共用） ──────────────────────────────
 
 def latest_topic_list(workspace_dir) -> str | None:
     """最近一次的当日/历史选题清单路径（优先当日）。
@@ -116,7 +304,7 @@ def topic_list_by_date(workspace_dir, date_str: str) -> str | None:
 def format_topic_list(path: str, top: int = 5) -> str:
     """把选题清单渲染成微信推送文本（纯文本 + 序号，设计 3.7 微信列）。
 
-    每条附笔记链接：可点开查看对标原文，也可直接粘贴给 bot 触发拉模式仿写。
+    每条附笔记链接与仿写角度（语义评分产出，/换角度 N 可调整）。
     """
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     topics = data.get("topic_list") or []
@@ -126,8 +314,11 @@ def format_topic_list(path: str, top: int = 5) -> str:
              "回复「确认 N」触发仿写；粘贴链接可直接仿写该条：", ""]
     for i, t in enumerate(topics[:top], 1):
         lines.append(f"{i}. {t.get('title', '')[:36]}")
-        lines.append(f"   热度{t.get('heat', '-')} 赞{t.get('likes', '-') or '-'} "
-                     f"藏{t.get('collects', '-') or '-'}")
+        score = t.get("opportunity_score")
+        heat = f"热度{t.get('heat', '-')}"
+        lines.append(f"   {heat} 赞{t.get('likes', '-') or '-'} "
+                     f"藏{t.get('collects', '-') or '-'}"
+                     + (f" 机会分{score}" if score is not None else ""))
         nid = str(t.get("note_id") or "").strip()
         if nid:
             lines.append(f"   🔗 {XHS_NOTE_URL}{nid}")

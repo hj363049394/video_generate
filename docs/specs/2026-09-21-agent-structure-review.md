@@ -2,6 +2,7 @@
 
 > 日期：2026-09-21 · 评估基线：`2026-09-19-agent-refactor-plan.md` §9/§12（Transformer 五层配置模式 + Hermes 形态 C）
 > 用途：① 结构遵从度评估结论 ② 业务流程质量链路评估 ③ **调整入口地图**（想改什么 → 去哪个文件）
+> **v1.3 实施状态**：§4 全部 P0/P1/P2 项 + 两个新场景已于 2026-09-21 落地（详见文末「§6 实施状态」）
 
 ---
 
@@ -219,3 +220,26 @@ CHECKLIST 头部声称"router 在任务执行过程中自动完成代码层检�
 1. **五层核对**：SOUL 是否被 load_soul 消费 → system-prompt 是否进 LLM 调用 → SKILL 数 vs 流水线 LLM 环节数 → config 覆盖面 → CHECKLIST 声明 vs 代码 grep 逐项对
 2. **提示词核对**：grep `"""` 大模板字符串于 pipeline/*.py，应只剩注释级；所有模板在 `agent/prompts/`
 3. **质量链路核对**：沿 _run_task 逐环节问"输入不合格会不会被拦"——当前答案：选题（不拦）、拆解（降级）、仿写（拦原创度，不拦 schema）、版式（拦 DSL 结构）、交付（拦视频大小）
+
+---
+
+## 6. 实施状态（v1.3，2026-09-21 落地）
+
+| 项 | 内容 | 落地位置 | 状态 |
+|---|---|---|---|
+| P0-1 | 雷达语义四维评分接线（含 rewrite_angle/persona_hook 产出） | `prompts/topic-scoring.md` + `radar.semantic_score` + main/router 接线 | ✅ |
+| P0-2 | 仿写 schema 校验（标题/正文/标签/单元数，失败重试一次） | `rewrite.validate_rewrite_output` | ✅ |
+| P0-3 | CHECKLIST 打假（原图引用拦截实装 + 文档同步 v1.2 版式） | `rewrite.contains_benchmark_url`（rewrite+imagepack 两处拦截）+ CHECKLIST v1.3 | ✅ |
+| P1-1 | note_analyze 补 SKILL.md | `skills/xhs-analyze/SKILL.md` | ✅ |
+| P1-2 | DEFAULT_CTA 单一来源化 | `promptkit.load_cta` + SOUL.md「默认 CTA」段 + config persona.cta 覆盖；imagepack 代码副本已删 | ✅ |
+| P1-3 | 质量报告落地 | `bot/quality.py` + router 随交付发送 + /视频 后更新 | ✅ |
+| P1-4 | /换角度 实装 | `router._cmd_angle`（更新选题角度）+ rewrite angle 注入 | ✅ |
+| P2-1 | radar 收编（fetch/score 进 pipeline，公式不变） | `radar.fetch_search_notes/score_numeric`（删除 subprocess 依赖） | ✅ |
+| P2-2 | 视频时长校验（30-90s 告警） | `quality.probe_video/check_video_spec` | ✅ |
+| P2-3 | assets 收编（agent/assets） | 字体/BGM 复制 + assets_dir 优先级 config > agent/assets > poc | ✅ |
+| 场景1 | /定位 命令（赛道/人设/服务钩子/关键词输入模板） | `router._cmd_persona` + user_profiles 表 + `_persona_for`（仿写/评分人设）+ `/选题 抓取` 按用户关键词 | ✅ |
+| 场景2a | 直发主题/爆款内容生成 | `/仿写 内容`（含链接自动转拉模式）+ 直发长文本回「仿写」确认 | ✅ |
+| 场景2b | 图文/视频流程拆开 | `_run_task` 不再自动合成视频；交付提示 `/视频 任务ID`；`_cmd_video` 补生成（列表/生成/规格报告） | ✅ |
+
+同步更新：SOUL.md（CTA 段+素材类型表）、system-prompt.md（v1.3 总纲+指令表）、
+xhs-video SKILL（触发方式）、config.example.yaml（persona.cta/pipeline.assets_dir/radar 语义评分说明）。
