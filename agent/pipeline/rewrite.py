@@ -78,6 +78,42 @@ def run_rewrite(llm_call: Callable[[str], str], benchmark: dict, persona: dict) 
     return result
 
 
+# ─── 小红书发布文案（LLM 排版，手机阅读习惯） ──────────────────────────
+
+XHS_COPY_PROMPT = """你是小红书排版专家。把下面的笔记标题和正文，排版成适合小红书手机端阅读的发布文案。
+
+要求：
+- 第一行：标题（20 字内，保留原标题含义，前缀 1-2 个贴题 emoji）
+- 正文：短句分行（每行不超过 20 字），段落间空一行
+- 关键信息行前加贴题 emoji（如 📍✅💰⚠️🚗🎫 等，不堆砌）
+- 结尾空一行后，输出 3-5 个话题标签（原标签优先，可补充）
+- 只做排版与 emoji 增强，不增删改任何事实信息
+- 直接输出纯文本，不要代码块、不要解释
+
+标题：{title}
+正文：{content}
+标签：{tags}
+"""
+
+
+def format_xhs_copy(llm_call: Callable[[str], str], result: dict) -> str:
+    """把仿写稿排版成小红书发布文案（可直接复制发布）。
+
+    LLM 排版失败时回落朴素模板（标题 + 正文 + 标签），不影响交付。
+    """
+    title = result.get("title", "")
+    content = result.get("content", "")
+    tags = " ".join(result.get("tags") or [])
+    try:
+        text = llm_call(XHS_COPY_PROMPT.format(title=title, content=content, tags=tags))
+        text = re.sub(r"^```[a-z]*\s*|\s*```$", "", text.strip()).strip()
+        if text:
+            return text
+    except Exception:
+        pass
+    return f"{title}\n\n{content}\n\n{tags}".strip()
+
+
 # ─── LLM 调用（OpenAI 兼容接口，config.llm 注入） ──────────────────────
 
 def _chat_once(base_url: str, api_key: str, model: str, prompt: str, timeout: int = 300) -> str:

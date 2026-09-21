@@ -32,15 +32,17 @@ GEN_ALIAS = {"ark": "ark", "火山": "ark", "gpt": "redfox_gpt", "红狐gpt": "r
              "doubao": "redfox_doubao", "红狐豆包": "redfox_doubao"}
 
 HELP_TEXT = """【小红书仿写助手 · 指令】
-/选题 —— 查看当日选题清单（Top 5）
+/选题 —— 查看当日选题清单（Top 5，附笔记链接）
+/选题 列表 —— 查看历史清单的日期
+/选题 MM-DD —— 查看指定日期清单（如 /选题 09-20）
 /确认 N 或 仿写第N条 —— 确认选题，触发生产线
 /状态 —— 查询生产进度
 /换角度 N 描述 —— 调整第 N 条的仿写角度
 /生图通道 ark|gpt|doubao —— 切换生图通道（ark=火山Seedream，gpt=红狐GPT-Image-2，doubao=红狐豆包）
 /生图 描述文字 —— 直接生一张竖图（通道实测用）
 粘贴小红书笔记链接 —— 拉模式：自动抓取详情并仿写
-  · 支持图文笔记：直接仿写 → 4 张图文卡 + 视频
-  · 支持视频笔记：先提取口播文案 → 仿写 → 图文卡 + 视频
+  · 支持图文笔记：直接仿写 → 4 张图文卡 + 发布文案 + 视频
+  · 支持视频笔记：先提取口播文案 → 仿写 → 图文卡 + 发布文案 + 视频
 /help —— 本帮助"""
 
 TASK_STAGES = ["queued", "rewriting", "imaging", "delivered", "failed"]
@@ -85,8 +87,8 @@ class Router:
         uid, text = intent.user_id, intent.text.strip()
         if not text:
             return
-        if m := re.match(r"^/?选题$|^今天有什么选题|^/?雷达$", text):
-            await self._cmd_topics(uid)
+        if m := re.match(r"^/?选题\s*(.*)$|^今天有什么选题|^/?雷达$", text):
+            await self._cmd_topics(uid, (m.group(1) or "").strip())
         elif m := re.match(r"^/?确认\s*(\d+)$|^仿写第\s*(\d+)\s*条", text):
             n = int(m.group(1) or m.group(2))
             await self._cmd_confirm(uid, n)
@@ -108,12 +110,30 @@ class Router:
 
     # ─── 指令实现 ───────────────────────────────────────────────────────
 
-    async def _cmd_topics(self, uid: str) -> None:
-        path = radar_mod.latest_topic_list(self.workspace)
-        if not path:
-            await self._safe_send(
-                uid, "还没有当日选题清单。管理员可运行：python3 agent/main.py --radar-now（立即抓取并推送）")
+    async def _cmd_topics(self, uid: str, arg: str = "") -> None:
+        """选题清单：无参=当日；「列表」=历史日期；MM-DD/YYYY-MM-DD=指定日期。"""
+        if arg in ("列表", "历史", "list"):
+            dates = radar_mod.list_topic_dates(self.workspace)
+            if not dates:
+                await self._safe_send(uid, "暂无任何选题清单（含历史）。可先跑一次雷达生成。")
+                return
+            lines = ["📚 历史选题清单：", ""]
+            lines += [f"· {d}　→ /选题 {d[5:]}" for d in reversed(dates)]
+            lines += ["", "⏰ 超过 3 天的选题热度窗口可能已过，仿写前留意时效"]
+            await self._safe_send(uid, "\n".join(lines))
             return
+        if arg:
+            path = radar_mod.topic_list_by_date(self.workspace, arg)
+            if not path:
+                await self._safe_send(
+                    uid, f"没有 {arg} 的选题清单。/选题 列表 查看所有日期。")
+                return
+        else:
+            path = radar_mod.latest_topic_list(self.workspace)
+            if not path:
+                await self._safe_send(
+                    uid, "还没有当日选题清单。管理员可运行：python3 agent/main.py --radar-now（立即抓取并推送）")
+                return
         await self._safe_send(uid, radar_mod.format_topic_list(path, top=5))
 
     async def _cmd_confirm(self, uid: str, n: int) -> None:
@@ -233,6 +253,13 @@ class Router:
             await deliver_note(
                 self.adapter, uid, result.get("title", ""), result.get("content", ""),
                 pack["cards"], video_path=None)
+            # ③b 小红书发布文案（LLM 按手机阅读习惯排版，可直接复制发布）
+            try:
+                xhs_copy = await asyncio.to_thread(rewrite_mod.format_xhs_copy, llm, result)
+                (work_dir / "xhs_copy.txt").write_text(xhs_copy, encoding="utf-8")
+                await self._safe_send(uid, "📝 发布文案（可直接复制发小红书）：\n\n" + xhs_copy)
+            except Exception as exc:
+                logger.warning("发布文案生成失败（不影响交付）: %s", exc)
             # ④ 视频合成（图文同源 5 镜头：narrations 与 video_frames 对应；视频失败不影响图文交付）
             _update("composing")
             try:
