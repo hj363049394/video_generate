@@ -260,7 +260,7 @@ class Router:
                 await self._safe_send(uid, "📝 发布文案（可直接复制发小红书）：\n\n" + xhs_copy)
             except Exception as exc:
                 logger.warning("发布文案生成失败（不影响交付）: %s", exc)
-            # ④ 视频合成（图文同源 5 镜头：narrations 与 video_frames 对应；视频失败不影响图文交付）
+            # ④ 视频合成（图文同源分镜：narrations 与 video_frames 等长；视频失败不影响图文交付）
             _update("composing")
             try:
                 video = await asyncio.to_thread(
