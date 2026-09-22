@@ -316,3 +316,29 @@ hermes 上游对照：`play_length: kw.get("play_length", 0)` 参数化但 `_sen
 play_length=4/video_size/aes_key=base64(hex) 均正确；③ ffprobe 缺失时回退=1
 非 0；④ image_item 无 play_length 字段，图片链路零影响。
 （待真机验收：git pull → /视频 重生成 → 微信端确认画面+进度条）
+
+#### §6.3.2 编码兼容层根因与修复（2026-09-22 v1.3.5）
+
+**现象（用户本机复现）**：生成的 video.mp4 在 Win11 媒体播放器报
+"无法打开。它使用不受支持的编码设置。0x80004005"（时长 0:00:36 可识别，
+即 v1.3.3 faststart 后容器正常，解码器初始化失败）。
+
+**根因（编码兼容层）**：TTS 源为 24kHz 单声道 mp3，`_make_clip` 以
+`-c:a aac -ar 24000` 直编继承采样率/声道，join 未指定 -ar 继续继承，
+成片 `-c:a copy` 原样透传 → 成品音频 = **AAC-LC 24kHz 单声道**（全文件
+最不标准组合）。MF 文档名义支持 24kHz 但实测 Windows 播放器兼容性差；
+视频流 H.264 High@L4.0/yuv420p/25fps 经复现确认完全标准。另：同款报错
+也存在机器级成因（音频驱动，见 Dell KB），修复策略为参数钉死 + 自检拦截
++ 机器侧诊断三管齐下。
+
+**修复（video.py）**：① 新增 `AUD_AR, AUD_CH = 44100, 2`，`_make_clip`
+与 join 两处 `-ar 44100 -ac 2` 显式重采样（TTS 保持 24k 请求不变，本地
+重采样，无 API 风险）；② join/final 两处加 `-pix_fmt yuv420p` 显式保险；
+③ 新增 `_verify_compat()` 兼容性自检门（成片后校验：音频 AAC ≥32kHz ≤2ch、
+视频 H.264/yuv420p，违规 raise）——堵"本机 ffmpeg 行为漂移静默产出坏文件"
+的质检盲区，与黑场自检同哲学。
+
+**验证**：真实 make_video 全管线冒烟（stub TTS，2 镜头+xfade+BGM 混音）：
+成品 AAC-LC 44100Hz stereo + H.264 High@L4.0 yuv420p + faststart（moov@36
+早于 mdat）；自检门负例（24kHz/mono）正确拦截并给出可读报错。
+（待真机验收：git pull → /视频 重生成 → 本机播放器+微信双端确认）

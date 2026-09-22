@@ -24,6 +24,11 @@ BGM_VOL = 0.16       # BGM 音量（旁白优先，ducking）
 XFADE = 0.5          # 镜头叠化时长
 FPS = 25
 OUT_W, OUT_H = 1080, 1440  # 3:4 竖版
+# 音频统一标准参数（2026-09-22 v1.3.5）：TTS 源为 24kHz 单声道 mp3，直编 AAC
+# 会继承 24kHz/mono 并经 -c:a copy 透传进成品——实测 Win11 媒体播放器报
+# 0x80004005"不受支持的编码设置"（MF 文档名义支持但实测兼容性差），且微信 CDN
+# 转码对非标准参数同样敏感。统一重采样 44.1kHz 立体声（通用解码器最大交集）。
+AUD_AR, AUD_CH = 44100, 2
 
 
 def tts(text: str, out: str, api_key: str = "") -> None:
@@ -109,7 +114,7 @@ def _make_clip(idx: int, img: str, mp3: str, dur: float, narration: str,
          "-filter_complex", f"[0:v]{vf}[v];[1:a]apad=whole_dur={dur:.3f}[a]",
          "-map", "[v]", "-map", "[a]", "-t", f"{dur:.3f}",
          "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-         "-c:a", "aac", "-b:a", "128k", "-ar", "24000", out],
+         "-c:a", "aac", "-b:a", "128k", "-ar", str(AUD_AR), "-ac", str(AUD_CH), out],
         check=True, capture_output=True)
 
 
@@ -166,7 +171,8 @@ def make_video(images: List[str], narrations: List[str], out_path: str,
          f"[avox][bgm]amix=inputs=2:duration=first:normalize=0[aout]",
          "-map", "[vout]", "-map", "[aout]", "-t", f"{total:.3f}",
          "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-         "-c:a", "aac", "-b:a", "160k",
+         "-pix_fmt", "yuv420p",
+         "-c:a", "aac", "-b:a", "160k", "-ar", str(AUD_AR), "-ac", str(AUD_CH),
          "-movflags", "+faststart", joined],
         check=True, capture_output=True)
 
@@ -176,11 +182,16 @@ def make_video(images: List[str], narrations: List[str], out_path: str,
         ["ffmpeg", "-y", "-i", joined,
          "-vf", f"fade=t=in:st=0:d=0.5,fade=t=out:st={fade_out:.2f}:d=0.6",
          "-c:v", "libx264", "-preset", "medium", "-crf", "20",
+         "-pix_fmt", "yuv420p",
          "-c:a", "copy",
          "-movflags", "+faststart", out_path],
         check=True, capture_output=True)
-    # 4. 黑场自检（2026-09-22）：拦截"合成正常但内容全黑"的静默交付。
-    # 微信流式播放对 mp4 索引/封装敏感（黑屏有声），自检失败即报错并提示诊断。
+    # 4. 兼容性自检（2026-09-22）：流参数必须落在通用解码器交集内，
+    #    非标准参数（如 24kHz 单声道 AAC）在 Windows 媒体播放器/微信端
+    #    会被直接拒绝，报错拦截优于静默交付坏文件。
+    _verify_compat(out_path)
+    # 5. 黑场自检（2026-09-22）：拦截"合成正常但内容全黑"的静默交付。
+    #    微信流式播放对 mp4 索引/封装敏感（黑屏有声），自检失败即报错并提示诊断。
     black = _detect_black(out_path)
     if black > total * 0.8:
         raise RuntimeError(
@@ -188,6 +199,29 @@ def make_video(images: List[str], narrations: List[str], out_path: str,
             f"多半是本机 ffmpeg 与 zoompan/drawtext 的兼容问题，"
             f"请把 ffmpeg -version 输出反馈给开发者")
     return out_path
+
+
+def _verify_compat(path: str) -> None:
+    """成片流参数自检：音频须 AAC 且 ≥32kHz/≤2 声道，视频须 H.264/yuv420p。
+    （AAC 24kHz 单声道等非标准参数在 Win11 媒体播放器报 0x80004005，
+    微信端转圈；此自检防本机 ffmpeg 行为漂移静默产出坏文件。）"""
+    r = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries",
+         "stream=codec_type,codec_name,pix_fmt,sample_rate,channels",
+         "-of", "json", path], capture_output=True, text=True, check=True)
+    errs = []
+    for s in json.loads(r.stdout).get("streams", []):
+        if s.get("codec_type") == "video" and (
+                s.get("codec_name") != "h264" or s.get("pix_fmt") != "yuv420p"):
+            errs.append(f"视频流 {s.get('codec_name')}/{s.get('pix_fmt')} 非 H.264/yuv420p")
+        elif s.get("codec_type") == "audio":
+            if s.get("codec_name") != "aac":
+                errs.append(f"音频流 {s.get('codec_name')} 非 AAC")
+            elif int(s.get("sample_rate", 0)) < 32000 or int(s.get("channels", 0)) > 2:
+                errs.append(f"音频流 {s.get('sample_rate')}Hz/{s.get('channels')}ch "
+                            f"低于通用兼容下限（需 ≥32kHz 且 ≤2ch）")
+    if errs:
+        raise RuntimeError("成片编码兼容性自检未通过：" + "；".join(errs))
 
 
 def _detect_black(path: str) -> float:
