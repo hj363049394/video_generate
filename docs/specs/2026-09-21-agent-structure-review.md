@@ -243,3 +243,16 @@ CHECKLIST 头部声称"router 在任务执行过程中自动完成代码层检�
 
 同步更新：SOUL.md（CTA 段+素材类型表）、system-prompt.md（v1.3 总纲+指令表）、
 xhs-video SKILL（触发方式）、config.example.yaml（persona.cta/pipeline.assets_dir/radar 语义评分说明）。
+
+### §6.1 定位调整（2026-09-21 v1.3.1）
+
+**变更**：SOUL.md 从"行程规划窄赛道"放宽为"旅游产品自媒体·专业旅行家·五大内容方向"
+（①行程规划 ②旅行知识 ③人生与旅行 ④旅行好物 ⑤机动，均在旅游垂类内）。
+
+**动因**：窄定位与 v1.2 同构异题原则冲突——情绪型爆款（旅行的意义）被硬套行程表；
+且 config 雷达关键词 2026-09-20 已按五大方向配置，人设层属半改状态。
+
+**同步落地**：SOUL.md 重写（五大方向表+类型化钩子表+起号配比+合集策略）；
+topic-scoring.md 增 content_direction 归类与方向化 persona_fit/conversion；
+layout.md cta 按方向类型化；radar/router 贯通 content_direction（清单展示+仿写注入）；
+promptkit 兜底人设同步；CHECKLIST #9 改为方向匹配；system-prompt.md 角色与规则同步。

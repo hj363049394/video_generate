@@ -34,6 +34,10 @@ logger = logging.getLogger("bot.router")
 GEN_ALIAS = {"ark": "ark", "火山": "ark", "gpt": "redfox_gpt", "红狐gpt": "redfox_gpt",
              "doubao": "redfox_doubao", "红狐豆包": "redfox_doubao"}
 
+# 内容方向（语义评分 content_direction）→ 中文标签（SOUL.md 五大方向，注入仿写提示词用）
+_DIR_LABELS = {"itinerary": "行程规划", "knowledge": "旅行知识", "life": "人生与旅行",
+               "gear": "旅行好物", "other": "机动方向"}
+
 HELP_TEXT = """【小红书仿写助手 · 指令】
 /选题 —— 查看当日选题清单（Top 5，附链接与仿写角度）
 /选题 抓取 —— 按我的关键词立即抓取评分（配合 /定位）
@@ -485,13 +489,19 @@ class Router:
                     json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8")
             except Exception as exc:
                 logger.warning("拆解失败，降级为无拆解仿写: %s", exc)
-            # ① 拆解仿写（v1.3：人设按用户 /定位 优先；角度=语义评分/换角度产出的
-            #    rewrite_angle + persona_hook，注入仿写提示词；schema 校验失败自动重试一次）
+            # ① 拆解仿写（v1.3：人设按用户 /定位 优先；注入=内容方向（钩子/视角按
+            #    五大方向适配，见 SOUL 钩子表）+ 语义评分/换角度产出的角度与钩子；
+            #    schema 校验失败自动重试一次）
             _update("rewriting")
             llm = rewrite_mod.llm_call_factory(self.config.get("llm") or {})
             persona = self._persona_for(uid)
-            angle = " ".join(str(x) for x in
-                             (topic.get("rewrite_angle"), topic.get("persona_hook")) if x) or None
+            angle_parts = []
+            dir_label = _DIR_LABELS.get(str(topic.get("content_direction") or ""))
+            if dir_label:
+                angle_parts.append(f"内容方向：{dir_label}（视角与结尾钩子按此方向适配，见人设钩子策略表）")
+            angle_parts += [str(x) for x in
+                            (topic.get("rewrite_angle"), topic.get("persona_hook")) if x]
+            angle = " ".join(angle_parts) or None
             result = await asyncio.to_thread(
                 rewrite_mod.run_rewrite, llm, topic, persona, analysis, angle)
             sim = result.get("similarity", 1.0)

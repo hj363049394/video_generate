@@ -27,6 +27,10 @@ logger = logging.getLogger("pipeline.radar")
 # 笔记详情页前缀（note_id → 可点开/可粘贴触发拉模式的链接）
 XHS_NOTE_URL = "https://www.xiaohongshu.com/explore/"
 
+# 内容方向 → 中文标签（与 SOUL.md 五大内容方向一致，清单展示用）
+DIR_LABELS = {"itinerary": "行程规划", "knowledge": "旅行知识", "life": "人生与旅行",
+              "gear": "旅行好物", "other": "机动"}
+
 DEFAULT_HEAT_THRESHOLD = 25.0
 DEFAULT_MIN_LIKES = 500
 _DATE_FORMATS = ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d")
@@ -178,6 +182,7 @@ def semantic_score(topics: list, llm_config: dict, persona: dict | None = None) 
         selected.append({**t,
                          "opportunity_score": e.get("opportunity_score"),
                          "sub_scores": e.get("sub_scores") or {},
+                         "content_direction": (e.get("content_direction") or "").strip(),
                          "rewrite_angle": (e.get("rewrite_angle") or "").strip(),
                          "persona_hook": (e.get("persona_hook") or "").strip()})
     # LLM 漏评的候选保留在尾部（不因漏评丢选题）
@@ -316,9 +321,11 @@ def format_topic_list(path: str, top: int = 5) -> str:
         lines.append(f"{i}. {t.get('title', '')[:36]}")
         score = t.get("opportunity_score")
         heat = f"热度{t.get('heat', '-')}"
+        dir_label = DIR_LABELS.get(str(t.get("content_direction") or ""), "")
         lines.append(f"   {heat} 赞{t.get('likes', '-') or '-'} "
                      f"藏{t.get('collects', '-') or '-'}"
-                     + (f" 机会分{score}" if score is not None else ""))
+                     + (f" 机会分{score}" if score is not None else "")
+                     + (f"｜{dir_label}" if dir_label else ""))
         nid = str(t.get("note_id") or "").strip()
         if nid:
             lines.append(f"   🔗 {XHS_NOTE_URL}{nid}")
