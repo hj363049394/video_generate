@@ -55,6 +55,7 @@ MAX_TEXT_LEN = 1800          # iLink 约 2048 字符处切块，hermes 实测阈
 CHUNK_DELAY_SECONDS = 1.5    # 分片发送间隔
 SEND_RETRIES = 4
 CDN_UPLOAD_RETRIES = 3       # CDN PUT 重试：5xx/网络异常退避重试（500 空 body 多为瞬时故障）
+THUMB_WIDTH = 240            # 视频封面缩略图宽（等比缩放，thumb_width/height 按实际尺寸上报）
 MEDIA_IMAGE, MEDIA_VIDEO, MEDIA_FILE = 1, 2, 3      # getuploadurl media_type
 ITEM_TEXT, ITEM_IMAGE, ITEM_FILE, ITEM_VIDEO = 1, 2, 4, 5  # item_list 类型
 MSG_TYPE_BOT, MSG_STATE_FINISH = 2, 2
@@ -108,6 +109,25 @@ def _video_play_length(path: str) -> int:
     except Exception as exc:
         logger.warning("[weixin] play_length 探测失败，回退 1s: %s", exc)
         return 1
+
+
+def _video_thumb(path: str) -> Tuple[bytes, int, int]:
+    """抽视频首帧生成封面 JPEG，返回 (jpeg 字节, 宽, 高)。
+    封面供微信会话气泡在视频未播放时展示（v1.3.8：no_need_thumb=False +
+    thumb_upload_param 上传链路）；生成失败由调用方降级为无封面发送。
+    管线输出的图生视频首帧即完整画面，无黑帧/淡入，取第一帧即可。"""
+    probe = subprocess.run(
+        ["ffprobe", "-v", "error", "-select_streams", "v:0",
+         "-show_entries", "stream=width,height", "-of", "csv=p=0", path],
+        capture_output=True, text=True, check=True, timeout=30)
+    w, h = (int(x) for x in probe.stdout.strip().split(",")[:2])
+    out_h = max(2, int(round(h * THUMB_WIDTH / w / 2)) * 2)
+    r = subprocess.run(
+        ["ffmpeg", "-y", "-v", "error", "-i", path, "-frames:v", "1",
+         "-vf", f"scale={THUMB_WIDTH}:{out_h}", "-q:v", "4",
+         "-f", "image2", "pipe:1"],
+        capture_output=True, check=True, timeout=60)
+    return r.stdout, THUMB_WIDTH, out_h
 
 
 # ─── 错误分类（hermes 预验证结论：-2 有两种语义） ────────────────────────
@@ -601,12 +621,33 @@ class WeixinTriggerAdapter(TriggerAdapter):
         filekey = secrets.token_hex(16)
         rawsize, md5 = len(plaintext), hashlib.md5(plaintext).hexdigest()
         ciphertext = _aes128_ecb_encrypt(plaintext, aes_key)
-        up = await self._api_post(EP_GET_UPLOAD_URL, {
+
+        # 封面（仅视频）：抽首帧 + 与视频共用同一 AES key 加密
+        # （getuploadurl 只接受一个 aeskey，服务器无其他密钥来源）；失败降级无封面
+        thumb_plain = thumb_cipher = None
+        thumb_w = thumb_h = 0
+        if media_type == MEDIA_VIDEO:
+            try:
+                thumb_plain, thumb_w, thumb_h = _video_thumb(path)
+                thumb_cipher = _aes128_ecb_encrypt(thumb_plain, aes_key)
+            except Exception as exc:
+                logger.warning("[weixin] 视频封面生成失败，降级无封面发送: %s", exc)
+
+        req: Dict[str, Any] = {
             "filekey": filekey, "media_type": media_type, "to_user_id": peer,
             "rawsize": rawsize, "rawfilemd5": md5, "filesize": len(ciphertext),
-            "no_need_thumb": True,
             # hermes 实证坑：aes_key 必须是 base64(hex字符串)，否则图片灰图
-            "aeskey": aes_key.hex()}, self._token, API_TIMEOUT_MS)
+            "aeskey": aes_key.hex()}
+        if thumb_cipher is not None:
+            # 协议字段见 weixin-agent GetUploadUrlRequest（thumb_rawsize/thumb_rawfilemd5/
+            # thumb_filesize），响应返回独立的 thumb_upload_param
+            req.update(no_need_thumb=False,
+                       thumb_rawsize=len(thumb_plain),
+                       thumb_rawfilemd5=hashlib.md5(thumb_plain).hexdigest(),
+                       thumb_filesize=len(thumb_cipher))
+        else:
+            req["no_need_thumb"] = True
+        up = await self._api_post(EP_GET_UPLOAD_URL, req, self._token, API_TIMEOUT_MS)
         upload_url = str(up.get("upload_full_url") or "") or (
             f"{self._cdn}/upload?encrypted_query_param="
             f"{quote(str(up.get('upload_param') or ''), safe='')}&filekey={quote(filekey, safe='')}"
@@ -614,12 +655,12 @@ class WeixinTriggerAdapter(TriggerAdapter):
         if not upload_url:
             raise RuntimeError(f"getUploadUrl 无上传地址: {up}")
 
-        async def _upload():
+        async def _cdn_upload(url: str, data: bytes) -> str:
             detail = ""
             for attempt in range(1, CDN_UPLOAD_RETRIES + 1):
                 try:
                     async with self._send_session.post(
-                            upload_url, data=ciphertext,
+                            url, data=data,
                             headers={"Content-Type": "application/octet-stream"}) as r:
                         param = r.headers.get("x-encrypted-param") if r.status == 200 else None
                         if param:
@@ -630,11 +671,28 @@ class WeixinTriggerAdapter(TriggerAdapter):
                 except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
                     detail = f"{type(exc).__name__}: {exc}"
                 logger.warning("CDN 上传第 %d/%d 次失败（密文 %.1fMB）: %s",
-                               attempt, CDN_UPLOAD_RETRIES, len(ciphertext) / 1048576, detail)
+                               attempt, CDN_UPLOAD_RETRIES, len(data) / 1048576, detail)
                 if attempt < CDN_UPLOAD_RETRIES:
                     await asyncio.sleep(2.0 * attempt)
-            raise RuntimeError(f"CDN 上传失败（重试 {CDN_UPLOAD_RETRIES} 次，密文 {len(ciphertext)} 字节）: {detail}")
-        encrypted_param = await asyncio.wait_for(_upload(), timeout=300)
+            raise RuntimeError(f"CDN 上传失败（重试 {CDN_UPLOAD_RETRIES} 次，密文 {len(data)} 字节）: {detail}")
+
+        encrypted_param = await asyncio.wait_for(
+            _cdn_upload(upload_url, ciphertext), timeout=300)
+
+        # 封面上传：thumb_upload_param 与主上传对称拼 URL；失败降级无封面（不拖垮视频发送）
+        thumb_param = None
+        if thumb_cipher is not None:
+            thumb_up_param = str(up.get("thumb_upload_param") or "")
+            if thumb_up_param:
+                thumb_url = (f"{self._cdn}/upload?encrypted_query_param="
+                             f"{quote(thumb_up_param, safe='')}&filekey={quote(filekey, safe='')}")
+                try:
+                    thumb_param = await asyncio.wait_for(
+                        _cdn_upload(thumb_url, thumb_cipher), timeout=60)
+                except Exception as exc:
+                    logger.warning("[weixin] 封面上传失败，降级无封面发送: %s", exc)
+            else:
+                logger.warning("[weixin] getUploadUrl 未返回 thumb_upload_param，降级无封面发送")
 
         media_field = {MEDIA_IMAGE: ("image_item", {"mid_size": len(ciphertext)}),
                        MEDIA_VIDEO: ("video_item", {"video_size": len(ciphertext),
@@ -647,6 +705,12 @@ class WeixinTriggerAdapter(TriggerAdapter):
                 key: {"media": {"encrypt_query_param": encrypted_param,
                                 "aes_key": base64.b64encode(aes_key.hex().encode()).decode(),
                                 "encrypt_type": 1}, **extra}}
+        if media_type == MEDIA_VIDEO and thumb_param:
+            item[key]["thumb_media"] = {"encrypt_query_param": thumb_param,
+                                        "aes_key": base64.b64encode(aes_key.hex().encode()).decode(),
+                                        "encrypt_type": 1}
+            item[key]["thumb_size"] = len(thumb_cipher)
+            item[key]["thumb_width"], item[key]["thumb_height"] = thumb_w, thumb_h
         items = ([{"type": ITEM_TEXT, "text_item": {"text": caption}}] if caption else []) + [item]
         context_token = self._ctx_tokens.get(peer)
         retried = False

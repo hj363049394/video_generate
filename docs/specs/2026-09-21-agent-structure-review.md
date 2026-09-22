@@ -396,3 +396,37 @@ yuvj420p,pc）仍正确拦截，报错文案与用户所见一致。
 
 **验证**：py_compile 通过；重传前强制自检复验为负例护栏。
 （待真机验收：git pull → 重发 /视频 c93b47a9 直接重传）
+
+#### §6.5 视频封面（thumb）：黑屏气泡修复（2026-09-22 v1.3.8）
+
+**现象**：视频消息在微信气泡中未播放时显示纯黑——此前 getuploadurl 硬编码
+`no_need_thumb=True` 且 video_item 无 thumb 字段（hermes 原版同为硬编码，
+当时判定"缩略图上传协议无文档"故未做）。
+
+**协议依据（本轮实证）**：weixin-agent（Rust crate，镜像 iLink Bot API 类型）
+types.rs 揭示完整 thumb 协议——GetUploadUrlRequest 含 `no_need_thumb`/
+`thumb_rawsize`/`thumb_rawfilemd5`/`thumb_filesize`（明文尺寸/明文 MD5/密文
+尺寸），GetUploadUrlResponse 含独立 `thumb_upload_param`；VideoItem 含
+`thumb_media`（CdnMedia: encrypt_query_param+aes_key+encrypt_type）+
+`thumb_size`/`thumb_width`/`thumb_height`。
+
+**实现（bot_weixin，全链路降级保护）**：
+1. `_video_thumb()`：ffprobe 探视频分辨率 → ffmpeg 抽首帧等比缩放到宽
+   THUMB_WIDTH=240 的 JPEG（q:v=4，输出约 6KB），返回 (字节, 宽, 高)；
+   管线图生视频首帧即完整画面无黑帧，取第一帧即可。
+2. `_send_media`：video 时封面与视频**共用同一 AES key** 加密（getuploadurl
+   只接受一个 aeskey，服务器无其他密钥来源）；getuploadurl 传
+   no_need_thumb=False + 三个 thumb 元数据字段；CDN PUT 用响应的
+   thumb_upload_param 对称拼 URL（同一 filekey），取 x-encrypted-param。
+3. video_item 补 thumb_media（aes_key 同主 media 的 base64(hex)）+
+   thumb_size/thumb_width/thumb_height。
+4. 降级链：封面生成失败 / getuploadurl 未返回 thumb_upload_param / 封面
+   PUT 失败 → 三处均 warning 日志 + 无封面发送（不拖垮视频本身）；
+   非视频类型完全走原路径。
+5. 附带重构：_upload 闭包参数化为 _cdn_upload(url, data)，视频与封面
+   共用 3 次退避重试逻辑。
+
+**验证**：py_compile 通过；沙箱 ffmpeg 6.1.1 实测 2160x2880 成片 → 240x320
+mjpeg 6017 字节（等比正确）；负例（不存在的视频）按预期抛
+CalledProcessError 由调用方降级。
+（待真机验收：重发 /视频 后气泡应显示首帧画面而非黑屏）
