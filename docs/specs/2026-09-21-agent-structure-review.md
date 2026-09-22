@@ -372,3 +372,27 @@ setrange=tv / 输出端 -color_range tv（只改元数据不转数据，播放�
 证明 6.1.1 上新增滤镜为真无操作、无双重压缩；③ 自检门负例（模拟产物
 yuvj420p,pc）仍正确拦截，报错文案与用户所见一致。
 （待真机验收：git pull → /视频 重生成）
+
+#### §6.4 交付链路：CDN 上传重试与任务状态自愈（2026-09-22 v1.3.7）
+
+**现象**：v1.3.6 后视频合成通过自检，但微信 CDN PUT 返回 HTTP 500（空 body）
+异常冒泡至顶层；任务状态卡死 composing，/视频 重发被状态门挡住无法重试。
+
+**根因（证据驱动）**：bot_weixin._send_media 的 CDN PUT 为单次尝试零重试
+（对比：同文件文本发送已有限流退避重试 SEND_RETRIES=4）；同一链路图片此前
+交付成功（任务能到 delivered）→ 请求格式/AES 加密/鉴权均无问题，novac2c
+5xx 空 body 属服务端瞬时故障，重试即可自愈。次要缺陷：① router._cmd_video
+未捕获 deliver_video 异常 → 状态不回滚；② 合成失败残留 video.mp4 无清理。
+
+**修复（三处）**：
+1. bot_weixin：CDN_UPLOAD_RETRIES=3 退避重试（2s/4s），仅对 5xx 与
+   aiohttp.ClientError/TimeoutError 重试（4xx 立即失败）；错误信息带密文
+   体积便于后续诊断；wait_for 300s 总闸不变。
+2. router：deliver_video 包 try/except → 状态回滚 delivered + 用户可读提示，
+   成片保留；合成失败时清理残片，确立"video.mp4 存在=通过自检"不变式。
+3. router：重试路径若 video.mp4 存在且复跑 _verify_compat 通过则直接重传
+   （省 3-5 分钟重合成，残片/坏片自动重新合成）；composing 超 15 分钟视为
+   上次中断，允许重发。
+
+**验证**：py_compile 通过；重传前强制自检复验为负例护栏。
+（待真机验收：git pull → 重发 /视频 c93b47a9 直接重传）

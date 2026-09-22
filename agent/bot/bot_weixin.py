@@ -54,6 +54,7 @@ SESSION_EXPIRED_ERRCODE, RATE_LIMIT_ERRCODE = -14, -2
 MAX_TEXT_LEN = 1800          # iLink 约 2048 字符处切块，hermes 实测阈值取 1800
 CHUNK_DELAY_SECONDS = 1.5    # 分片发送间隔
 SEND_RETRIES = 4
+CDN_UPLOAD_RETRIES = 3       # CDN PUT 重试：5xx/网络异常退避重试（500 空 body 多为瞬时故障）
 MEDIA_IMAGE, MEDIA_VIDEO, MEDIA_FILE = 1, 2, 3      # getuploadurl media_type
 ITEM_TEXT, ITEM_IMAGE, ITEM_FILE, ITEM_VIDEO = 1, 2, 4, 5  # item_list 类型
 MSG_TYPE_BOT, MSG_STATE_FINISH = 2, 2
@@ -614,13 +615,25 @@ class WeixinTriggerAdapter(TriggerAdapter):
             raise RuntimeError(f"getUploadUrl 无上传地址: {up}")
 
         async def _upload():
-            async with self._send_session.post(
-                    upload_url, data=ciphertext,
-                    headers={"Content-Type": "application/octet-stream"}) as r:
-                param = r.headers.get("x-encrypted-param") if r.status == 200 else None
-                if param:
-                    return param
-                raise RuntimeError(f"CDN 上传 HTTP {r.status}: {(await r.text())[:200]}")
+            detail = ""
+            for attempt in range(1, CDN_UPLOAD_RETRIES + 1):
+                try:
+                    async with self._send_session.post(
+                            upload_url, data=ciphertext,
+                            headers={"Content-Type": "application/octet-stream"}) as r:
+                        param = r.headers.get("x-encrypted-param") if r.status == 200 else None
+                        if param:
+                            return param
+                        detail = f"HTTP {r.status}: {(await r.text())[:200]}"
+                        if r.status < 500:  # 4xx 为请求问题，重试无意义
+                            break
+                except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
+                    detail = f"{type(exc).__name__}: {exc}"
+                logger.warning("CDN 上传第 %d/%d 次失败（密文 %.1fMB）: %s",
+                               attempt, CDN_UPLOAD_RETRIES, len(ciphertext) / 1048576, detail)
+                if attempt < CDN_UPLOAD_RETRIES:
+                    await asyncio.sleep(2.0 * attempt)
+            raise RuntimeError(f"CDN 上传失败（重试 {CDN_UPLOAD_RETRIES} 次，密文 {len(ciphertext)} 字节）: {detail}")
         encrypted_param = await asyncio.wait_for(_upload(), timeout=300)
 
         media_field = {MEDIA_IMAGE: ("image_item", {"mid_size": len(ciphertext)}),

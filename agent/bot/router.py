@@ -398,13 +398,16 @@ class Router:
             lines += [f"· {r[0]}　{(r[1] or '')[:24]}" for r in rows]
             await self._safe_send(uid, "\n".join(lines))
             return
-        row = self._db.execute("SELECT uid, status FROM tasks WHERE id=?", (arg,)).fetchone()
+        row = self._db.execute("SELECT uid, status, updated FROM tasks WHERE id=?", (arg,)).fetchone()
         if not row or row[0] != uid:
             await self._safe_send(uid, f"任务 {arg} 不存在（/视频 查看可生成列表）")
             return
         if row[1] != "delivered":
-            await self._safe_send(uid, f"任务 {arg} 状态为 {row[1]}，需图文交付完成（delivered）后才能生成视频")
-            return
+            # composing 超 15 分钟视为上次合成/上传中断（进程崩溃、CDN 故障等），允许重试
+            stale = row[1] == "composing" and time.time() - float(row[2] or 0) > 900
+            if not stale:
+                await self._safe_send(uid, f"任务 {arg} 状态为 {row[1]}，需图文交付完成（delivered）后才能生成视频")
+                return
         work_dir = self.workspace / "users" / uid.replace(":", "_") / arg
         layout_path = work_dir / "layout.json"
         if not layout_path.exists():
@@ -423,17 +426,35 @@ class Router:
         self._db.execute("UPDATE tasks SET status='composing', updated=? WHERE id=?",
                          (time.time(), arg))
         self._db.commit()
+        video_path = work_dir / "video.mp4"
+        video = None
+        if video_path.exists():  # 已通过自检的成片直接重传（上传失败重试场景）
+            try:
+                video_mod._verify_compat(str(video_path))
+                video = str(video_path)
+            except Exception:
+                video = None
+        if video is None:
+            try:
+                video = await asyncio.to_thread(
+                    video_mod.make_video, frames, layout.get("narrations") or [],
+                    str(video_path), self.assets_dir)
+            except Exception as exc:
+                video_path.unlink(missing_ok=True)  # 清理残片，维持"存在=通过自检"不变式
+                self._db.execute("UPDATE tasks SET status='delivered', updated=? WHERE id=?",
+                                 (time.time(), arg))
+                self._db.commit()
+                await self._safe_send(uid, f"视频合成失败：{exc}\n（可稍后重发 /视频 {arg}）")
+                return
         try:
-            video = await asyncio.to_thread(
-                video_mod.make_video, frames, layout.get("narrations") or [],
-                str(work_dir / "video.mp4"), self.assets_dir)
+            await deliver_video(self.adapter, uid, video, self.video_max_mb)
         except Exception as exc:
             self._db.execute("UPDATE tasks SET status='delivered', updated=? WHERE id=?",
                              (time.time(), arg))
             self._db.commit()
-            await self._safe_send(uid, f"视频合成失败：{exc}\n（可稍后重发 /视频 {arg}）")
+            await self._safe_send(uid, f"视频上传/发送失败：{exc}\n"
+                                       f"（成片已保留，稍后重发 /视频 {arg} 直接重传，无需重新合成）")
             return
-        await deliver_video(self.adapter, uid, video, self.video_max_mb)
         vinfo = quality_mod.probe_video(video)
         self._db.execute("UPDATE tasks SET status='delivered', detail='video_done', updated=? WHERE id=?",
                          (time.time(), arg))
