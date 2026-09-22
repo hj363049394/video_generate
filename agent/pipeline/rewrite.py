@@ -45,17 +45,25 @@ def build_rewrite_prompt(benchmark: dict, persona: dict, analysis: Optional[dict
         skeleton_text = "\n".join(
             f"  {i + 1}. {u.get('unit', '')}——{u.get('desc', '')}"
             for i, u in enumerate(skeleton))
+        imgs = analysis.get("image_structure") or []
         img_text = "\n".join(
             f"  图 {im.get('idx', i + 1)}：{im.get('kind', '')}｜{im.get('text_layout', '')}"
             f"｜{im.get('style', '')}"
-            for i, im in enumerate(analysis.get("image_structure") or []))
+            for i, im in enumerate(imgs))
+        # 单图/无图卡对标：数量一致指令会与 image_units≥2 硬校验冲突（2026-09-22 实测
+        # 「图片单元仅 1 个 < 2」两轮重试同败），改为扩充指引
+        if len(imgs) >= 2:
+            img_rule = "图卡结构（仿写 image_units 数量与之一致，每张对标其 kind/风格）："
+        else:
+            img_rule = ("图卡结构（对标为单图/封面型或无图卡数据：扩充为 3-4 个 image_units——"
+                        "首图沿用对标 kind/风格，其余按正文骨架扩展内容卡，保持同一视觉调性）：")
         analysis_section = f"""
 ## 对标结构拆解（已由拆解引擎产出，仿写必须逐项对标）
 标题公式：{cs.get('title_pattern', '')}
 正文骨架（仿写正文按此逐单元同构，单元数保持一致）：
 {skeleton_text or '（无骨架数据）'}
 口吻：{cs.get('tone', '')}
-图卡结构（仿写 image_units 数量与之一致，每张对标其 kind/风格）：
+{img_rule}
 {img_text or '（无图卡数据）'}
 整体调性：{analysis.get('style_summary', '')}
 """

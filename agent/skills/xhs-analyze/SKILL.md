@@ -66,6 +66,7 @@ kind 枚举：`full_photo_cover` / `list_card` / `rows_card` / `lines_quote` / `
 
 | 场景 | 行为 |
 |---|---|
+| 选题无图集（雷达确认/直发） | Router 先经红狐详情接口补图（`_enrich_topic_images`），仍无则封面/文字拆解 |
 | 图片下载失败 | 跳过单张，其余继续 |
 | 未配置 vision_model | 纯文字拆解（从正文分段推断图卡，desc 标注「推断」） |
 | 看图单张失败 | 占位描述「该图视觉信息缺失」 |

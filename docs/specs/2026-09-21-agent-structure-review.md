@@ -256,3 +256,21 @@ xhs-video SKILL（触发方式）、config.example.yaml（persona.cta/pipeline.a
 topic-scoring.md 增 content_direction 归类与方向化 persona_fit/conversion；
 layout.md cta 按方向类型化；radar/router 贯通 content_direction（清单展示+仿写注入）；
 promptkit 兜底人设同步；CHECKLIST #9 改为方向匹配；system-prompt.md 角色与规则同步。
+
+### §6.2 雷达拆解图集补全 + 单图对标冲突修复（2026-09-22 v1.3.2）
+
+**问题一（数据缺口）**：雷达链路只用红狐搜索列表接口（仅封面 1 张，无图集），
+拆解只能推断图卡结构，仿写版式还原度低于拉模式。红狐详情接口 `get_work` 有完整
+图集（拉模式在用），属"没去拿"而非"拿不到"。
+
+**修复（方案A）**：Router `_run_task` 载入 topic 后新增 `_enrich_topic_images`——
+无图集且有 note_id 的选题（雷达确认/直发）调一次详情接口补图集（含更全正文），
+幂等跳过拉模式/manual，失败降级封面/文字拆解不阻断。成本 1 次详情调用/篇。
+
+**问题二（机制冲突，2026-09-22 实测任务 b812b79e 失败）**：单图/视频封面型对标的
+拆解 image_structure 仅 1 张，仿写提示词"image_units 数量与之一致"指令与 schema
+硬校验「≥2」直接冲突，两轮重试同败。
+
+**修复**：rewrite.build_rewrite_prompt 按拆解图卡数分支——≥2 张维持"数量一致"；
+≤1 张改为扩充指引（3-4 个 image_units，首图沿用对标 kind/风格，其余按骨架扩展），
+硬校验下限不放松。

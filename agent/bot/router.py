@@ -467,6 +467,35 @@ class Router:
 
     # ─── 任务执行（rewrite → 底图 → 交付） ──────────────────────────────
 
+    def _enrich_topic_images(self, topic: dict) -> dict:
+        """方案A（2026-09-22）：雷达确认/直发选题无图集时，经红狐详情接口补图集。
+
+        拉模式（粘贴链接）topic 已含详情图集，幂等跳过；manual 任务无 note_id 跳过。
+        失败降级现状（封面/文字拆解），不阻断主线。
+        """
+        nid = str(topic.get("note_id") or "").strip()
+        if not nid or nid.startswith("manual-") or topic.get("images"):
+            return topic
+        api_key = ((self.config.get("radar") or {}).get("redfox_api_key", "")
+                   or os.environ.get("REDFOX_API_KEY", ""))
+        if not api_key:
+            return topic
+        try:
+            detail = note_fetch_mod.normalize(
+                note_fetch_mod.fetch_note_detail(work_id=nid, api_key=api_key))
+            if detail.get("images"):
+                topic = {**topic,
+                         "images": detail["images"],
+                         "cover_image": detail.get("cover_image") or topic.get("cover_image", ""),
+                         "description": detail.get("description") or topic.get("description", ""),
+                         "data_source": f"{topic.get('data_source', '')}+detail"}
+                logger.info("选题 %s 详情补图 %d 张", nid, len(detail["images"]))
+            else:
+                logger.info("选题 %s 详情无图集（视频/单图型），维持封面拆解", nid)
+        except Exception as exc:
+            logger.warning("详情补图失败（降级封面/文字拆解）note_id=%s: %s", nid, exc)
+        return topic
+
     async def _run_task(self, uid: str, task_id: str) -> None:
         def _update(status: str, detail: str = ""):
             self._db.execute("UPDATE tasks SET status=?, detail=?, updated=? WHERE id=?",
@@ -475,6 +504,8 @@ class Router:
 
         row = self._db.execute("SELECT detail FROM tasks WHERE id=?", (task_id,)).fetchone()
         topic = json.loads(row[0]) if row and row[0] else {}
+        # 方案A：无图集选题（雷达确认/直发）先补详情图集，拆解输入与拉模式同构
+        topic = await asyncio.to_thread(self._enrich_topic_images, topic)
         work_dir = self.workspace / "users" / uid.replace(":", "_") / task_id
         work_dir.mkdir(parents=True, exist_ok=True)  # v1.1：workspace 已含 bot_id 分层
         try:
