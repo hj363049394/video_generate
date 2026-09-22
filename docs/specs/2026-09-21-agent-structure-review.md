@@ -274,3 +274,21 @@ promptkit 兜底人设同步；CHECKLIST #9 改为方向匹配；system-prompt.m
 **修复**：rewrite.build_rewrite_prompt 按拆解图卡数分支——≥2 张维持"数量一致"；
 ≤1 张改为扩充指引（3-4 个 image_units，首图沿用对标 kind/风格，其余按骨架扩展），
 硬校验下限不放松。
+
+### §6.3 视频黑屏（微信端）兼容修复（2026-09-22 v1.3.3）
+
+**现象**：图文交付正常，/视频 产出的 video.mp4 质检通过（36.1s/13.1MB）但在
+微信里全黑只有声音。沙箱同链路复现（ffmpeg 6.1）无黑场、字幕正常；13.1MB 码率
+（~2.6Mbps 视频轨）证明文件内有画面——问题在封装/播放兼容层，不在合成逻辑。
+
+**根因**：ffmpeg 默认 mp4 的 moov 索引写在文件尾，本地播放器可容忍，微信手机端
+流式播放读不到索引 → 黑屏有声（实测修复前 moov 位于文件尾、修复后前置到偏移 36）。
+
+**修复（video.py 三件套）**：① 拼接与成片两步加 `-movflags +faststart`（moov 前置）；
+② 成片后 blackdetect 黑场自检（黑场 >80% 总时长即 raise，拦截真黑屏静默交付，
+报错提示反馈 ffmpeg -version）；③ drawtext 字幕 `text=` 改 `textfile=`（UTF-8
+文件读取，规避中文 Windows 按 ANSI codepage 解析命令行导致的字幕乱码）。
+
+**附带发现**：质检 #4（probe_video）只校验时长/大小，无画面内容校验——黑场自检
+补上该盲区。微信上传链路 no_need_thumb=True 且曾有"图片灰图"协议先例，若 faststart
+后仍黑，需进一步排查 CDN 转码层。

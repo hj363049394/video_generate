@@ -11,6 +11,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import re
 import shutil
 import subprocess
 import urllib.request
@@ -89,11 +90,15 @@ def _make_clip(idx: int, img: str, mp3: str, dur: float, narration: str,
                font: str, out: str) -> None:
     frames = int(round(dur * FPS))
     z = "min(zoom+0.0007,1.18)" if idx % 2 == 0 else "max(1.18-0.0008*on,1.001)"  # 奇偶交替推/拉
+    sub_dir = Path(out).parent
     draws = []
     for i, ln in enumerate(_split_lines(narration)):
-        safe = ln.replace(":", "").replace("'", "")
+        # Windows 兼容（2026-09-22）：text= 直传中文在中文系统上可能被按 ANSI
+        # codepage（GBK）解析成乱码；textfile= 强制按 UTF-8 读取，跨平台稳定
+        tf = str(sub_dir / f"sub_{idx}_{i}.txt")
+        Path(tf).write_text(ln, encoding="utf-8")
         draws.append(
-            f"drawtext=fontfile={ff_filter_path(font)}:text='{safe}':"
+            f"drawtext=fontfile={ff_filter_path(font)}:textfile={ff_filter_path(tf)}:"
             f"fontcolor=white:expansion=none:"
             f"borderw=5:bordercolor=black@0.75:fontsize=56:x=(w-text_w)/2:y=h-{300 - i * 78}")
     vf = (f"scale=2160:-2,crop=2160:2880,"
@@ -161,7 +166,8 @@ def make_video(images: List[str], narrations: List[str], out_path: str,
          f"[avox][bgm]amix=inputs=2:duration=first:normalize=0[aout]",
          "-map", "[vout]", "-map", "[aout]", "-t", f"{total:.3f}",
          "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-         "-c:a", "aac", "-b:a", "160k", joined],
+         "-c:a", "aac", "-b:a", "160k",
+         "-movflags", "+faststart", joined],
         check=True, capture_output=True)
 
     # 3. 首尾淡入淡出 → 成片
@@ -170,9 +176,32 @@ def make_video(images: List[str], narrations: List[str], out_path: str,
         ["ffmpeg", "-y", "-i", joined,
          "-vf", f"fade=t=in:st=0:d=0.5,fade=t=out:st={fade_out:.2f}:d=0.6",
          "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-         "-c:a", "copy", out_path],
+         "-c:a", "copy",
+         "-movflags", "+faststart", out_path],
         check=True, capture_output=True)
+    # 4. 黑场自检（2026-09-22）：拦截"合成正常但内容全黑"的静默交付。
+    # 微信流式播放对 mp4 索引/封装敏感（黑屏有声），自检失败即报错并提示诊断。
+    black = _detect_black(out_path)
+    if black > total * 0.8:
+        raise RuntimeError(
+            f"成片黑场自检未通过：黑场 {black:.1f}s / 总时长 {total:.1f}s。"
+            f"多半是本机 ffmpeg 与 zoompan/drawtext 的兼容问题，"
+            f"请把 ffmpeg -version 输出反馈给开发者")
     return out_path
+
+
+def _detect_black(path: str) -> float:
+    """blackdetect 统计黑场总时长（秒）。阈值：像素亮度 ≤10% 且占比 ≥98% 判黑。"""
+    r = subprocess.run(
+        ["ffmpeg", "-i", path, "-vf", "blackdetect=d=0.5:pix_th=0.10",
+         "-an", "-f", "null", "-"],
+        capture_output=True, text=True)
+    total = 0.0
+    for ln in r.stderr.splitlines():
+        m = re.search(r"black_duration:([0-9.]+)", ln)
+        if m:
+            total += float(m.group(1))
+    return total
 
 
 def shutil_which_none(cmd: str) -> bool:
