@@ -342,3 +342,33 @@ play_length=4/video_size/aes_key=base64(hex) 均正确；③ ffprobe 缺失时�
 成品 AAC-LC 44100Hz stereo + H.264 High@L4.0 yuv420p + faststart（moov@36
 早于 mdat）；自检门负例（24kHz/mono）正确拦截并给出可读报错。
 （待真机验收：git pull → /视频 重生成 → 本机播放器+微信双端确认）
+
+#### §6.3.3 视频流色彩范围根因与修复（2026-09-22 v1.3.6）
+
+**现象（v1.3.5 自检门正确拦截）**：用户 ffmpeg 9.0.1 环境 /视频 报
+"成片编码兼容性自检未通过：视频流 h264/yuvj420p 非 H.264/yuv420p"——
+音频已达标（44.1kHz 立体声），视频流被 ffprobe 判为 yuvj420p（full-range H.264）。
+
+**根因（证据驱动，非猜测）**：yuvj420p = JPEG full-range YUV（ffmpeg 7+
+已弃用该标签）。
+- 源 JPEG 解码输出 full-range 数据：沙箱 ffprobe 实测 yuvj420p,pc（与用户机一致）。
+- 版本行为差异（沙箱直跑不复现的解释）：ffmpeg 6.1.1 的 format=yuv420p 滤镜
+  做数据压缩（signalstats 实测白图 255→235）+ 标签转 tv，全链 yuv420p 通过；
+  ffmpeg 7+（用户机 9.0.1）弃用 yuvj420p 后走"元数据直通"——解码输出
+  yuv420p + color_range=pc，format 只换格式标签不动范围元数据，range=pc 帧
+  直通 libx264 → x264 按 full-range 编码 → 成片 ffprobe 显示 yuvj420p。
+- 机制模拟复现（沙箱 6.1.1 强制直通路径）：`format=yuv420p,setparams=range=pc`
+  → 输出 yuvj420p,pc，与用户报错特征一致，为根因直接证据。
+
+**修复（video.py _make_clip 一处，最小改动）**：vf 链 `format=yuv420p,` 后追加
+`scale=out_range=limited`——9.x 路径：scale 读取输入 pc 元数据，实际压缩数据
+255→235 并标 tv；6.1.1 路径：format 已转 tv，scale 为无操作，两版本行为均正确。
+join/final 的输入经 _make_clip 修复后已是 tv，无需改动。不采用
+setrange=tv / 输出端 -color_range tv（只改元数据不转数据，播放端按 limited
+解读 full 数据会发白）。
+
+**验证**：① 修复后全管线回归（stub TTS）成品 h264/yuv420p + aac/44100/2ch；
+② 修复前后同帧 signalstats 逐位一致（YMIN=7/YAVG=125.745/YMAX=249）——
+证明 6.1.1 上新增滤镜为真无操作、无双重压缩；③ 自检门负例（模拟产物
+yuvj420p,pc）仍正确拦截，报错文案与用户所见一致。
+（待真机验收：git pull → /视频 重生成）

@@ -106,9 +106,14 @@ def _make_clip(idx: int, img: str, mp3: str, dur: float, narration: str,
             f"drawtext=fontfile={ff_filter_path(font)}:textfile={ff_filter_path(tf)}:"
             f"fontcolor=white:expansion=none:"
             f"borderw=5:bordercolor=black@0.75:fontsize=56:x=(w-text_w)/2:y=h-{300 - i * 78}")
+    # v1.3.6 色彩范围修复：format=yuv420p 只转格式标签、不转范围元数据——
+    # ffmpeg 7+（实测 9.0.1）JPEG 解码输出 yuv420p+pc（full range）直通 libx264，
+    # 成片被 ffprobe 判为 yuvj420p（自检门拦截）。scale=out_range=limited 在
+    # 新版本实际压缩数据 255→235 并标 tv；旧版本（6.1.1 format 已转 tv）为无操作
     vf = (f"scale=2160:-2,crop=2160:2880,"
           f"zoompan=z='{z}':x='iw/2-(iw/zoom)/2':y='ih/2-(ih/zoom)/2':"
-          f"d={frames}:s={OUT_W}x{OUT_H}:fps={FPS},format=yuv420p," + ",".join(draws))
+          f"d={frames}:s={OUT_W}x{OUT_H}:fps={FPS},format=yuv420p,scale=out_range=limited,"
+          + ",".join(draws))
     subprocess.run(
         ["ffmpeg", "-y", "-loop", "1", "-i", img, "-i", mp3,
          "-filter_complex", f"[0:v]{vf}[v];[1:a]apad=whole_dur={dur:.3f}[a]",
