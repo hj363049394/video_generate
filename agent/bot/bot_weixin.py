@@ -18,6 +18,7 @@ import logging
 import os
 import re
 import secrets
+import subprocess
 import time
 import uuid
 from pathlib import Path
@@ -90,6 +91,22 @@ def _parse_aes_key(aes_key_b64: str) -> bytes:
     if text and all(ch in "0123456789abcdefABCDEF" for ch in text):
         return bytes.fromhex(text)
     raise ValueError(f"unexpected aes_key format ({len(decoded)} decoded bytes)")
+
+
+def _video_play_length(path: str) -> int:
+    """ffprobe 探测视频时长（秒，uint32）。微信协议 play_length 语义 = 视频秒数
+    （官方文档示例值 24）；hermes 原版恒传 0 未经验证，实测 play_length=0 时
+    客户端播放器初始化异常——转圈、视频层不渲染（黑屏有声，音频流不受影响）。
+    探测失败回退 1s 并告警（0 是已知致错值，不可回退到 0）。"""
+    try:
+        r = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+             "-of", "csv=p=0", path], capture_output=True, text=True,
+            check=True, timeout=30)
+        return max(1, int(round(float(r.stdout.strip()))))
+    except Exception as exc:
+        logger.warning("[weixin] play_length 探测失败，回退 1s: %s", exc)
+        return 1
 
 
 # ─── 错误分类（hermes 预验证结论：-2 有两种语义） ────────────────────────
@@ -607,7 +624,8 @@ class WeixinTriggerAdapter(TriggerAdapter):
         encrypted_param = await asyncio.wait_for(_upload(), timeout=300)
 
         media_field = {MEDIA_IMAGE: ("image_item", {"mid_size": len(ciphertext)}),
-                       MEDIA_VIDEO: ("video_item", {"video_size": len(ciphertext), "play_length": 0,
+                       MEDIA_VIDEO: ("video_item", {"video_size": len(ciphertext),
+                                                    "play_length": _video_play_length(path),
                                                     "video_md5": md5}),
                        MEDIA_FILE: ("file_item", {"file_name": Path(path).name, "len": str(rawsize)})}[media_type]
         key, extra = media_field

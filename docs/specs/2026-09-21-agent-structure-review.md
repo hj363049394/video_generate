@@ -292,3 +292,27 @@ promptkit 兜底人设同步；CHECKLIST #9 改为方向匹配；system-prompt.m
 **附带发现**：质检 #4（probe_video）只校验时长/大小，无画面内容校验——黑场自检
 补上该盲区。微信上传链路 no_need_thumb=True 且曾有"图片灰图"协议先例，若 faststart
 后仍黑，需进一步排查 CDN 转码层。
+
+#### §6.3.1 协议层根因与修复（2026-09-22 v1.3.4）
+
+**现象（v1.3.3 后复现）**：faststart 修复后微信端仍"黑屏"，且点击播放一直转圈、
+画面永不出现（有声）。用户 ffmpeg 9.0.1 环境下黑场自检未报错，排除合成端。
+
+**根因（协议层，非封装层）**：`bot_weixin.py` 发视频时 `video_item.play_length`
+硬编码 0。微信官方文档确认 `play_length | uint32 | 视频秒数`（示例值 24）——
+传 0 等于告诉客户端"这是一段 0 秒的视频"，播放器初始化进度/缓冲拿到非法时长
+→ 转圈、视频层不渲染；音频流不受该字段影响，故"黑屏有声"与 v1.3.3 症状叠加。
+hermes 上游对照：`play_length: kw.get("play_length", 0)` 参数化但 `_send_file`
+从不传入（全仓库仅 weixin.py 一处），即上游 iLink 视频路径本就未经真机验证的
+缺陷，非移植引入。图片链路正常排除传输层（同 CDN/AES/sendmessage）。
+
+**修复（bot_weixin.py）**：新增 `_video_play_length(path)`——ffprobe 探测
+`format=duration` 四舍五入为秒（uint32），探测失败回退 1s 并告警（0 是已知
+致错值，绝不回退 0）；`video_item.play_length` 改填真实时长。
+`no_need_thumb=True` 保持不动：hermes 原版同为硬编码，缩略图上传协议无文档，
+不引入未知风险。
+
+**验证**：沙箱冒烟 4 项全过——① 4s 测试视频探测=4；② 完整 sendmessage payload
+play_length=4/video_size/aes_key=base64(hex) 均正确；③ ffprobe 缺失时回退=1
+非 0；④ image_item 无 play_length 字段，图片链路零影响。
+（待真机验收：git pull → /视频 重生成 → 微信端确认画面+进度条）
