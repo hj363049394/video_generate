@@ -343,6 +343,7 @@ class Router:
         if not arg:
             await self._safe_send(
                 uid, "用法：/主题 词1, 词2（逗号或空格分隔，可多个）\n"
+                     "主题词越短越好（2-6 字，像搜索词，如：避寒路线、室内遛娃）\n"
                      "本次抓取按该主题搜索爆款，/定位 的默认关键词保持不变。")
             return
         asyncio.create_task(self._run_radar_now(uid, arg))
@@ -350,7 +351,12 @@ class Router:
             uid, f"按主题「{arg}」抓取中（约 1-3 分钟）…完成后自动推送清单，/确认 N 直接衔接生成")
 
     async def _run_radar_now(self, uid: str, theme: str = "") -> None:
-        """按主题（/主题 传入，临时生效）或定位关键词（/选题 抓取）立即跑雷达并推送清单。"""
+        """按主题（/主题 传入，临时生效）或定位关键词（/选题 抓取）立即跑雷达并推送清单。
+
+        v1.3.10：/主题 是用户主动探索，数值门槛全放（0/0）——口语化长句
+        召回的中低互动笔记不被爆款门槛误杀；质量把关交给语义评分硬门槛
+        （relevance≥6 且 virality≥5）。config 门槛只作用于 /选题 抓取。
+        """
         if theme:
             keywords = [k for k in re.split(r"[，,、\s]+", theme) if k]
         else:
@@ -360,8 +366,8 @@ class Router:
             path = await asyncio.to_thread(
                 radar_mod.run_radar, keywords,
                 (self.config.get("radar") or {}).get("max_items", 20),
-                (self.config.get("radar") or {}).get("heat_threshold"),
-                (self.config.get("radar") or {}).get("min_likes"),
+                0 if theme else (self.config.get("radar") or {}).get("heat_threshold"),
+                0 if theme else (self.config.get("radar") or {}).get("min_likes"),
                 self.bot_id, self.config.get("llm") or {}, self._persona_for(uid),
                 (self.config.get("radar") or {}).get("redfox_api_key", ""))
             text = radar_mod.format_topic_list(path, top=5)

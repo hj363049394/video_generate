@@ -243,9 +243,15 @@ def run_radar(keywords: list, max_items: int = 20,
     out_dir = Path(__file__).resolve().parents[1] / "workspace" / bot_id
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"topic_list_{date.today().isoformat()}.json"
+    used_heat = DEFAULT_HEAT_THRESHOLD if heat_threshold is None else heat_threshold
+    used_likes = DEFAULT_MIN_LIKES if min_likes is None else min_likes
     out_path.write_text(json.dumps({
         "date": date.today().isoformat(),
         "note": note,
+        "stats": {  # v1.3.10：漏斗统计——空清单时提示语透出"差在哪"
+            "candidates": len(deduped), "numeric_passed": len(passed),
+            "heat_threshold": used_heat, "min_likes": used_likes,
+        },
         "topic_list": selected,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     return str(out_path)
@@ -314,7 +320,13 @@ def format_topic_list(path: str, top: int = 5) -> str:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     topics = data.get("topic_list") or []
     if not topics:
-        return f"{data.get('date', '')} 雷达无过门槛选题（可放宽阈值或换关键词）"
+        stats = data.get("stats") or {}
+        base = f"{data.get('date', '')} 雷达无过门槛选题"
+        if stats:
+            base += (f"：共搜到 {stats.get('candidates', 0)} 篇，数值门槛"
+                     f"（热度≥{stats.get('heat_threshold', '-')} 且赞≥{stats.get('min_likes', '-')}）"
+                     f"通过 {stats.get('numeric_passed', 0)} 篇")
+        return base + "；建议换更短的搜索词（如：城市旅行 回忆杀）重试 /主题"
     lines = [f"📅 {data.get('date', '')} 选题清单 Top{min(top, len(topics))}",
              "回复「确认 N」触发仿写；粘贴链接可直接仿写该条：", ""]
     for i, t in enumerate(topics[:top], 1):
