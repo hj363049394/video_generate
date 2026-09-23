@@ -137,10 +137,31 @@ cd "D:\My Project\github_project\video_generate"
 git pull                                   # 拉最新代码
 git status                                 # 看本地改动
 git log --oneline -5                       # 最近 5 次提交
-git checkout trae/agent-F784ti             # 切到开发分支
+git checkout trae/agent-F784ti             # 切到开发分支（首次切完它会自动建立跟踪）
 git config user.name "hj363049394"         # 换机后重建提交身份
 git config user.email "hj363049394@users.noreply.github.com"
 ```
+
+**关于 `git pull` 要不要带分支名**：不带分支名的前提是当前分支已建立跟踪
+（upstream）关系。
+
+```powershell
+# ① 自查（二选一）：有跟踪的标志是状态行带 ...origin/trae/agent-F784ti
+git status -sb        # ## trae/agent-F784ti...origin/trae/agent-F784ti  = 有跟踪
+git branch -vv        # 分支名后带 [origin/trae/agent-F784ti]           = 有跟踪
+
+# ② 没跟踪时（pull/push 报 no tracking information）一次性修复：
+git branch --set-upstream-to=origin/trae/agent-F784ti
+
+# ③ 万能写法（任何时候都行，不依赖跟踪关系）：
+git pull origin trae/agent-F784ti
+git push origin trae/agent-F784ti
+```
+
+> 跟踪建立一次长期有效，之后 `git pull` / `git push` 裸跑即可。
+> 报错 `not stored as a remote-tracking branch` 多为 fetch refspec 过窄，
+> 修复：`git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"`
+> 后再 `git fetch origin --prune`。
 
 ---
 
