@@ -23,10 +23,12 @@
 
 ```powershell
 cd "D:\My Project\github_project\video_generate"
-git pull
+git pull origin trae/agent-F784ti
 python agent\main.py
 ```
 
+> 命令统一用完整写法（`git pull origin 分支名`）：不依赖本地跟踪关系配置、
+> 任何状态下都有效、当前在哪个分支都拉的是 trae/agent-F784ti，避免出错。
 > 正在运行的 bot 先 Ctrl+C 停掉再 pull，避免运行中文件被覆盖。
 
 ---
@@ -153,12 +155,12 @@ git branch -vv        # 分支名后带 [origin/trae/agent-F784ti]           = �
 # ② 没跟踪时（pull/push 报 no tracking information）一次性修复：
 git branch --set-upstream-to=origin/trae/agent-F784ti
 
-# ③ 万能写法（任何时候都行，不依赖跟踪关系）：
+# ③ 万能写法（任何时候都行，不依赖跟踪关系；日常更新统一用它）：
 git pull origin trae/agent-F784ti
 git push origin trae/agent-F784ti
 ```
 
-> 跟踪建立一次长期有效，之后 `git pull` / `git push` 裸跑即可。
+> 跟踪建立一次长期有效，建立后 `git pull` / `git push` 裸跑也可以。
 > 报错 `not stored as a remote-tracking branch` 多为 fetch refspec 过窄，
 > 修复：`git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"`
 > 后再 `git fetch origin --prune`。
