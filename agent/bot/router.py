@@ -372,7 +372,8 @@ class Router:
                 0 if theme else (self.config.get("radar") or {}).get("min_likes"),
                 self.bot_id, self.config.get("llm") or {}, self._persona_for(uid),
                 (self.config.get("radar") or {}).get("redfox_api_key", ""),
-                bool(theme))
+                bool(theme),
+                (self.config.get("radar") or {}).get("time_filter_days", 180))
             text = radar_mod.format_topic_list(path, top=5)
         except Exception as exc:  # noqa: BLE001 —— 推送失败原因给用户
             logger.warning("按需雷达失败 uid=%s: %s", uid, exc)

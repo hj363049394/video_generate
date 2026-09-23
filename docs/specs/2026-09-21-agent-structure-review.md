@@ -510,3 +510,37 @@ v1.3.10 的设计缺陷：数值门槛放开了，语义硬门槛没跟上，探
 探索模式混合（selected 机会分序在前 rejected 热度序在后）/ 默认门槛
 数值拦光（回归 v1.3.10 原提示）。首轮两断言写错（stub 热度序假设），
 清单行为本身正确，修正后全 PASS。
+
+#### §6.9 雷达时间硬筛 + 翻页上限补偿（2026-09-23 v1.3.12）
+
+**背景**：对照用户人肉找爆款逻辑（主题搜 → 按赞/藏排序 → 近半年时间
+筛 → 取前 10 篇）评估定稿：多维热度公式与语义评分保留（不退回单维排
+序），"近半年"时间硬筛是真实缺口——"最热"排序天然被老爆款霸榜（2019
+年 10 万赞攻略永远置顶），时间衰减只降权不剔除，而老笔记对"仿写当下
+爆款"参考价值低。
+
+**修复（v1.3.12）**：
+- radar.run_radar 新增 time_filter_days 参数（默认 180=近半年，0=关闭）：
+  去重后按 workPublishTime 硬筛；**无发布时间的笔记保留不误杀**
+  （no_ts 单独计数透出，交语义评分兜底）；筛后为空 raise 并给可操作
+  提示（调大 radar.time_filter_days 或设 0 关闭）；
+- radar.fetch_search_notes 新增 raw_cap 翻页上限：时间筛会淘汰过半
+  老笔记，run_radar 传 raw_cap=max_items×2 放大翻页补偿过滤损耗，
+  None 时抓满 max_items 即停（调用方未启用时间筛零开销）；
+- stats 漏斗补全：fetched（原始抓取）/no_ts/time_dropped/
+  time_filter_days 落盘，format_topic_list 空清单提示透出"另 N 篇被
+  近 X 天时间筛剔除"；
+- router._run_radar_now 传 `(config.radar).time_filter_days`（默认
+  180）；main.py 两处无人值守调用不传参吃默认 180——**有意为之**：
+  老笔记对每日推送同样低参考价值，防霸榜对所有场景一致生效。
+
+**观察项（未实施）**：红狐 hot 模式 search_hot_notes 服务端原生日期
+筛 + 官方时效分（POC fetch_redfox.py 验证过字段映射）后续可 A/B；
+黑马榜同理。
+
+**验证**：py_compile 通过；stub 十六断言全 PASS——时间筛淘汰老笔记/
+无时间戳保留且计数/0 关闭全保留/筛后空 raise 带指引/raw_cap 翻页上限
+（无 raw_cap 抓满即停、=20 翻页到 20、run_radar 传 2×max_items、关闭
+时传 None）/空清单提示透出时间筛漏斗。测试脚本首轮自误两处（stub 泄
+漏到 D 场景未还原、cap_seen[-2] 时序错），库代码本身无误。
+```

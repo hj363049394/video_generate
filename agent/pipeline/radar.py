@@ -73,11 +73,18 @@ def _normalize_search(item: dict, keyword: str) -> dict:
     }
 
 
-def fetch_search_notes(keyword: str, max_items: int, api_key: str) -> list:
-    """关键词搜索笔记（sort_type='2' 最热排序，自动翻页），返回内部 Schema 列表。"""
+def fetch_search_notes(keyword: str, max_items: int, api_key: str,
+                       raw_cap: int | None = None) -> list:
+    """关键词搜索笔记（sort_type='2' 最热排序，自动翻页），返回内部 Schema 列表。
+
+    raw_cap（v1.3.12）：原始抓取上限——发布时间硬筛会淘汰过半老笔记
+    （"最热"排序天然被老爆款霸榜），调用方传 max_items*2 放大翻页补偿；
+    None 时抓满 max_items 即停。
+    """
     client = _get_client(api_key)
+    cap = raw_cap or max_items
     raw, offset = [], 0
-    while len(raw) < max_items:
+    while len(raw) < cap:
         r = client.xiaohongshu.search_articles(keyword=keyword, offset=offset, sort_type="2")
         lst = r.get("list", [])
         if not lst or not r.get("hasMore"):
@@ -85,7 +92,7 @@ def fetch_search_notes(keyword: str, max_items: int, api_key: str) -> list:
             break
         raw.extend(lst)
         offset += len(lst)
-    return [_normalize_search(n, keyword) for n in raw[:max_items]]
+    return [_normalize_search(n, keyword) for n in raw[:cap]]
 
 
 # ─── ② 数值热度评分（收编自 poc/radar/score_topics.py，公式不变） ───────
@@ -210,7 +217,7 @@ def run_radar(keywords: list, max_items: int = 20,
               heat_threshold: float | None = None, min_likes: int | None = None,
               bot_id: str = "default", llm_config: dict | None = None,
               persona: dict | None = None, api_key: str = "",
-              explore_mode: bool = False) -> str:
+              explore_mode: bool = False, time_filter_days: int = 180) -> str:
     """跑一轮雷达，产出 agent/workspace/<bot_id>/topic_list_YYYY-MM-DD.json，返回清单路径。
 
     llm_config/persona 传入时启用语义四维评分（产出仿写角度/人设钩子）；
@@ -218,6 +225,9 @@ def run_radar(keywords: list, max_items: int = 20,
     explore_mode（v1.3.11，/主题 探索模式）：数值门槛全放（调用方传 0/0）+
     语义硬门槛放开（LLM 淘汰项保留清单尾部）；默认 False，无人值守每日雷达
     维持防噪音硬门槛不变。
+    time_filter_days（v1.3.12）：发布时间硬筛（天），默认 180（近半年）——
+    "最热"排序天然被老爆款霸榜，老笔记对仿写参考价值低；无发布时间的
+    笔记保留不误杀（计数透出）；0 = 关闭。
     """
     if not keywords:
         raise ValueError("radar.keywords 未配置")
@@ -225,10 +235,14 @@ def run_radar(keywords: list, max_items: int = 20,
     if not api_key:
         raise RuntimeError("未配置 REDFOX_API_KEY（雷达抓取必需）")
 
+    raw_cap = max_items * 2 if time_filter_days else None  # 时间筛翻页补偿
+    fetched = 0
     notes = []
     for kw in keywords:
         try:
-            notes.extend(fetch_search_notes(kw, max_items, api_key))
+            got = fetch_search_notes(kw, max_items, api_key, raw_cap)
+            fetched += len(got)
+            notes.extend(got)
         except Exception as exc:  # noqa: BLE001 —— 单关键词失败不拖垮整轮
             logger.warning("关键词「%s」抓取失败（跳过）: %s", kw, exc)
     if not notes:
@@ -241,6 +255,25 @@ def run_radar(keywords: list, max_items: int = 20,
             continue
         seen.add(nid)
         deduped.append(n)
+
+    no_ts, time_dropped = 0, 0
+    if time_filter_days:               # v1.3.12：发布时间硬筛（去重后，口径准确）
+        today = date.today()
+        kept = []
+        for n in deduped:
+            pub = _parse_published(n.get("published_at"))
+            if pub is None:
+                no_ts += 1             # 无时间戳不误杀，交语义评分兜底
+                kept.append(n)
+            elif (today - pub.date()).days <= time_filter_days:
+                kept.append(n)
+            else:
+                time_dropped += 1
+        deduped = kept
+        if not deduped:
+            raise RuntimeError(
+                f"抓到 {fetched} 篇但近 {time_filter_days} 天时间筛后无候选"
+                f"（可在 config 把 radar.time_filter_days 调大或设 0 关闭）")
 
     passed = score_numeric(deduped,
                            DEFAULT_HEAT_THRESHOLD if heat_threshold is None else heat_threshold,
@@ -266,8 +299,11 @@ def run_radar(keywords: list, max_items: int = 20,
         "date": date.today().isoformat(),
         "note": note,
         "stats": {  # v1.3.10：漏斗统计——空清单时提示语透出"差在哪"
+            "fetched": fetched,  # v1.3.12：原始抓取数（时间筛/去重前）
             "candidates": len(deduped), "numeric_passed": len(passed),
             "heat_threshold": used_heat, "min_likes": used_likes,
+            "no_ts": no_ts, "time_dropped": time_dropped,  # v1.3.12：时间筛漏斗
+            "time_filter_days": time_filter_days,
         },
         "topic_list": selected,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -340,14 +376,21 @@ def format_topic_list(path: str, top: int = 5) -> str:
         stats = data.get("stats") or {}
         date_str = data.get("date", "")
         if stats.get("numeric_passed", 0) > 0:  # v1.3.11：数值全过但语义阶段拦光
+            tf = (f"，时间筛剔除 {stats.get('time_dropped', 0)} 篇"
+                  if stats.get("time_dropped") else "")
             return (f"{date_str} 搜到 {stats.get('candidates', 0)} 篇，数值门槛全部通过，"
-                    f"但语义评分认为与账号定位契合度不足，{stats.get('numeric_passed', 0)} 篇全被淘汰；"
+                    f"但语义评分认为与账号定位契合度不足，{stats.get('numeric_passed', 0)} 篇全被淘汰{tf}；"
                     "建议换更贴旅游主题的短词（如：城市旅行 回忆杀）重试 /主题")
         base = f"{date_str} 雷达无过门槛选题"
         if stats:
             base += (f"：共搜到 {stats.get('candidates', 0)} 篇，数值门槛"
                      f"（热度≥{stats.get('heat_threshold', '-')} 且赞≥{stats.get('min_likes', '-')}）"
                      f"通过 {stats.get('numeric_passed', 0)} 篇")
+            if stats.get("time_dropped"):  # v1.3.12：时间筛漏斗透出
+                base += (f"，另 {stats.get('time_dropped', 0)} 篇被近"
+                         f"{stats.get('time_filter_days', 180)} 天时间筛剔除")
+            if stats.get("no_ts"):
+                base += f"（其中 {stats.get('no_ts', 0)} 篇无发布时间，已保留）"
         return base + "；建议换更短的搜索词（如：城市旅行 回忆杀）重试 /主题"
     lines = [f"📅 {data.get('date', '')} 选题清单 Top{min(top, len(topics))}",
              "回复「确认 N」触发仿写；粘贴链接可直接仿写该条：", ""]
