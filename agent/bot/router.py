@@ -40,7 +40,8 @@ _DIR_LABELS = {"itinerary": "行程规划", "knowledge": "旅行知识", "life":
 
 HELP_TEXT = """【小红书仿写助手 · 指令】
 /选题 —— 查看当日选题清单（Top 5，附链接与仿写角度）
-/选题 抓取 —— 按我的关键词立即抓取评分（配合 /定位）
+/选题 抓取 —— 按 /定位 的默认关键词立即抓取评分
+/主题 词1, 词2 —— 按临时主题立即抓取爆款（仅本次生效，不改 /定位）
 /选题 列表 —— 查看历史清单日期；/选题 MM-DD 查指定日期
 /确认 N 或 仿写第N条 —— 按选题生成图文笔记（含发布文案）
 /换角度 N 描述 —— 调整第 N 条选题的仿写角度
@@ -61,7 +62,7 @@ PERSONA_TEMPLATE = """【/定位 模板】复制以下四行、填好后整体�
 服务钩子：评论区报人数/天数/预算，帮你出定制行程
 关键词：带娃游, 亲子旅行, 避寒, 行程规划
 · 赛道/人设/服务钩子 → 仿写与选题评分按你的定位走
-· 关键词 → /选题 抓取 按你的关键词搜索爆款
+· 关键词 → /选题 抓取 的默认主题；临时换向直接 /主题 词1, 词2
 · 重置：发送 /定位 重置"""
 
 TASK_STAGES = ["queued", "rewriting", "imaging", "delivered", "failed"]
@@ -119,6 +120,8 @@ class Router:
             return
         if m := re.match(r"^/?选题\s*(.*)$|^今天有什么选题|^/?雷达$", text):
             await self._cmd_topics(uid, (m.group(1) or "").strip())
+        elif m := re.match(r"^/?主题\s*(.*)$", text, re.S):
+            await self._cmd_topic_search(uid, (m.group(1) or "").strip())
         elif m := re.match(r"^/?确认\s*(\d+)$|^仿写第\s*(\d+)\s*条", text):
             n = int(m.group(1) or m.group(2))
             await self._cmd_confirm(uid, n)
@@ -332,10 +335,27 @@ class Router:
                  + (f"关键词：{' / '.join(keywords)}\n" if keywords else "关键词：（未填，按系统默认）\n")
                  + "接下来：/选题 抓取 按你的关键词搜索；/确认 N 或 /仿写 内容 按你的人设仿写")
 
-    async def _run_radar_now(self, uid: str) -> None:
-        """按用户关键词（未设置则 config 默认）立即跑一轮雷达并推送清单。"""
-        profile = self._get_user_profile(uid) or {}
-        keywords = profile.get("keywords") or (self.config.get("radar") or {}).get("keywords", [])
+    async def _cmd_topic_search(self, uid: str, arg: str) -> None:
+        """v1.3.9：/主题 词1, 词2 —— 临时主题立即抓取。
+
+        定位（赛道/人设）是长期属性、主题只是定位下的内容方向，
+        故主题仅对本次抓取生效，不覆盖 /定位 的默认关键词。"""
+        if not arg:
+            await self._safe_send(
+                uid, "用法：/主题 词1, 词2（逗号或空格分隔，可多个）\n"
+                     "本次抓取按该主题搜索爆款，/定位 的默认关键词保持不变。")
+            return
+        asyncio.create_task(self._run_radar_now(uid, arg))
+        await self._safe_send(
+            uid, f"按主题「{arg}」抓取中（约 1-3 分钟）…完成后自动推送清单，/确认 N 直接衔接生成")
+
+    async def _run_radar_now(self, uid: str, theme: str = "") -> None:
+        """按主题（/主题 传入，临时生效）或定位关键词（/选题 抓取）立即跑雷达并推送清单。"""
+        if theme:
+            keywords = [k for k in re.split(r"[，,、\s]+", theme) if k]
+        else:
+            profile = self._get_user_profile(uid) or {}
+            keywords = profile.get("keywords") or (self.config.get("radar") or {}).get("keywords", [])
         try:
             path = await asyncio.to_thread(
                 radar_mod.run_radar, keywords,
