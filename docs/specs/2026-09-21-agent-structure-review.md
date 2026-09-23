@@ -478,3 +478,35 @@ _dispatch 加 `^/?主题\s*(.*)$` 分支（置于 /选题 后，前缀不冲突�
 默认门槛全拦出统计提示 / 探索模式 0/0 全进清单且语义评分产出角度与
 机会分 / 语义异常降级数值排序清单不空。注意点：semantic_score 内部
 延迟导入 llm_call_factory，monkeypatch 需打在 pipeline.rewrite 源头。
+
+#### §6.8 /主题 探索模式二期：语义硬门槛也放开（2026-09-23 v1.3.11）
+
+**现象（真机）**：v1.3.10 后重发 `/主题 让我印象最深刻的城市` 仍空清单，
+但提示已透出漏斗——"共搜到 4 篇，数值门槛（热度≥0 且赞≥0）通过 4 篇"。
+
+**根因**：拦截点不在数值阶段而在语义阶段——topic-scoring.md 硬门槛
+（relevance<6 或 virality<5 → status=rejected）由 LLM 判定，4 篇长句
+召回的城市泛内容/低互动笔记全被判 rejected，radar 只保留 selected → 空。
+v1.3.10 的设计缺陷：数值门槛放开了，语义硬门槛没跟上，探索语义不完整。
+
+**修复（v1.3.11）**：
+- radar.run_radar / semantic_score 新增 explore_mode 参数（签名末尾，
+  默认 False——main.py 两处无人值守调用不传，防噪音硬门槛不变）；
+- semantic_score 探索模式下 LLM 淘汰项也进清单：附 reject_reason 落盘
+  备查，无机会分（0）排序自然落尾部（selected 按机会分在前，rejected
+  按热度序在后）；漏评保留逻辑不变；
+- format_topic_list 空清单提示分阶段：数值通过但语义拦光 → "…数值门槛
+  全部通过，但语义评分认为与账号定位契合度不足，N 篇全被淘汰"（仅
+  非探索模式会出现；探索模式清单永不空，除非抓取本身无输出）；
+- 机会分展示条件 `is not None` → 真值判断（rejected 的 0 分不显示
+  "机会分0"）；
+- router._run_radar_now：调用末尾传 `bool(theme)`。
+
+**/确认 N 兼容**：rejected 条目无 rewrite_angle/persona_hook，仿写注入
+处 `if x` 过滤后 angle=None 正常走无注入路径；/换角度 N 可事后补。
+
+**验证**：stub 四场景——探索模式全 rejected（清单非空按热度序、无机会
+分展示、reject_reason 落盘）/ 非探索全 rejected（语义拦光新提示）/
+探索模式混合（selected 机会分序在前 rejected 热度序在后）/ 默认门槛
+数值拦光（回归 v1.3.10 原提示）。首轮两断言写错（stub 热度序假设），
+清单行为本身正确，修正后全 PASS。

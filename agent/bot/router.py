@@ -354,8 +354,10 @@ class Router:
         """按主题（/主题 传入，临时生效）或定位关键词（/选题 抓取）立即跑雷达并推送清单。
 
         v1.3.10：/主题 是用户主动探索，数值门槛全放（0/0）——口语化长句
-        召回的中低互动笔记不被爆款门槛误杀；质量把关交给语义评分硬门槛
-        （relevance≥6 且 virality≥5）。config 门槛只作用于 /选题 抓取。
+        召回的中低互动笔记不被爆款门槛误杀。
+        v1.3.11：探索模式语义硬门槛也放开（explore_mode）——LLM 淘汰项保留
+        清单尾部，用户主动要的探索不再被"契合度不足"拦成空清单；
+        config 门槛与语义硬门槛只作用于 /选题 抓取与无人值守雷达。
         """
         if theme:
             keywords = [k for k in re.split(r"[，,、\s]+", theme) if k]
@@ -369,7 +371,8 @@ class Router:
                 0 if theme else (self.config.get("radar") or {}).get("heat_threshold"),
                 0 if theme else (self.config.get("radar") or {}).get("min_likes"),
                 self.bot_id, self.config.get("llm") or {}, self._persona_for(uid),
-                (self.config.get("radar") or {}).get("redfox_api_key", ""))
+                (self.config.get("radar") or {}).get("redfox_api_key", ""),
+                bool(theme))
             text = radar_mod.format_topic_list(path, top=5)
         except Exception as exc:  # noqa: BLE001 —— 推送失败原因给用户
             logger.warning("按需雷达失败 uid=%s: %s", uid, exc)

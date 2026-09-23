@@ -146,11 +146,14 @@ def _parse_json_array(text: str) -> list:
     return json.loads(m.group(1))
 
 
-def semantic_score(topics: list, llm_config: dict, persona: dict | None = None) -> list:
+def semantic_score(topics: list, llm_config: dict, persona: dict | None = None,
+                   explore_mode: bool = False) -> list:
     """对过数值门槛的候选做 LLM 四维评分。
 
     返回通过硬门槛（relevance≥6 且 virality≥5）的列表，按机会分降序；
     每条附 opportunity_score/sub_scores/rewrite_angle/persona_hook。
+    explore_mode（v1.3.11，/主题 探索模式）：硬门槛放开——LLM 淘汰项也保留，
+    附 reject_reason 且无机会分，排序自然落到尾部，用户可自行判断。
     评分失败向上抛（run_radar 捕获后降级数值排序）。
     """
     from pipeline.promptkit import load_prompt, load_soul
@@ -177,14 +180,23 @@ def semantic_score(topics: list, llm_config: dict, persona: dict | None = None) 
     selected = []
     for t in topics:
         e = by_id.get(str(t.get("note_id")))
-        if not e or str(e.get("status")) != "selected":
+        if not e:
             continue
-        selected.append({**t,
-                         "opportunity_score": e.get("opportunity_score"),
-                         "sub_scores": e.get("sub_scores") or {},
-                         "content_direction": (e.get("content_direction") or "").strip(),
-                         "rewrite_angle": (e.get("rewrite_angle") or "").strip(),
-                         "persona_hook": (e.get("persona_hook") or "").strip()})
+        if str(e.get("status")) == "selected":
+            selected.append({**t,
+                             "opportunity_score": e.get("opportunity_score"),
+                             "sub_scores": e.get("sub_scores") or {},
+                             "content_direction": (e.get("content_direction") or "").strip(),
+                             "rewrite_angle": (e.get("rewrite_angle") or "").strip(),
+                             "persona_hook": (e.get("persona_hook") or "").strip()})
+        elif explore_mode:  # v1.3.11：探索模式淘汰项也进清单（排序落尾部），理由落盘备查
+            selected.append({**t,
+                             "opportunity_score": e.get("opportunity_score") or 0,
+                             "sub_scores": e.get("sub_scores") or {},
+                             "content_direction": (e.get("content_direction") or "").strip(),
+                             "rewrite_angle": (e.get("rewrite_angle") or "").strip(),
+                             "persona_hook": (e.get("persona_hook") or "").strip(),
+                             "reject_reason": (e.get("reject_reason") or "").strip()})
     # LLM 漏评的候选保留在尾部（不因漏评丢选题）
     missed = [t for t in topics if str(t.get("note_id")) not in by_id]
     selected.extend(missed)
@@ -197,11 +209,15 @@ def semantic_score(topics: list, llm_config: dict, persona: dict | None = None) 
 def run_radar(keywords: list, max_items: int = 20,
               heat_threshold: float | None = None, min_likes: int | None = None,
               bot_id: str = "default", llm_config: dict | None = None,
-              persona: dict | None = None, api_key: str = "") -> str:
+              persona: dict | None = None, api_key: str = "",
+              explore_mode: bool = False) -> str:
     """跑一轮雷达，产出 agent/workspace/<bot_id>/topic_list_YYYY-MM-DD.json，返回清单路径。
 
     llm_config/persona 传入时启用语义四维评分（产出仿写角度/人设钩子）；
     未配置或评分失败自动降级数值排序，不阻断。
+    explore_mode（v1.3.11，/主题 探索模式）：数值门槛全放（调用方传 0/0）+
+    语义硬门槛放开（LLM 淘汰项保留清单尾部）；默认 False，无人值守每日雷达
+    维持防噪音硬门槛不变。
     """
     if not keywords:
         raise ValueError("radar.keywords 未配置")
@@ -234,8 +250,9 @@ def run_radar(keywords: list, max_items: int = 20,
     note = "数值热度排序（语义评分未启用：未配置 llm）"
     if passed and llm_config:
         try:
-            selected = semantic_score(passed[:10], llm_config, persona)
-            note = "语义四维评分排序（relevance/virality/persona_fit/conversion，含仿写角度）"
+            selected = semantic_score(passed[:10], llm_config, persona, explore_mode)
+            note = ("语义评分排序（探索模式：硬门槛放开，淘汰项保留在尾部）" if explore_mode
+                    else "语义四维评分排序（relevance/virality/persona_fit/conversion，含仿写角度）")
         except Exception as exc:  # noqa: BLE001 —— 降级不阻断
             logger.warning("语义评分失败，降级数值排序: %s", exc)
             note = f"数值热度排序（语义评分失败降级）"
@@ -321,7 +338,12 @@ def format_topic_list(path: str, top: int = 5) -> str:
     topics = data.get("topic_list") or []
     if not topics:
         stats = data.get("stats") or {}
-        base = f"{data.get('date', '')} 雷达无过门槛选题"
+        date_str = data.get("date", "")
+        if stats.get("numeric_passed", 0) > 0:  # v1.3.11：数值全过但语义阶段拦光
+            return (f"{date_str} 搜到 {stats.get('candidates', 0)} 篇，数值门槛全部通过，"
+                    f"但语义评分认为与账号定位契合度不足，{stats.get('numeric_passed', 0)} 篇全被淘汰；"
+                    "建议换更贴旅游主题的短词（如：城市旅行 回忆杀）重试 /主题")
+        base = f"{date_str} 雷达无过门槛选题"
         if stats:
             base += (f"：共搜到 {stats.get('candidates', 0)} 篇，数值门槛"
                      f"（热度≥{stats.get('heat_threshold', '-')} 且赞≥{stats.get('min_likes', '-')}）"
@@ -336,7 +358,7 @@ def format_topic_list(path: str, top: int = 5) -> str:
         dir_label = DIR_LABELS.get(str(t.get("content_direction") or ""), "")
         lines.append(f"   {heat} 赞{t.get('likes', '-') or '-'} "
                      f"藏{t.get('collects', '-') or '-'}"
-                     + (f" 机会分{score}" if score is not None else "")
+                     + (f" 机会分{score}" if score else "")  # 0 分（探索模式淘汰项）不显示
                      + (f"｜{dir_label}" if dir_label else ""))
         nid = str(t.get("note_id") or "").strip()
         if nid:
