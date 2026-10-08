@@ -32,6 +32,8 @@ import time
 from typing import Optional
 from urllib.parse import urlparse
 
+from pipeline import costing  # v1.4.0：红狐调用记账（账本未初始化时静默丢弃）
+
 logger = logging.getLogger("pipeline.note_fetch")
 
 # 红狐 transcript 异步任务轮询参数
@@ -103,7 +105,9 @@ def fetch_note_detail(work_id: str = "", work_link: str = "", api_key: str = "")
     work_id 和 work_link 至少传一个，红狐 SDK 会自动选择。
     """
     client = _get_client(api_key)
-    return client.xiaohongshu.get_work(work_id=work_id or None, work_link=work_link or None)
+    raw = client.xiaohongshu.get_work(work_id=work_id or None, work_link=work_link or None)
+    costing.record("redfox_detail", 1, note=work_id or work_link)  # v1.4.0 记账
+    return raw
 
 
 def fetch_video_transcript(video_url: str, api_key: str = "") -> str:
@@ -127,6 +131,7 @@ def fetch_video_transcript(video_url: str, api_key: str = "") -> str:
             status = r.get("status") or r.get("state") or r.get("data", {}).get("status", "")
             text = r.get("text") or r.get("content") or r.get("data", {}).get("text", "")
             if text:
+                costing.record("redfox_transcript", 1, note=video_url)  # v1.4.0 记账
                 return text
             if status in ("failed", "error", "FAIL"):
                 logger.warning("视频提文案任务失败: %s", r)

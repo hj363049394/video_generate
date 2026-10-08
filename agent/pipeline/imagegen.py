@@ -18,6 +18,8 @@ import urllib.request
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
+from pipeline import costing  # v1.4.0：生图张数记账（账本未初始化时静默丢弃）
+
 ORIENTATIONS = ("portrait", "landscape")
 
 
@@ -232,6 +234,7 @@ class ImageGenRouter:
                 continue
             try:
                 path = p.generate(prompt, out_path, orientation, ref_images)
+                costing.record("gen_image", 1, note=name)  # v1.4.0 记账
                 return path, name
             except Exception as exc:  # noqa: BLE001 —— fallback 需要吞掉各通道异常
                 errors.append(f"{name}: {exc}")

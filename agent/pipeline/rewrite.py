@@ -12,6 +12,7 @@ import re
 import urllib.request
 from typing import Callable, Dict, Optional
 
+from pipeline import costing  # v1.4.0：LLM 用量记账（账本未初始化时静默丢弃）
 from pipeline.promptkit import load_prompt, load_soul
 
 # 原创度门槛：字符 3-gram Jaccard 相似度（POC 定稿 0.30，验收样例 0.014）
@@ -248,7 +249,9 @@ def llm_call_factory(llm_config: dict) -> Callable[[str], str]:
         errors = []
         for model in models:  # 按优先级逐个尝试，成功即返回
             try:
-                return _chat_once(base_url, api_key, model, prompt)
+                out = _chat_once(base_url, api_key, model, prompt)
+                costing.record("llm_chars", len(prompt) + len(out), note=model)  # v1.4.0 记账
+                return out
             except Exception as exc:  # noqa: BLE001 —— fallback 需吞掉单模型异常
                 errors.append(f"{model}: {exc}")
         raise RuntimeError("全部 LLM 模型失败 -> " + " | ".join(errors))
@@ -270,6 +273,9 @@ def llm_vision_call_factory(llm_config: dict) -> Optional[Callable[[str, list], 
         return None
 
     def vision_call(prompt: str, images_b64: list) -> str:
-        return _chat_once_vision(base_url, api_key, model, prompt, images_b64)
+        out = _chat_once_vision(base_url, api_key, model, prompt, images_b64)
+        costing.record("vision_images", len(images_b64), note=model)  # v1.4.0 记账
+        costing.record("llm_chars", len(prompt) + len(out), note=f"vision:{model}")
+        return out
 
     return vision_call

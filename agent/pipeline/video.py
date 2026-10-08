@@ -18,6 +18,8 @@ import urllib.request
 from pathlib import Path
 from typing import List, Tuple
 
+from pipeline import costing  # v1.4.0：TTS 字符记账（账本未初始化时静默丢弃）
+
 TTS_URL = "https://openspeech.bytedance.com/api/v3/plan/tts/unidirectional"
 SPEAKER = "zh_female_qingxinnvsheng_uranus_bigtts"  # 清新女声（uranus 2.0 系，POC 定稿）
 BGM_VOL = 0.16       # BGM 音量（旁白优先，ducking）
@@ -59,6 +61,7 @@ def tts(text: str, out: str, api_key: str = "") -> None:
     if not audio:
         raise RuntimeError("TTS 未返回音频")
     Path(out).write_bytes(audio)
+    costing.record("tts_chars", len(text))  # v1.4.0 记账（成功才计费口径）
 
 
 def _probe(path: str) -> float:

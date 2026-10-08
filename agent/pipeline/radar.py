@@ -22,6 +22,8 @@ import re
 from datetime import date, datetime
 from pathlib import Path
 
+from pipeline import costing  # v1.4.0：雷达搜索记账 + radar:{date} 范围绑定
+
 logger = logging.getLogger("pipeline.radar")
 
 # 笔记详情页前缀（note_id → 可点开/可粘贴触发拉模式的链接）
@@ -86,6 +88,7 @@ def fetch_search_notes(keyword: str, max_items: int, api_key: str,
     raw, offset = [], 0
     while len(raw) < cap:
         r = client.xiaohongshu.search_articles(keyword=keyword, offset=offset, sort_type="2")
+        costing.record("redfox_search", 1, note=keyword)  # v1.4.0 记账（每页一次）
         lst = r.get("list", [])
         if not lst or not r.get("hasMore"):
             raw.extend(lst)
@@ -217,8 +220,13 @@ def run_radar(keywords: list, max_items: int = 20,
               heat_threshold: float | None = None, min_likes: int | None = None,
               bot_id: str = "default", llm_config: dict | None = None,
               persona: dict | None = None, api_key: str = "",
-              explore_mode: bool = False, time_filter_days: int = 180) -> str:
-    """跑一轮雷达，产出 agent/workspace/<bot_id>/topic_list_YYYY-MM-DD.json，返回清单路径。
+              explore_mode: bool = False, time_filter_days: int = 180,
+              user_id: str | None = None) -> str:
+    """跑一轮雷达，产出选题清单 JSON，返回清单路径。
+
+    v1.4.0（P0-5 重方案）：user_id 非空时清单保存到用户专属目录
+    workspace/{bot_id}/users/{safe_uid}/topic_list_{date}.json，
+    按用户 persona 独立评分；user_id 为空时保存到全局目录（推 home_uid）。
 
     llm_config/persona 传入时启用语义四维评分（产出仿写角度/人设钩子）；
     未配置或评分失败自动降级数值排序，不阻断。
@@ -235,6 +243,9 @@ def run_radar(keywords: list, max_items: int = 20,
     if not api_key:
         raise RuntimeError("未配置 REDFOX_API_KEY（雷达抓取必需）")
 
+    # v1.4.0：雷达消耗单独立账（radar:日期），与生产任务成本分开对账；
+    # 未初始化账本时 bind 无副作用，record 静默丢弃
+    costing.bind(f"radar:{date.today().isoformat()}")
     raw_cap = max_items * 2 if time_filter_days else None  # 时间筛翻页补偿
     fetched = 0
     notes = []
@@ -290,7 +301,15 @@ def run_radar(keywords: list, max_items: int = 20,
             logger.warning("语义评分失败，降级数值排序: %s", exc)
             note = f"数值热度排序（语义评分失败降级）"
 
-    out_dir = Path(__file__).resolve().parents[1] / "workspace" / bot_id
+    # v1.4.0（P0-5 重方案）：user_id 非空时，清单落盘到用户专属目录
+    # workspace/{bot_id}/users/{safe_uid}/，按用户定位独立评分与推送；
+    # user_id 为空时落盘到全局目录，推送到 home_uid
+    base_ws = Path(__file__).resolve().parents[1] / "workspace" / bot_id
+    if user_id:
+        safe_uid = user_id.replace(":", "_")
+        out_dir = base_ws / "users" / safe_uid
+    else:
+        out_dir = base_ws
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"topic_list_{date.today().isoformat()}.json"
     used_heat = DEFAULT_HEAT_THRESHOLD if heat_threshold is None else heat_threshold
@@ -363,6 +382,49 @@ def topic_list_by_date(workspace_dir, date_str: str) -> str | None:
         if p.exists():
             return str(p)
     return None
+
+
+# ─── v1.4.0（P0-5 重方案）：按用户读取专属选题清单 ──────────────────────
+
+def latest_topic_list_for_user(workspace_dir, uid: str) -> str | None:
+    """用户最近的选题清单（优先用户专属目录，回退全局目录）。
+
+    用户专属清单按用户定位独立评分，雷达每日为每个用户独立推送。
+    """
+    safe_uid = uid.replace(":", "_")
+    user_dir = Path(workspace_dir) / "users" / safe_uid
+    hits = sorted(glob.glob(str(user_dir / "topic_list_*.json")))
+    if hits:
+        return hits[-1]
+    return latest_topic_list(workspace_dir)
+
+def topic_list_by_date_for_user(workspace_dir, uid: str, date_str: str) -> str | None:
+    """按日期查用户选题清单（优先用户专属，回退全局）。"""
+    safe_uid = uid.replace(":", "_")
+    user_dir = Path(workspace_dir) / "users" / safe_uid
+    parts = re.findall(r"\d+", date_str)
+    if len(parts) == 3:
+        iso = f"{int(parts[0]):04d}-{int(parts[1]):02d}-{int(parts[2]):02d}"
+    elif len(parts) == 2:
+        iso = f"{date.today().year}-{int(parts[0]):02d}-{int(parts[1]):02d}"
+    else:
+        return None
+    user_path = user_dir / f"topic_list_{iso}.json"
+    if user_path.exists():
+        return str(user_path)
+    return topic_list_by_date(workspace_dir, date_str)
+
+def list_topic_dates_for_user(workspace_dir, uid: str) -> list:
+    """列出用户所有历史选题清单日期（用户专属 + 全局合并，升序）。"""
+    safe_uid = uid.replace(":", "_")
+    user_dir = Path(workspace_dir) / "users" / safe_uid
+    dates = set()
+    for f in glob.glob(str(user_dir / "topic_list_*.json")):
+        m = re.search(r"topic_list_(\d{4}-\d{2}-\d{2})\.json$", f)
+        if m:
+            dates.add(m.group(1))
+    dates.update(list_topic_dates(workspace_dir))
+    return sorted(dates)
 
 
 def format_topic_list(path: str, top: int = 5) -> str:

@@ -118,11 +118,13 @@ def run_analyze(topic: dict, work_dir: str, llm_config: dict) -> dict:
     img_paths = download_images(urls, img_dir) if urls else []
 
     descs: List[str] = []
+    vision_used = False
     if img_paths:
         vision = llm_vision_call_factory(llm_config or {})
         if vision:
             descs = describe_images(vision, img_paths)
             if descs:
+                vision_used = True
                 logger.info("多模态看图完成 %d 张", len(descs))
         else:
             logger.info("未配置 llm.vision_model，跳过看图（文字拆解）")
@@ -135,4 +137,8 @@ def run_analyze(topic: dict, work_dir: str, llm_config: dict) -> dict:
         raise ValueError("拆解输出缺 image_structure")
     if not (analysis.get("content_structure", {}).get("skeleton") or []):
         raise ValueError("拆解输出缺 content_structure.skeleton")
+    # v1.4.0（P0-6）：拆解方式透出——质量报告据此标注"看图拆解/文字拆解"，
+    # 看图还原度更高，未开 vision 时用户可见降级原因
+    analysis["vision_used"] = vision_used
+    analysis["vision_images"] = len(descs) if vision_used else 0
     return analysis

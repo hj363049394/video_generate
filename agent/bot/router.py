@@ -13,6 +13,7 @@ import re
 import sqlite3
 import time
 import uuid
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -25,6 +26,7 @@ from pipeline import promptkit
 from pipeline import radar as radar_mod
 from pipeline import imagepack
 from pipeline import video as video_mod
+from pipeline import costing  # v1.4.0：成本账本（P0-3）+ 任务范围绑定
 from pipeline import note_fetch as note_fetch_mod  # v1.1：拉模式 - 用户粘贴链接抓取
 from pipeline import note_analyze as note_analyze_mod  # v1.2：爆款显式拆解
 
@@ -48,6 +50,9 @@ HELP_TEXT = """【小红书仿写助手 · 指令】
 /视频 —— 查看可补生成视频的任务；/视频 任务ID —— 生成视频笔记
 /仿写 内容 —— 直发主题或爆款笔记文字（首行=标题，其余=正文）
 粘贴小红书笔记链接 —— 抓取该笔记并仿写（图文/视频笔记均支持）
+/已发布 笔记链接 —— 成品发出后登记（关联最近任务，开启每日数据回采）
+/效果 [任务ID] —— 查看已发布笔记的赞藏评数据（不带ID=列表，带ID=立即刷新）
+/成本 [任务ID] —— 成本账本（不带ID=近7天总览，带ID=单篇明细）
 /定位 —— 查看/设置我的赛道·人设·关键词（新用户从这里开始）
 /状态 —— 查询生产进度
 /生图通道 ark|gpt|doubao —— 切换生图通道（ark=火山Seedream，gpt=红狐GPT-Image-2，doubao=红狐豆包）
@@ -102,7 +107,15 @@ class Router:
         # 场景1：用户定位画像（/定位 存，仿写人设与选题关键词按此走）
         self._db.execute("""CREATE TABLE IF NOT EXISTS user_profiles(
             uid TEXT PRIMARY KEY, persona TEXT, keywords TEXT, updated REAL)""")
+        # v1.4.0（P0-4）：效果回流三列——旧库平滑迁移（PRAGMA 探测缺列才补）
+        _cols = {r[1] for r in self._db.execute("PRAGMA table_info(tasks)")}
+        for _col, _decl in (("published_at", "REAL"), ("published_url", "TEXT"),
+                            ("metrics", "TEXT")):
+            if _col not in _cols:
+                self._db.execute(f"ALTER TABLE tasks ADD COLUMN {_col} {_decl}")
         self._db.commit()
+        # v1.4.0（P0-3）：成本账本初始化（同库独立 cost_log 表；记账失败静默不打断生产）
+        costing.init(str(db_path), self.config.get("pricing") or {})
 
     # ─── 主入口（Adapter 回调） ─────────────────────────────────────────
 
@@ -114,8 +127,9 @@ class Router:
             logger.exception("处理消息失败 uid=%s", intent.user_id)
             await self._safe_send(intent.user_id, "处理出错，请稍后重试或 /help 查看用法。")
 
-    async def _dispatch(self, intent: Intent) -> None:
-        uid, text = intent.user_id, intent.text.strip()
+    async def _dispatch(self, uid: str, text: str) -> None:
+        costing.bind("adhoc")  # v1.4.0：每条消息重置记账范围，防上一条消息的绑定泄漏
+        text = text.strip()
         if not text:
             return
         if m := re.match(r"^/?选题\s*(.*)$|^今天有什么选题|^/?雷达$", text):
@@ -125,6 +139,12 @@ class Router:
         elif m := re.match(r"^/?确认\s*(\d+)$|^仿写第\s*(\d+)\s*条", text):
             n = int(m.group(1) or m.group(2))
             await self._cmd_confirm(uid, n)
+        elif m := re.match(r"^/?已发布\s+(.+)", text, re.S):
+            await self._cmd_published(uid, m.group(1).strip())
+        elif m := re.match(r"^/?效果(?:\s+(\S+))?\s*$", text):
+            await self._cmd_metrics(uid, (m.group(1) or "").strip())
+        elif m := re.match(r"^/?成本(?:\s+(\S+))?\s*$", text):
+            await self._cmd_cost(uid, (m.group(1) or "").strip())
         elif re.match(r"^/?状态$", text):
             await self._cmd_status(uid)
         elif m := re.match(r"^/?换角度\s*(\d+)\s+(.+)", text, re.S):
@@ -171,7 +191,7 @@ class Router:
                 uid, "雷达抓取中（关键词搜索 + 数值评分 + 语义四维评分，约 1-3 分钟）…完成后自动推送")
             return
         if arg in ("列表", "历史", "list"):
-            dates = radar_mod.list_topic_dates(self.workspace)
+            dates = radar_mod.list_topic_dates_for_user(self.workspace, uid)
             if not dates:
                 await self._safe_send(uid, "暂无任何选题清单（含历史）。可先跑一次雷达生成。")
                 return
@@ -181,13 +201,13 @@ class Router:
             await self._safe_send(uid, "\n".join(lines))
             return
         if arg:
-            path = radar_mod.topic_list_by_date(self.workspace, arg)
+            path = radar_mod.topic_list_by_date_for_user(self.workspace, uid, arg)
             if not path:
                 await self._safe_send(
                     uid, f"没有 {arg} 的选题清单。/选题 列表 查看所有日期。")
                 return
         else:
-            path = radar_mod.latest_topic_list(self.workspace)
+            path = radar_mod.latest_topic_list_for_user(self.workspace, uid)
             if not path:
                 await self._safe_send(
                     uid, "还没有当日选题清单。管理员可运行：python3 agent/main.py --radar-now（立即抓取并推送）")
@@ -224,6 +244,115 @@ class Router:
             return
         lines = [f"{r[0]} · {r[2]:<9} · {(r[1] or '')[:24]}" for r in rows]
         await self._safe_send(uid, "最近任务（ID · 状态 · 标题）：\n" + "\n".join(lines))
+
+    # ─── v1.4.0（P0-4）：/已发布 · /效果 · /成本 ────────────────────────
+
+    async def _cmd_published(self, uid: str, url: str) -> None:
+        """关联已发布的小红书笔记 URL 到最近的已交付任务，开启每日效果回采。"""
+        if not url or not re.search(r"xhslink\.com|xiaohongshu\.com", url):
+            await self._safe_send(uid, "请提供有效的小红书笔记链接。\n用法：/已发布 笔记链接")
+            return
+        rows = self._db.execute(
+            """SELECT id, title FROM tasks
+               WHERE uid=? AND status='delivered' AND published_url IS NULL
+               ORDER BY created DESC LIMIT 1""", (uid,)).fetchone()
+        if not rows:
+            await self._safe_send(
+                uid, "没有可关联的已交付任务。\n先使用 /确认 N 或 /仿写 内容 生成笔记，交付后再 /已发布 登记发布链接。")
+            return
+        task_id, title = rows
+        self._db.execute(
+            "UPDATE tasks SET published_url=?, published_at=?, updated=? WHERE id=?",
+            (url, time.time(), time.time(), task_id))
+        self._db.commit()
+        await self._safe_send(
+            uid, f"✅ 已关联发布链接到任务 {task_id}：{title[:24]}\n"
+                 f"🔗 {url}\n"
+                 f"每日将自动回采该笔记的赞藏评数据。使用 /效果 {task_id} 可手动刷新查看最新数据。")
+
+    async def _cmd_metrics(self, uid: str, arg: str) -> None:
+        """查看已发布笔记的效果数据。
+
+        无参数：列出该用户最近已发布任务的效果数据（不回采，直接读库）。
+        有参数（任务ID）：立即回采该任务的效果数据并展示。
+        """
+        rows = self._db.execute(
+            """SELECT id, title, published_url, published_at, metrics
+               FROM tasks WHERE uid=? AND published_url IS NOT NULL
+               ORDER BY published_at DESC LIMIT 10""", (uid,)).fetchall()
+        if not rows:
+            await self._safe_send(
+                uid, "暂无已发布任务。使用 /确认 N 生成笔记，交付后发送 /已发布 笔记链接 登记发布状态。")
+            return
+
+        if not arg:
+            # 无参数：直接读库展示，不回采
+            lines = ["📊 已发布笔记效果（/效果 任务ID 可手动刷新）：", ""]
+            for task_id, title, url, pub_at, metrics_json in rows:
+                m = json.loads(metrics_json) if metrics_json else {}
+                likes, collects, comments = m.get("likes", "-"), m.get("collects", "-"), m.get("comments", "-")
+                days_ago = int((time.time() - pub_at) / 86400)
+                lines.append(
+                    f"· {task_id}「{title[:24]}」\n"
+                    f"  👍 {likes} 赞 · ⭐ {collects} 藏 · 💬 {comments} 评（发布 {days_ago} 天）")
+                if not m:
+                    lines.append("  （暂无回采数据，发送 /效果 " + task_id + " 可立即刷新）")
+            await self._safe_send(uid, "\n".join(lines))
+            return
+
+        # 有参数：指定任务ID，立即回采
+        target = next((r for r in rows if r[0] == arg), None)
+        if not target:
+            await self._safe_send(uid, f"任务 {arg} 不存在或尚未关联发布链接。")
+            return
+        task_id, title, url = target[0], target[1], target[2]
+        await self._safe_send(uid, f"🔄 正在回采任务 {task_id} 的效果数据…")
+        try:
+            raw = await asyncio.to_thread(
+                note_fetch_mod.fetch_note_detail,
+                work_id="", work_link=url,
+                api_key=(self.config.get("radar") or {}).get("redfox_api_key", "")
+                        or os.environ.get("REDFOX_API_KEY", ""))
+            fresh = note_fetch_mod.normalize(raw)
+            metrics_json = json.dumps({
+                "likes": fresh.get("likes", 0),
+                "collects": fresh.get("collects", 0),
+                "comments": fresh.get("comments", 0),
+                "shares": fresh.get("shares", 0),
+                "ts": time.time(),
+            }, ensure_ascii=False)
+            self._db.execute(
+                "UPDATE tasks SET metrics=?, updated=? WHERE id=?",
+                (metrics_json, time.time(), task_id))
+            self._db.commit()
+            m = json.loads(metrics_json)
+            await self._safe_send(
+                uid, f"📊 任务 {task_id}「{title[:24]}」的最新效果：\n"
+                     f"👍 {m['likes']} 赞 · ⭐ {m['collects']} 藏 · "
+                     f"💬 {m['comments']} 评 · 📤 {m['shares']} 享")
+        except Exception as exc:
+            logger.warning("任务 %s 效果回采失败: %s", task_id, exc)
+            # 回采失败，降级显示上次已知数据
+            m = json.loads(target[4]) if target[4] else {}
+            if m:
+                await self._safe_send(
+                    uid, f"⚠️ 回采失败（{exc}），显示上次已知数据：\n"
+                         f"👍 {m.get('likes', '-')} 赞 · ⭐ {m.get('collects', '-')} 藏 · "
+                         f"💬 {m.get('comments', '-')} 评")
+            else:
+                await self._safe_send(uid, f"回采失败且暂无历史数据：{exc}")
+
+    async def _cmd_cost(self, uid: str, arg: str) -> None:
+        """查询成本明细。无参数=近7天总览；有参数(任务ID)=单篇成本明细。"""
+        if arg:
+            row = self._db.execute(
+                "SELECT id FROM tasks WHERE id=? AND uid=?", (arg, uid)).fetchone()
+            if not row:
+                await self._safe_send(uid, f"任务 {arg} 不存在。")
+                return
+            await self._safe_send(uid, costing.format_breakdown(arg))
+        else:
+            await self._safe_send(uid, costing.format_recent(7))
 
     async def _cmd_switch_gen(self, uid: str, name: str) -> None:
         provider = GEN_ALIAS.get(name.lower()) or GEN_ALIAS.get(name)
@@ -293,6 +422,35 @@ class Router:
         if profile and profile["persona"]:
             return {"soul": profile["persona"]}
         return self.config.get("persona") or {}
+
+    # ─── v1.4.0：定时任务公共助手（main.py 雷达/回采循环调用） ──────────
+
+    def all_user_profiles(self) -> list:
+        """所有已 /定位 用户 [{uid, persona, keywords}]——重方案"各评各推"的遍历源。"""
+        rows = self._db.execute(
+            "SELECT uid, persona, keywords FROM user_profiles").fetchall()
+        out = []
+        for uid, persona, keywords in rows:
+            kws = [k for k in re.split(r"[，,、\s]+", keywords or "") if k]
+            out.append({"uid": uid, "persona": (persona or "").strip(), "keywords": kws})
+        return out
+
+    def published_tasks(self, since: float = 0.0) -> list:
+        """已登记发布链接的任务 [(id, uid, title, url, metrics_json)]——效果回采遍历源。
+
+        since：发布时间下限（unix 秒）——老笔记数据趋稳，只回采近 N 天，
+        避免已发布清单越积越长、红狐调用量线性膨胀。
+        """
+        return self._db.execute(
+            """SELECT id, uid, title, published_url, metrics FROM tasks
+               WHERE published_url IS NOT NULL AND published_at >= ?
+               ORDER BY published_at DESC""", (since,)).fetchall()
+
+    def update_task_metrics(self, task_id: str, metrics_json: str) -> None:
+        """回采结果写回任务记录（metrics 为 JSON 文本）。"""
+        self._db.execute("UPDATE tasks SET metrics=?, updated=? WHERE id=?",
+                         (metrics_json, time.time(), task_id))
+        self._db.commit()
 
     async def _cmd_persona(self, uid: str, body: str) -> None:
         """场景1：查看/设置/重置用户定位（赛道/人设/服务钩子/关键词）。"""
@@ -373,7 +531,8 @@ class Router:
                 self.bot_id, self.config.get("llm") or {}, self._persona_for(uid),
                 (self.config.get("radar") or {}).get("redfox_api_key", ""),
                 bool(theme),
-                (self.config.get("radar") or {}).get("time_filter_days", 180))
+                (self.config.get("radar") or {}).get("time_filter_days", 180),
+                uid)  # v1.4.0（P0-5 重方案）：清单落用户专属目录，/选题 读到自己的清单
             text = radar_mod.format_topic_list(path, top=5)
         except Exception as exc:  # noqa: BLE001 —— 推送失败原因给用户
             logger.warning("按需雷达失败 uid=%s: %s", uid, exc)
