@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小红书仿写助手 · 小程序版 PRD v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAF6EF; --paper-2:#F3EDE0; --ink:#2B2620; --ink-soft:#6B6156;
+  --coral:#E8553F; --coral-deep:#C93E2A; --green:#1F3D2B; --gold:#D9A441;
+  --line:#E5DCCB; --card:#FFFDF8;
+  --serif:"Noto Serif SC","Songti SC",serif;
+  --sans:"Noto Sans SC","PingFang SC",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;
+  background-image:radial-gradient(rgba(43,38,32,.045) 1px,transparent 1px);background-size:22px 22px}
+.wrap{max-width:880px;margin:0 auto;padding:56px 32px 120px}
+/* ── 刊头 ── */
+.kicker{font-size:12px;letter-spacing:.35em;color:var(--coral);font-weight:700;text-transform:uppercase}
+h1{font-family:var(--serif);font-weight:900;font-size:44px;line-height:1.2;margin:10px 0 6px}
+.sub{color:var(--ink-soft);font-size:14px}
+.rule{height:3px;background:var(--ink);margin:26px 0 0;position:relative}
+.rule::after{content:"";position:absolute;right:0;top:-5px;width:56px;height:13px;background:var(--coral)}
+.meta{display:flex;gap:28px;flex-wrap:wrap;margin:16px 0 8px;font-size:13px;color:var(--ink-soft)}
+.meta b{color:var(--ink);font-weight:500}
+/* ── 摘要 ── */
+.lede{font-family:var(--serif);font-size:17.5px;line-height:1.95;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--coral);padding:22px 26px;margin:34px 0;border-radius:0 10px 10px 0}
+/* ── 章节 ── */
+h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:64px 0 6px;display:flex;align-items:baseline;gap:14px}
+h2 .no{font-size:15px;color:var(--coral);letter-spacing:.1em}
+h2::after{content:"";flex:1;height:1px;background:var(--line);transform:translateY(-6px)}
+h3{font-family:var(--serif);font-size:18.5px;margin:32px 0 10px;color:var(--ink)}
+h4{font-size:14.5px;margin:20px 0 6px;color:var(--green)}
+p{margin:10px 0}
+ul,ol{padding-left:1.4em;margin:8px 0}
+li{margin:4px 0}
+strong{font-weight:700}
+code{font-family:ui-monospace,monospace;font-size:.86em;background:var(--paper-2);padding:1px 6px;border-radius:4px;border:1px solid var(--line)}
+/* ── 表格 ── */
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;background:var(--card);border:1px solid var(--line)}
+th{font-family:var(--serif);font-weight:700;text-align:left;background:var(--paper-2);padding:9px 12px;border-bottom:2px solid var(--ink);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+/* ── 标签 ── */
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;letter-spacing:.05em;vertical-align:1px}
+.tag.p0{background:var(--coral);color:#fff}
+.tag.p1{background:#fff;border:1px solid var(--gold);color:#8a6520}
+.tag.p2{background:var(--paper-2);border:1px solid var(--line);color:var(--ink-soft)}
+.tag.evi{background:#EDF3EE;border:1px solid #C6D6C9;color:var(--green)}
+/* ── 调用块 ── */
+.note{background:var(--card);border:1px dashed var(--gold);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:13.5px}
+.note b{color:#8a6520}
+.tbd{color:var(--coral-deep);font-weight:700}
+/* ── FR 模块卡 ── */
+.fr{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 26px;margin:20px 0}
+.fr-head{display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.fr-id{font-family:var(--serif);font-weight:900;color:#fff;background:var(--green);padding:2px 10px;border-radius:6px;font-size:13px;letter-spacing:.06em}
+.fr-name{font-family:var(--serif);font-weight:700;font-size:17px}
+.fr dl{display:grid;grid-template-columns:84px 1fr;gap:6px 14px;margin-top:10px;font-size:14px}
+.fr dt{font-weight:700;color:var(--green);font-size:13px;padding-top:2px}
+.fr dd{color:var(--ink)}
+/* ── 状态机 ── */
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:12px 0}
+.st{font-size:12.5px;font-weight:700;padding:5px 13px;border-radius:8px;border:1.5px solid var(--ink);background:var(--card)}
+.st.done{background:var(--green);color:#fff;border-color:var(--green)}
+.st.fail{background:#fff;border-color:var(--coral);color:var(--coral-deep)}
+.ar{color:var(--ink-soft);font-size:14px}
+/* ── 设计 tokens ── */
+.swatches{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0}
+.sw{width:108px;text-align:center;font-size:12px}
+.sw i{display:block;height:64px;border-radius:10px;border:1px solid var(--line);margin-bottom:6px}
+.sw b{display:block;font-family:ui-monospace,monospace;font-weight:500;font-size:11.5px;color:var(--ink-soft)}
+/* ── 手机线框 ── */
+.phones{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;margin:26px 0 4px}
+.phone-block{width:262px}
+.phone{width:262px;height:540px;background:var(--card);border:2px solid var(--ink);border-radius:26px;overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:6px 6px 0 rgba(43,38,32,.12)}
+.p-status{height:22px;background:var(--paper);font-size:9px;color:var(--ink-soft);display:flex;justify-content:space-between;padding:4px 14px;flex-shrink:0}
+.p-body{flex:1;overflow:hidden;background:var(--paper);padding:10px;display:flex;flex-direction:column;gap:8px}
+.p-cap{text-align:center;font-size:13px;margin-top:12px}
+.p-cap b{font-family:var(--serif)}
+.p-cap span{display:block;color:var(--ink-soft);font-size:11.5px}
+.p-h{font-family:var(--serif);font-weight:900;font-size:15px;display:flex;justify-content:space-between;align-items:baseline}
+.p-h small{font-family:var(--sans);font-weight:400;font-size:9.5px;color:var(--ink-soft)}
+.p-tab{height:40px;background:var(--card);border-top:1px solid var(--line);display:flex;flex-shrink:0}
+.p-tab i{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-style:normal;font-size:8.5px;color:var(--ink-soft);gap:1px}
+.p-tab i.on{color:var(--coral);font-weight:700}
+.p-tab i::before{content:attr(data-ic);font-size:13px;font-style:normal}
+.p-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 11px;box-shadow:2px 2px 0 rgba(43,38,32,.06)}
+.p-card h5{font-family:var(--serif);font-size:12.5px;font-weight:700;line-height:1.4}
+.p-meta{font-size:9px;color:var(--ink-soft);margin-top:3px}
+.bar{height:5px;border-radius:3px;background:var(--paper-2);overflow:hidden;margin-top:3px}
+.bar i{display:block;height:100%;border-radius:3px}
+.scores{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;margin-top:6px}
+.sc{font-size:8.5px;color:var(--ink-soft)}
+.sc b{color:var(--ink)}
+.btn{display:block;text-align:center;font-size:11px;font-weight:700;background:var(--coral);color:#fff;border-radius:9px;padding:7px 0;margin-top:8px}
+.btn.ghost{background:#fff;color:var(--coral);border:1.5px solid var(--coral)}
+.chip{display:inline-block;font-size:8.5px;padding:1px 7px;border-radius:99px;background:#EDF3EE;color:var(--green);border:1px solid #C6D6C9;margin-right:3px}
+.chip.hot{background:#FBEDE9;color:var(--coral-deep);border-color:#EFC4BA}
+.step-dots{display:flex;gap:4px;margin:2px 0}
+.step-dots i{width:18px;height:4px;border-radius:2px;background:var(--line)}
+.step-dots i.on{background:var(--coral)}
+.p-input{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:9.5px;color:var(--ink-soft)}
+.p-label{font-size:9.5px;font-weight:700;color:var(--green)}
+.stat3{display:flex;gap:6px}
+.stat3 .p-card{flex:1;text-align:center;padding:8px 4px}
+.stat3 b{font-family:var(--serif);font-size:15px}
+.stat3 span{display:block;font-size:8px;color:var(--ink-soft)}
+.delta{font-size:8px;color:var(--green);font-weight:700}
+.prog{display:flex;align-items:center;gap:3px;margin:4px 0}
+.prog .dot{width:14px;height:14px;border-radius:50%;background:var(--green);color:#fff;font-size:7.5px;display:flex;align-items:center;justify-content:center}
+.prog .dot.off{background:var(--paper-2);color:var(--ink-soft)}
+.prog .ln{flex:1;height:2px;background:var(--green)}
+.prog .ln.off{background:var(--line)}
+.imgrow{display:flex;gap:5px}
+.imgrow i{flex:1;aspect-ratio:3/4;border-radius:7px;background:linear-gradient(160deg,#F0E4D0,#DEC9A8);border:1px solid var(--line);position:relative}
+.imgrow i:first-child{background:linear-gradient(160deg,#E8D3B4,#C9A87C)}
+.copybar{display:flex;gap:5px;margin-top:2px}
+.copybar span{flex:1;text-align:center;font-size:9px;font-weight:700;border:1.5px solid var(--ink);border-radius:7px;padding:5px 0;background:#fff}
+.copybar span.fill{background:var(--ink);color:#fff}
+.rows{display:flex;flex-direction:column;gap:6px}
+.rows .p-card{display:flex;justify-content:space-between;align-items:center;padding:8px 11px}
+.rows .p-card b{font-size:11px;font-family:var(--serif)}
+.rows .p-card em{font-style:normal;font-size:9px;color:var(--ink-soft)}
+.tgl{width:26px;height:15px;border-radius:99px;background:var(--green);position:relative;flex-shrink:0}
+.tgl::after{content:"";position:absolute;right:2px;top:2px;width:11px;height:11px;border-radius:50%;background:#fff}
+/* ── 页脚 ── */
+.foot{margin-top:80px;padding-top:18px;border-top:3px solid var(--ink);display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft)}
+@media print{body{background:#fff}.fr,.phone{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">XHS REWRITE ASSISTANT · PRODUCT REQUIREMENTS</div>
+  <h1>小程序版 PRD：把「编辑部」装进微信</h1>
+  <p class="sub">小红书仿写助手 · 微信小程序形态 —— 面向自媒体小白与代运营客户的合规主入口</p>
+  <div class="rule"></div>
+  <div class="meta">
+    <span><b>版本</b> v1.0（评审稿）</span>
+    <span><b>日期</b> 2026-10-08</span>
+    <span><b>上游文档</b> 设计文档 v1.1 · v1.4.0 变更（重方案 / 效果回流 / 成本账本）</span>
+    <span><b>状态</b> 待评审 <span class="tbd">[TBD：产品名与小程序类目]</span></span>
+  </div>
+</header>
+
+<div class="lede">
+  v1.4.0 已在微信 Bot 上跑通完整闭环：<strong>定位 → 每日专属选题 → 确认生产 → 成品交付 → 发布登记 → 每日数据回采</strong>。但 Bot 作为商业化载体存在三大约束（推送配额、会话保活、风控），且指令交互对自媒体小白门槛过高。本 PRD 定义<strong>微信小程序版</strong>：以可视化界面承载既有生产能力，以订阅消息解决合规触达，让「不会用指令的人」也能完成从选题到效果复盘的全流程。
+</div>
+
+<h2><span class="no">§1</span>背景与痛点</h2>
+
+<h3>1.1 已确认的事实基础</h3>
+<ul>
+  <li><span class="tag evi">已落地</span> 生产线：红狐抓取 → 数值+语义四维评分 → 仿写 → 图文卡片 → 视频按需生成；多用户重方案（每人按自己的关键词/人设独立评分、独立推送清单）已上线。</li>
+  <li><span class="tag evi">已落地</span> 效果回流：<code>/已发布</code> 登记发布链接，每日定时回采赞藏评并推送增量日报；成本账本可查单篇花销。</li>
+  <li><span class="tag evi">已验证</span> 微信 Bot（ClawBot iLink）单号可服务多用户，但存在 §1.2 三大约束；飞书替代方案已被应用商店驳回（非企业办公类应用）。</li>
+  <li><span class="tag evi">已确认</span> 目标用户：自媒体小白（大学生、小红书新手主理人，旅行赛道为主）；近期将接入代运营客户——效果数据展示是其付费核心理由。</li>
+</ul>
+
+<h3>1.2 痛点清单</h3>
+<table>
+  <tr><th style="width:44px">编号</th><th style="width:170px">痛点</th><th>描述</th><th style="width:180px">直接影响</th></tr>
+  <tr><td><b>P1</b></td><td>风控不可承诺</td><td>Bot 账号一旦封号，该号下所有付费用户同时失联，SLA 无法承诺。</td><td>不敢收费，商业化被卡死</td></tr>
+  <tr><td><b>P2</b></td><td>推送配额挤占</td><td>每用户 24h 主动推送约 10 条；一单成品交付拆 6–9 条消息已贴近上限，选题清单、数据日报还要再挤。</td><td>关键通知被丢弃或降级</td></tr>
+  <tr><td><b>P3</b></td><td>会话保活依赖</td><td>会话令牌需用户每天说话续期，沉默用户收不到任何推送——数据日报对沉默用户失效。</td><td>效果回流卖点断链</td></tr>
+  <tr><td><b>P4</b></td><td>指令门槛</td><td><code>/定位 /选题 /确认 N /换角度 N /已发布 /效果 /成本</code> 共 10+ 条指令；小白记不住、不敢用。</td><td>激活与留存受损</td></tr>
+  <tr><td><b>P5</b></td><td>消息流不可视</td><td>选题评分、赞藏评趋势、成品图文全部以纯文本呈现；数据无法沉淀为可回看的看板。</td><td>付费价值感知弱</td></tr>
+</table>
+
+<h2><span class="no">§2</span>解决方案与产品形态</h2>
+
+<h3>2.1 形态决策</h3>
+<p><strong>决策：以微信小程序为主入口，订阅消息为合规触达通道，网页管理后台（另立项）服务主理人，Bot 降级为可选辅助渠道。</strong></p>
+<table>
+  <tr><th style="width:120px">端</th><th>定位</th><th style="width:230px">解决的痛点</th></tr>
+  <tr><td><b>微信小程序</b></td><td>创作者主入口：定位、选题、生产、交付、效果查看全流程可视化。</td><td>P1 合规载体（官方容器无封号失联风险）、P4 零指令门槛、P5 可视化</td></tr>
+  <tr><td><b>订阅消息</b></td><td>关键节点触达：选题日报、任务完成、数据日报（详见 FR-07）。</td><td>P2 按需触达不占 Bot 配额、P3 无会话保活依赖</td></tr>
+  <tr><td><b>网页后台</b></td><td>主理人/代运营视角：多客户账号管理、成本对账、效果汇总报表。</td><td>多账号批量管理不适合手机端（另立项，不在本 PRD 范围）</td></tr>
+  <tr><td><b>微信 Bot</b></td><td>降级为可选渠道：老用户过渡期保留，不再新增能力。</td><td>—</td></tr>
+</table>
+
+<h3>2.2 为什么不是 App / 纯 H5</h3>
+<ul>
+  <li><strong>App</strong>：下载安装对小白用户是第一道流失口；微信生态内传播（朋友圈/群/小程序卡片）无法直达。</li>
+  <li><strong>纯 H5</strong>：微信内无法申请订阅消息授权，触达问题（P2/P3）无解；会话保活问题依旧。</li>
+</ul>
+
+<h2><span class="no">§3</span>范围</h2>
+
+<h3>3.1 P0 最小完整旅程</h3>
+<p><strong>入口条件</strong>：微信用户首次打开小程序。<br>
+<strong>旅程</strong>：微信一键登录 → 三步定位引导 → 看到今日专属选题清单 → 选一条「照这个写」→ 观看生产进度 → 收到成品（图文预览+发布文案）→ 发布后登记链接 → 次日看到该笔记的赞藏评数据。<br>
+<strong>完成证据</strong>：用户在「数据」页看到自己已发布笔记的真实回采数据与增量。<br>
+<strong>关键恢复路径</strong>：生产失败的任务可一键重试（见 FR-04 异常）。</p>
+
+<h3>3.2 优先级边界</h3>
+<table>
+  <tr><th style="width:60px">批次</th><th>内容</th></tr>
+  <tr><td><span class="tag p0">P0</span></td><td>FR-01 登录与账号 · FR-02 定位引导 · FR-03 今日选题 · FR-04 生产任务 · FR-05 成品交付 · FR-06 发布登记与效果看板 · FR-07 订阅消息触达</td></tr>
+  <tr><td><span class="tag p1">P1</span></td><td>FR-08 成本明细页 · FR-09 直发仿写（粘贴链接/长文本）· 历史清单日期切换 · 主题探索（对应 Bot <code>/主题</code>）</td></tr>
+  <tr><td><span class="tag p2">P2</span></td><td>主理人多客户视图 · 网页管理后台 · 视频成品展示（生产端已支持，小程序端展示后置）</td></tr>
+</table>
+<p class="note"><b>明确不做</b>：小程序内不做账号矩阵管理、不做评论代回复、不做粉丝画像分析——均属网页后台/远期范围。</p>
+
+<h2><span class="no">§4</span>产品模型</h2>
+
+<h3>4.1 对象与关系</h3>
+<table>
+  <tr><th style="width:110px">对象</th><th>定义</th><th style="width:210px">与 Bot 版对应</th></tr>
+  <tr><td><b>用户</b></td><td>微信 openid 唯一标识；与 Bot uid 同一体系映射，两端口径互通。</td><td><code>uid</code></td></tr>
+  <tr><td><b>定位</b></td><td>赛道 + 人设 + 关键词（数组），每用户一份；驱动评分与仿写。</td><td><code>user_profiles</code>（<code>/定位</code>）</td></tr>
+  <tr><td><b>选题</b></td><td>雷达产出的单条候选：标题/热度/四维评分/仿写角度/人设钩子；按用户专属清单组织，每日一份。</td><td><code>topic_list_{date}.json</code>（重方案个人目录）</td></tr>
+  <tr><td><b>任务</b></td><td>一次生产：选题 → 拆解 → 仿写 → 配图 → 交付；有唯一任务号与状态机。</td><td><code>tasks</code></td></tr>
+  <tr><td><b>发布记录</b></td><td>任务交付后用户登记的小红书链接 + 回采的指标快照序列。</td><td><code>published_url / metrics</code></td></tr>
+</table>
+
+<h3>4.2 任务状态机（跨端共享，Bot 与小程序一致）</h3>
+<div class="flow">
+  <span class="st">queued 已排队</span><span class="ar">→</span>
+  <span class="st">rewriting 拆解仿写</span><span class="ar">→</span>
+  <span class="st">imaging 配图</span><span class="ar">→</span>
+  <span class="st done">delivered 已交付</span>
+</div>
+<div class="flow">
+  <span class="st fail">failed 失败</span><span class="ar">← 任一环节可失败，可重试；重试回 queued</span>
+</div>
+<p>已交付任务追加登记发布链接后进入「已发布」标记态；发布记录的回采不改变任务状态。</p>
+
+<h3>4.3 用户旅程图</h3>
+<table>
+  <tr><th style="width:60px">阶段</th><th>用户动作</th><th>系统响应</th><th style="width:130px">触达</th></tr>
+  <tr><td>① 进入</td><td>打开小程序，微信一键登录</td><td>无定位 → 进引导；有定位 → 进今日选题</td><td>—</td></tr>
+  <tr><td>② 定位</td><td>三步填写赛道/人设/关键词</td><td>保存定位；生成首份专属选题清单（异步）</td><td>任务完成通知</td></tr>
+  <tr><td>③ 选题</td><td>浏览清单，点「照这个写」</td><td>任务入队，进度页实时刷新</td><td>生产完成通知</td></tr>
+  <tr><td>④ 交付</td><td>预览图文、复制发布文案、存图</td><td>引导「发布后回来登记」</td><td>—</td></tr>
+  <tr><td>⑤ 登记</td><td>粘贴发布链接</td><td>关联最近已交付任务，纳入每日回采</td><td>—</td></tr>
+  <tr><td>⑥ 复盘</td><td>打开数据页看赞藏评与增量</td><td>每日自动回采；日报推送</td><td>数据日报</td></tr>
+</table>
+
+<h2><span class="no">§5</span>功能需求</h2>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-01</span><span class="fr-name">登录与账号</span><span class="tag p0">P0</span></div>
+  <dl>
+    <dt>触发</dt><dd>用户首次打开小程序，或本地凭据失效时。</dd>
+    <dt>处理</dt><dd>微信一键登录（不弹授权弹窗收集昵称头像）。openid 映射到内部 uid；若该 uid 已有 Bot 使用记录，自动继承其定位、任务、发布记录与成本数据。</dd>
+    <dt>结果</dt><dd>登录态静默保持；进入首页时按「有无定位」分流到 FR-02 或 FR-03。</dd>
+    <dt>边界</dt><dd>登录失败：展示重试入口，不阻塞浏览空态首页。老用户继承逻辑失败时按新用户处理并提示可联系主理人找回。</dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-02</span><span class="fr-name">定位引导（Onboarding）</span><span class="tag p0">P0</span></div>
+  <dl>
+    <dt>触发</dt><dd>登录后无定位记录，用户点击「设置我的定位」。</dd>
+    <dt>布局</dt><dd>三步向导，每步一屏：① 选赛道（预设旅行方向单选+自定义输入）→ ② 写人设（一句话自我介绍，示例引导文案）→ ③ 填关键词（1–5 个，逗号分隔，chip 呈现可删）。</dd>
+    <dt>规则</dt><dd>与 Bot 口径一致：至少填「人设」或「关键词」一项才能提交；关键词空格/逗号/顿号混输均容忍。提交即保存并触发首份专属清单生成（异步，见 FR-03 抓取态）。</dd>
+    <dt>结果</dt><dd>保存定位 → 跳转首页，首页展示「清单生成中」的抓取态；完成后清单卡片流入场。</dd>
+    <dt>异常</dt><dd>抓取失败（无候选/服务异常）：首页显示失败原因与「重试抓取」按钮，不回退定位数据。</dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-03</span><span class="fr-name">今日选题清单（首页）</span><span class="tag p0">P0</span></div>
+  <dl>
+    <dt>触发</dt><dd>每日进入首页；或用户下拉刷新 / 点击「重新抓取」。</dd>
+    <dt>布局</dt><dd>顶部刊头（日期 + 「今日 X 条选题，按你的定位评分」）→ 选题卡片流，默认展示前 5 条，展开加载全部 → 每卡：标题、热度标签（赞藏计数）、四维评分条（相关/爆点/人设契合/转化）、仿写角度一句话、人设钩子、主按钮「照这个写」。</dd>
+    <dt>规则</dt><dd>
+      ① 默认读<strong>用户专属清单</strong>（重方案：按该用户关键词+人设独立评分）；无专属清单时回退全局清单并明确标注「通用清单 · 设置定位后更准」。<br>
+      ② 每日雷达由系统定时跑（Bot 与小程序共用一次抓取，不重复消耗）；「重新抓取」走按需抓取，相同日期内覆盖个人清单。<br>
+      ③ 卡片展示与 Bot <code>/选题</code> 同源同序；评分低于语义硬门槛的淘汰项不在小程序展示。<br>
+      ④ <span class="tag p1">P1</span> 历史日期切换（近 7 天）与「按主题探索」（放开门槛为 0/0 的探索模式，结果标注「探索模式 · 门槛放开」）。
+    </dd>
+    <dt>空态</dt><dd>当日无清单：区分「还没生成（去抓取）」「门槛筛后为空（展示漏斗数据：抓取 N → 达标 0，建议放宽关键词）」「抓取失败（重试）」三种，各配专属文案。</dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-04</span><span class="fr-name">生产任务</span><span class="tag p0">P0</span></div>
+  <dl>
+    <dt>触发</dt><dd>选题卡点「照这个写」；或历史任务详情点「重试」。</dd>
+    <dt>规则</dt><dd>
+      ① 确认即建任务入队（同 Bot <code>/确认 N</code>），同一选题可多次生成，任务号区分。<br>
+      ② 进度页展示四阶段步进条：拆解仿写 → 配图 → 交付（文案 + 图文卡片），每阶段完成即点亮；预估时长以「约 1–3 分钟」量级文案呈现，<span class="tbd">[TBD：实测后校准]</span>。<br>
+      ③ 「换角度」入口：任务页改写仿写角度后重新生产（同 Bot <code>/换角度 N</code>）。<br>
+      ④ 用户离开小程序后生产继续；完成靠订阅消息（FR-07）召回。
+    </dd>
+    <dt>状态与异常</dt><dd>失败任务在「生产」Tab 常驻展示失败原因（文案生成失败/生图通道失败），提供「重试」与「换生图通道」两个动作；重试生成新任务，原任务保留可追溯。</dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-05</span><span class="fr-name">成品交付</span><span class="tag p0">P0</span></div>
+  <dl>
+    <dt>触发</dt><dd>任务状态变更为已交付；用户从通知或「生产」Tab 进入。</dd>
+    <dt>布局</dt><dd>图文卡片轮播（首图突出，支持单张保存/批量保存到相册）→ 发布文案区（标题+正文+话题标签）→「一键复制全文」→ 交付清单摘要（张数/通道/生成时间）。</dd>
+    <dt>规则</dt><dd>
+      ① 文案复制保留小红书排版换行；复制成功有明确反馈并引导「发布后回来登记链接，开启数据追踪」。<br>
+      ② 交付消息拆条问题不复存在——小程序内一次呈现全部成品，<strong>不占用任何推送配额</strong>；推送侧只在完成时发 1 条通知。<br>
+      ③ 视频成品 <span class="tag p2">P2</span>：生产端已支持按需补生成，小程序端先行只读展示入口与跳转说明。
+    </dd>
+    <dt>异常</dt><dd>图片保存到相册需相册权限：拒绝后提供「去设置开启」引导；图片链接过期时支持「重新取图」。</dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-06</span><span class="fr-name">发布登记与效果看板</span><span class="tag p0">P0</span></div>
+  <dl>
+    <dt>触发</dt><dd>交付后引导页；或「数据」Tab 点「登记已发布」。</dd>
+    <dt>规则</dt><dd>
+      ① 粘贴小红书链接（<code>xiaohongshu.com</code>/<code>xhslink.com</code>），校验合法性后关联该用户最近一条<strong>未登记的已交付任务</strong>；关联关系登记后可解绑重绑（解除前需确认）。<br>
+      ② 每日系统定时回采近 30 天内发布笔记的赞藏评（回采窗口与 Bot 共用配置口径）；数据页展示：赞/藏/评三卡（总量 + 今日增量）与近 30 天趋势。<br>
+      ③ 手动「立即刷新」单条笔记（每次刷新计一次详情抓取消耗，成本记入该用户账本）。<br>
+      ④ 增量日报由订阅消息推送（FR-07），数据页为完整看板。
+    </dd>
+    <dt>空态/异常</dt><dd>无已发布笔记：空态引导回交付页。单条回采失败不影响其余条目；失败项标注「上次成功数据 + 失败时间」。</dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-07</span><span class="fr-name">订阅消息触达</span><span class="tag p0">P0</span></div>
+  <dl>
+    <dt>模板</dt><dd>
+      ① <strong>选题日报</strong>：「今日 N 条选题已就绪，前 3 条标题摘要」→ 点击进首页。<br>
+      ② <strong>任务完成</strong>：「你的笔记已生成（任务号）」→ 点击进交付页。<br>
+      ③ <strong>数据日报</strong>：「昨日你的笔记 +X 赞 +Y 藏」→ 点击进数据页。
+    </dd>
+    <dt>规则</dt><dd>
+      ① 订阅消息为一次性授权模型：每次用户授权可推送一条。授权收集节点固定在价值交换时刻——提交定位后（换任务完成通知）、复制文案后（换数据日报）、点开数据页后（换次日选题日报），<strong>绝不弹窗轰炸</strong>；单日单用户最多请求 1 次授权。<br>
+      ② 无授权或推送失败：内容降级为站内待读（首页红点 + 角标计数），下次打开必达。<br>
+      ③ 推送内容包含核心信息量（标题/增量数字），即使不点开也有价值。<br>
+      ④ <span class="tbd">[TBD]</span> 模板类目可用性与字段上限以微信审核为准，文案模板预留可替换。
+    </dd>
+    <dt>与 Bot 的关系</dt><dd>小程序用户默认不再走 Bot 推送；未迁移老用户维持 Bot 通道直至引导迁移完成。</dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-08</span><span class="fr-name">成本明细页</span><span class="tag p1">P1</span></div>
+  <dl>
+    <dt>触发</dt><dd>「我的」Tab → 成本明细；或任务详情 →「本篇花了多少」。</dd>
+    <dt>规则</dt><dd>
+      ① 单篇视图：该任务各环节用量与折算金额（提示词字符、生图张数、详情抓取次数）；汇总视图：近 7 天用量与金额。<br>
+      ② 金额为按配置单价的估算值，页面固定文案「按当前单价估算，以账单为准」；未配置单价时仅展示用量。<br>
+      ③ 付费用户成本透明是信任卖点；免费用户仅展示用量不展示金额。
+    </dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-09</span><span class="fr-name">直发仿写</span><span class="tag p1">P1</span></div>
+  <dl>
+    <dt>触发</dt><dd>首页「+ 自由仿写」：粘贴小红书笔记链接，或直接输入首行标题+正文。</dd>
+    <dt>规则</dt><dd>与 Bot 拉模式同源：链接 → 抓详情（视频笔记提取口播文案）→ 按用户定位仿写；纯文本 → 直接生产。探索与仿写共用 FR-04 任务流。</dd>
+    <dt>异常</dt><dd>链接无效/抓取失败给出明确原因；视频提文案超时降级为仅看图拆解并标注。</dd>
+  </dl>
+</div>
+
+<h2><span class="no">§6</span>界面设计</h2>
+
+<h3>6.1 设计调性：「旅行编辑部」</h3>
+<p>用户是旅行自媒体人，产品要给的感受是——<strong>「有一位专业编辑每天为我的账号挑选题、写稿、盯数据」</strong>，而不是一个冷冰冰的 SaaS 工具。因此整体采用<strong>杂志编辑部</strong>风格：暖纸底色、衬线刊头、车票式标签、纸质卡片；克制、专业、有人味。拒绝科技感渐变紫与后台仪表盘味。本 PRD 的排版即此调性的示范。</p>
+
+<div class="swatches">
+  <div class="sw"><i style="background:#FAF6EF"></i><b>米纸白</b>FAF6EF 底色</div>
+  <div class="sw"><i style="background:#E8553F"></i><b>落日珊瑚</b>E8553F 主色/CTA</div>
+  <div class="sw"><i style="background:#1F3D2B"></i><b>松林墨绿</b>1F3D2B 强调/成功</div>
+  <div class="sw"><i style="background:#D9A441"></i><b>沙金</b>D9A441 热度/次强调</div>
+  <div class="sw"><i style="background:#2B2620"></i><b>墨色</b>2B2620 正文</div>
+  <div class="sw"><i style="background:#E5DCCB"></i><b>纸边</b>E5DCCB 描边/分隔</div>
+</div>
+<table>
+  <tr><th style="width:110px">Token</th><th>规范</th></tr>
+  <tr><td><b>字体</b></td><td>标题/数字：思源宋体（Noto Serif SC）——杂志刊头感；正文：苹方/思源黑体。数字用等宽变体保证数据对齐。</td></tr>
+  <tr><td><b>卡片</b></td><td>纸片隐喻：米白卡面 + 1px 纸边描边 + 微投影（2px 偏移硬影，非模糊大阴影），圆角 12px。</td></tr>
+  <tr><td><b>标签</b></td><td>行李签/车票式胶囊标签（赛道、探索模式、热度）；评分用四维水平条，墨绿达标、沙金预警。</td></tr>
+  <tr><td><b>动效</b></td><td>轻盈、有"翻页"感：清单卡片 stagger 入场（50ms 间隔）、按钮按压微缩 0.97、生产进度步进点亮带弹性；不做常驻循环动画。</td></tr>
+  <tr><td><b>空态</b></td><td>插画 + 一句编辑口吻文案（如"今天编辑部还没挑出好题——换个关键词试试"），并永远给出下一步动作按钮。</td></tr>
+</table>
+
+<h3>6.2 信息架构</h3>
+<p>底部四 Tab：<strong>选题（首页）/ 生产 / 数据 / 我的</strong>。核心旅程「选题 → 生产 → 数据」各占一 Tab，符合每日使用节奏：早看选题、午管生产、晚看数据。</p>
+
+<h3>6.3 关键页面线框</h3>
+
+<div class="phones">
+
+<div class="phone-block">
+  <div class="phone">
+    <div class="p-status"><span>9:41</span><span>选题日报</span></div>
+    <div class="p-body">
+      <div class="p-h">今日选题 <small>10月8日 · 按你的定位评分</small></div>
+      <div class="p-card">
+        <h5>带俩娃避寒｜三亚5天4晚这样排不踩坑</h5>
+        <div class="p-meta">👍 1.2万 · ⭐ 3400 · <span class="chip hot">热度 87</span><span class="chip">行程规划</span></div>
+        <div class="scores">
+          <div class="sc">相关 <b>9.2</b><div class="bar"><i style="width:92%;background:#1F3D2B"></i></div></div>
+          <div class="sc">爆点 <b>8.8</b><div class="bar"><i style="width:88%;background:#1F3D2B"></i></div></div>
+          <div class="sc">人设契合 <b>9.5</b><div class="bar"><i style="width:95%;background:#D9A441"></i></div></div>
+          <div class="sc">转化 <b>8.1</b><div class="bar"><i style="width:81%;background:#1F3D2B"></i></div></div>
+        </div>
+        <div class="p-meta" style="margin-top:5px">✍️ 仿写角度：别写攻略，写"排行程时最后悔的3个决定"</div>
+        <div class="btn">照这个写 →</div>
+      </div>
+      <div class="p-card">
+        <h5>第一次带娃坐飞机，这6样东西真的别带</h5>
+        <div class="p-meta">👍 8600 · ⭐ 2100 · <span class="chip hot">热度 74</span></div>
+        <div class="btn ghost">照这个写 →</div>
+      </div>
+      <div class="p-card" style="text-align:center;color:#6B6156;font-size:9.5px">展开查看今日其余 3 条 ↓</div>
+    </div>
+    <div class="p-tab"><i data-ic="☀" class="on">选题</i><i data-ic="⚙">生产</i><i data-ic="▤">数据</i><i data-ic="☰">我的</i></div>
+  </div>
+  <div class="p-cap"><b>FR-03 首页 · 今日选题</b><span>个人专属评分 · 四维条 · 一键开写</span></div>
+</div>
+
+<div class="phone-block">
+  <div class="phone">
+    <div class="p-status"><span>9:41</span><span>设置我的定位</span></div>
+    <div class="p-body">
+      <div class="p-h">让编辑部认识你 <small>第 2 步 / 共 3 步</small></div>
+      <div class="step-dots"><i></i><i class="on"></i><i></i></div>
+      <div class="p-label">你的人设</div>
+      <div class="p-input">一句话介绍你是谁，例如：两个娃的爸爸，专写带娃行程怎么排…</div>
+      <div class="p-meta">· 人设会注入每篇仿写的口吻与视角<br>· 可以只填人设或只填关键词</div>
+      <div class="p-label">选择赛道</div>
+      <div class="p-meta"><span class="chip">亲子游行程</span><span class="chip">旅行避坑</span><span class="chip">独自旅行</span><span class="chip">旅行好物</span><span class="chip">自定义…</span></div>
+      <div class="btn" style="margin-top:auto">下一步：填关键词</div>
+      <div class="p-meta" style="text-align:center">先跳过，用通用清单看看</div>
+    </div>
+    <div class="p-tab"><i data-ic="☀">选题</i><i data-ic="⚙">生产</i><i data-ic="▤">数据</i><i data-ic="☰" class="on">我的</i></div>
+  </div>
+  <div class="p-cap"><b>FR-02 定位引导</b><span>三步向导 · 示例引导 · 可跳过</span></div>
+</div>
+
+<div class="phone-block">
+  <div class="phone">
+    <div class="p-status"><span>9:41</span><span>生产中</span></div>
+    <div class="p-body">
+      <div class="p-h">任务 a3f8c2 <small>三亚带娃行程 · 已排队</small></div>
+      <div class="p-card">
+        <div class="prog">
+          <span class="dot">✓</span><span class="ln"></span>
+          <span class="dot">✓</span><span class="ln"></span>
+          <span class="dot off">3</span><span class="ln off"></span>
+          <span class="dot off">4</span>
+        </div>
+        <div class="p-meta">✓ 拆解爆款　✓ 按你的人设仿写　· 配图中　　交付</div>
+        <div class="p-meta" style="color:#E8553F">预计还需 1 分钟 · 可离开，完成后通知你</div>
+      </div>
+      <div class="p-card">
+        <h5>成品预览（模拟）</h5>
+        <div class="imgrow"><i></i><i></i><i></i><i></i></div>
+        <div class="p-meta" style="margin-top:5px">标题：带俩娃避寒｜三亚5天4晚这样排不踩坑</div>
+        <div class="copybar"><span class="fill">复制发布文案</span><span>保存全部图片</span></div>
+      </div>
+      <div class="p-card" style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:9.5px;color:#6B6156">📤 已发布？登记链接开启数据追踪</span>
+        <span style="font-size:9.5px;font-weight:700;color:#E8553F">去登记 →</span>
+      </div>
+    </div>
+    <div class="p-tab"><i data-ic="☀">选题</i><i data-ic="⚙" class="on">生产</i><i data-ic="▤">数据</i><i data-ic="☰">我的</i></div>
+  </div>
+  <div class="p-cap"><b>FR-04 / FR-05 生产与交付</b><span>四阶段步进 · 成品即页面 · 不拆消息</span></div>
+</div>
+
+<div class="phone-block">
+  <div class="phone">
+    <div class="p-status"><span>9:41</span><span>数据日报</span></div>
+    <div class="p-body">
+      <div class="p-h">我的数据 <small>近 30 天已发布 · 每日自动回采</small></div>
+      <div class="stat3">
+        <div class="p-card"><b>1,284</b><span>👍 赞 <em class="delta">+56</em></span></div>
+        <div class="p-card"><b>412</b><span>⭐ 藏 <em class="delta">+23</em></span></div>
+        <div class="p-card"><b>97</b><span>💬 评 <em class="delta">+5</em></span></div>
+      </div>
+      <div class="p-card">
+        <h5>带俩娃避寒｜三亚5天4晚这样排不踩坑</h5>
+        <div class="p-meta">发布 3 天 · <span style="color:#1F3D2B;font-weight:700">趋势 ↗</span></div>
+        <div class="bar" style="height:26px;margin-top:5px;display:flex;align-items:flex-end;gap:2px"><i style="width:8%;height:20%;background:#D9A441"></i><i style="width:8%;height:35%;background:#D9A441"></i><i style="width:8%;height:60%;background:#E8553F"></i><i style="width:8%;height:88%;background:#E8553F"></i><i style="width:8%;height:100%;background:#E8553F"></i></div>
+        <div class="p-meta">👍 842（+56）· ⭐ 231（+23）· 💬 41（+5）　<span style="color:#E8553F">↻ 刷新</span></div>
+      </div>
+      <div class="p-card">
+        <h5>第一次带娃坐飞机，这6样东西真的别带</h5>
+        <div class="p-meta">发布 9 天 · 👍 442 · ⭐ 181 · 💬 56 · <span style="color:#6B6156">已趋稳</span></div>
+      </div>
+      <div class="btn ghost">＋ 登记新发布的笔记</div>
+    </div>
+    <div class="p-tab"><i data-ic="☀">选题</i><i data-ic="⚙">生产</i><i data-ic="▤" class="on">数据</i><i data-ic="☰">我的</i></div>
+  </div>
+  <div class="p-cap"><b>FR-06 效果看板</b><span>总量+增量 · 趋势 · 代运营核心卖点</span></div>
+</div>
+
+<div class="phone-block">
+  <div class="phone">
+    <div class="p-status"><span>9:41</span><span>我的</span></div>
+    <div class="p-body">
+      <div class="p-h">我的 <small>三个娃的爸爸 · 亲子游行程</small></div>
+      <div class="rows">
+        <div class="p-card"><b>✏️ 我的定位</b><em>赛道 · 人设 · 关键词 →</em></div>
+        <div class="p-card"><b>🔔 消息订阅</b><em><span class="tgl"></span></em></div>
+        <div class="p-card"><b>💰 成本明细</b><em>近 7 天 ¥1.24 →</em></div>
+        <div class="p-card"><b>✨ 会员与套餐</b><em><span class="tbd" style="font-size:9px">TBD</span></em></div>
+        <div class="p-card"><b>🧭 自由仿写</b><em>粘贴链接 / 直出内容</em></div>
+      </div>
+      <div class="p-card" style="background:#EDF3EE;border-color:#C6D6C9">
+        <div class="p-meta" style="color:#1F3D2B">💡 明天 8:00 编辑部会准时送来新选题。<br>保持订阅，好题不漏。</div>
+      </div>
+    </div>
+    <div class="p-tab"><i data-ic="☀">选题</i><i data-ic="⚙">生产</i><i data-ic="▤">数据</i><i data-ic="☰" class="on">我的</i></div>
+  </div>
+  <div class="p-cap"><b>FR-01/07/08 我的</b><span>定位 · 订阅管理 · 成本 · 会员入口</span></div>
+</div>
+
+</div>
+
+<h2><span class="no">§7</span>共享规则</h2>
+
+<h3>7.1 通知策略（跨模块统一）</h3>
+<table>
+  <tr><th style="width:110px">事件</th><th>通道与时机</th><th>降级</th></tr>
+  <tr><td>选题就绪</td><td>订阅消息，每日雷达完成后（默认 8:00 档）</td><td>首页红点待读</td></tr>
+  <tr><td>任务完成 / 失败</td><td>订阅消息，状态变更即时</td><td>生产 Tab 常驻 + 待读</td></tr>
+  <tr><td>数据日报</td><td>订阅消息，每日回采后（默认 9:00 档）；<strong>仅当日有增量才推</strong></td><td>数据页查看</td></tr>
+  <tr><td>授权请求</td><td>仅价值交换节点弹出，单日单用户 ≤1 次</td><td>静默跳过</td></tr>
+</table>
+
+<h3>7.2 数据口径（与 Bot 版一致，一处定义）</h3>
+<ul>
+  <li><strong>清单归属</strong>：有定位用户读个人专属清单（按其关键词+人设独立评分）；无定位用户读全局清单。个人清单按日覆盖。</li>
+  <li><strong>回采窗口</strong>：仅自动回采近 30 天发布的笔记；超窗笔记保留历史数据，可手动刷新。</li>
+  <li><strong>成本归属</strong>：生产记任务号、雷达记日期、回采记回采批次；单篇成本 = 该任务号全部条目聚合。</li>
+  <li><strong>同端互斥</strong>：同一 uid 同时只用一个活跃通道推送，避免双端重复打扰。</li>
+</ul>
+
+<h3>7.3 权限</h3>
+<table>
+  <tr><th style="width:150px">操作</th><th>规则</th></tr>
+  <tr><td>查看/生产/登记</td><td>仅本人数据；uid 边界硬隔离（清单、任务、发布记录、成本均按 uid 过滤）。</td></tr>
+  <tr><td>定位修改</td><td>本人可改，改后次日清单生效，当日的可手动重抓。</td></tr>
+  <tr><td>发布记录解绑</td><td>需二次确认；解绑后该笔记停止回采。</td></tr>
+</table>
+
+<h2><span class="no">§8</span>开放问题</h2>
+<table>
+  <tr><th style="width:200px">问题</th><th>影响</th><th style="width:150px">状态</th></tr>
+  <tr><td>小程序类目与资质（内容创作/效率工具类目是否需要额外资质）</td><td>能否过审、上架周期</td><td class="tbd">TBD · 提审前确认</td></tr>
+  <tr><td>订阅消息模板可用性（日报/任务类模板字段与频控）</td><td>FR-07 触达能力边界</td><td class="tbd">TBD · 申请模板验证</td></tr>
+  <tr><td>定价与免费额度（免费用户每日清单条数/生产篇数）</td><td>成本明细是否展示金额、会员入口呈现</td><td class="tbd">TBD · 商业化评审</td></tr>
+  <tr><td>老 Bot 用户迁移节奏（强制/引导双轨期时长）</td><td>双通道并行成本</td><td class="tbd">TBD · 上线后定</td></tr>
+</table>
+
+<div class="foot">
+  <span>小红书仿写助手 · 小程序版 PRD v1.0</span>
+  <span>评审稿 · 2026-10-08 · 上游：设计文档 v1.1 / v1.4.0 变更记录</span>
+</div>
+
+</div>
+</body>
+</html>
