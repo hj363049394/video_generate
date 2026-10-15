@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD 评审报告 · 小程序版 v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAF6EF; --paper-2:#F3EDE0; --ink:#2B2620; --ink-soft:#6B6156;
+  --coral:#E8553F; --coral-deep:#C93E2A; --green:#1F3D2B; --gold:#D9A441;
+  --line:#E5DCCB; --card:#FFFDF8;
+  --serif:"Noto Serif SC","Songti SC",serif; --sans:"Noto Sans SC","PingFang SC",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;
+  background-image:radial-gradient(rgba(43,38,32,.045) 1px,transparent 1px);background-size:22px 22px}
+.wrap{max-width:900px;margin:0 auto;padding:56px 32px 120px}
+.kicker{font-size:12px;letter-spacing:.35em;color:var(--coral);font-weight:700}
+h1{font-family:var(--serif);font-weight:900;font-size:40px;line-height:1.25;margin:10px 0 6px}
+.sub{color:var(--ink-soft);font-size:14px}
+.rule{height:3px;background:var(--ink);margin:24px 0 0;position:relative}
+.rule::after{content:"";position:absolute;right:0;top:-5px;width:56px;height:13px;background:var(--coral)}
+.meta{display:flex;gap:26px;flex-wrap:wrap;margin:16px 0 0;font-size:13px;color:var(--ink-soft)}
+.meta b{color:var(--ink);font-weight:500}
+h2{font-family:var(--serif);font-weight:900;font-size:25px;margin:60px 0 6px;display:flex;align-items:baseline;gap:14px}
+h2 .no{font-size:15px;color:var(--coral)}
+h2::after{content:"";flex:1;height:1px;background:var(--line);transform:translateY(-6px)}
+h3{font-family:var(--serif);font-size:18px;margin:30px 0 8px}
+h4{font-size:14.5px;margin:18px 0 4px;color:var(--green)}
+p{margin:9px 0} ul,ol{padding-left:1.4em;margin:8px 0} li{margin:4px 0}
+strong{font-weight:700} code{font-family:ui-monospace,monospace;font-size:.86em;background:var(--paper-2);padding:1px 6px;border-radius:4px;border:1px solid var(--line)}
+/* 结论横幅 */
+.verdict{margin:34px 0;background:var(--green);color:#F4F0E6;border-radius:14px;padding:26px 30px;box-shadow:5px 5px 0 rgba(43,38,32,.12)}
+.verdict .big{font-family:var(--serif);font-weight:900;font-size:27px;letter-spacing:.04em}
+.verdict p{color:#D8E2D5;font-size:14px;margin-top:8px}
+.verdict b{color:#fff}
+/* 评分卡 */
+.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+.score{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:2px 2px 0 rgba(43,38,32,.06)}
+.score h5{font-family:var(--serif);font-size:14.5px;margin-bottom:8px}
+.score .num{font-family:var(--serif);font-weight:900;font-size:26px;color:var(--green)}
+.score .num small{font-size:13px;color:var(--ink-soft);font-weight:400}
+.sbar{height:6px;border-radius:3px;background:var(--paper-2);margin:7px 0 6px}
+.sbar i{display:block;height:100%;border-radius:3px;background:var(--green)}
+.score p{font-size:12px;color:var(--ink-soft);line-height:1.6;margin:0}
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px;background:var(--card);border:1px solid var(--line)}
+th{font-family:var(--serif);font-weight:700;text-align:left;background:var(--paper-2);padding:8px 11px;border-bottom:2px solid var(--ink);white-space:nowrap}
+td{padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+/* 标签 */
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.tag.ok{background:#EDF3EE;border:1px solid #C6D6C9;color:var(--green)}
+.tag.warn{background:#FBEDE9;border:1px solid #EFC4BA;color:var(--coral-deep)}
+.tag.cut{background:var(--paper-2);border:1px solid var(--line);color:var(--ink-soft)}
+.tag.p0{background:var(--coral);color:#fff}
+.tag.p1{background:#fff;border:1px solid var(--gold);color:#8a6520}
+.tag.p2{background:var(--paper-2);border:1px solid var(--line);color:var(--ink-soft)}
+.tbd{color:var(--coral-deep);font-weight:700}
+/* 缺口卡 */
+.gap{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:0 10px 10px 0;padding:14px 18px;margin:12px 0}
+.gap.high{border-left-color:var(--coral)}
+.gap b.t{font-family:var(--serif);font-size:15.5px}
+.gap .lvl{float:right;font-size:11px;font-weight:700}
+.gap p{font-size:13.5px;margin:6px 0 0;color:var(--ink)}
+.gap p b{color:var(--green)}
+/* 修订清单 */
+.rev{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0}
+.rev h4{margin:0 0 8px;font-size:14px}
+.rev ol{margin:0}
+.rev li{margin:6px 0;font-size:13.5px}
+.rev li b{color:var(--coral-deep)}
+/* 实测数据条 */
+.facts{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+.fact{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;text-align:center}
+.fact b{display:block;font-family:var(--serif);font-size:17px;color:var(--green)}
+.fact span{font-size:11.5px;color:var(--ink-soft)}
+.note{background:var(--card);border:1px dashed var(--gold);border-radius:10px;padding:11px 16px;margin:12px 0;font-size:13.5px}
+.note b{color:#8a6520}
+.foot{margin-top:70px;padding-top:16px;border-top:3px solid var(--ink);display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft)}
+@media (max-width:720px){.scores{grid-template-columns:1fr}}
+@media print{.verdict,.score,.gap{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">PRD REVIEW · 小红书仿写助手</div>
+  <h1>小程序版 PRD v1.0 · 评审报告</h1>
+  <p class="sub">需求维度 × 功能维度（与微信 Bot Agent 逐项对照）× 效果维度（frontend-design 框架 + 渲染实测）</p>
+  <div class="rule"></div>
+  <div class="meta">
+    <span><b>评审对象</b> docs/prd/xhs-miniapp-prd.html（v1.0 评审稿）</span>
+    <span><b>日期</b> 2026-10-08</span>
+    <span><b>方法</b> 文档审读 + 浏览器渲染实测（截图 4 张）+ Bot 端已上线能力（v1.4.0）代码级对照</span>
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="big">评审结论：有条件通过 —— 修订 5 项 P0 后可进入开发</div>
+  <p>产品方向与「旅行编辑部」调性成立，P0 最小完整旅程闭环完整；与 Bot Agent 对照 25 项能力中 19 项已覆盖或增强。需在开发前补齐：<b>①用量额度控制（成本无上界风险）②内容安全与账号合规（小程序审核硬门槛）③触达残留约束的明示与服务号备选 ④视频生成优先级 ⑤Bot 能力缺口收口</b>。效果层另有 10 项 UI 修订建议随设计稿落实。</p>
+</div>
+
+<div class="scores">
+  <div class="score">
+    <h5>① 需求情况</h5>
+    <div class="num">8.0<small> /10</small></div>
+    <div class="sbar"><i style="width:80%"></i></div>
+    <p>合理性 8.5 · 真实性 9 · 场景完整性 7。痛点全部来自已验证事实；扣分在「沉默用户触达」解法不彻底与额度/合规缺位。</p>
+  </div>
+  <div class="score">
+    <h5>② 功能情况</h5>
+    <div class="num">8.3<small> /10</small></div>
+    <div class="sbar"><i style="width:83%"></i></div>
+    <p>对照覆盖 8.5 · 使用性 8 · 全面性 8.5。核心旅程强于 Bot 版（可视化+消灭拆条）；视频/拆解/生图通道等 5 项能力缺口或降级过深。</p>
+  </div>
+  <div class="score">
+    <h5>③ 效果情况</h5>
+    <div class="num">8.2<small> /10</small></div>
+    <div class="sbar"><i style="width:82%"></i></div>
+    <p>调性 9 · 习惯符合 8 · 落地可行性 7.5。渲染实测零缺陷；扣分在线框语义规则未定义（评分条配色/CTA 主次）与小程序端字体落地成本。</p>
+  </div>
+</div>
+
+<h2><span class="no">§1</span>需求情况评审</h2>
+
+<h3>1.1 通过项：合理性、真实性、场景依据</h3>
+<table>
+  <tr><th style="width:96px">维度</th><th>评审依据</th><th style="width:70px">判定</th></tr>
+  <tr><td><b>合理性</b></td><td>痛点 P1–P5 全部有可追溯来源：Bot 三大约束（24h 推送配额 ~10 条、令牌需每日说话续期、封号=付费用户失联）经实测确认；飞书替代被应用商店驳回是既成事实；形态决策（小程序 vs App/H5）论证成立。</td><td><span class="tag ok">通过</span></td></tr>
+  <tr><td><b>真实性</b></td><td>目标用户（自媒体小白：大学生、小红书新手主理人）与既有用户画像一致；代运营客户为已确认的经营动作（近期接单），效果数据展示是其付费核心理由——FR-06/FR-07 直接服务该目标。</td><td><span class="tag ok">通过</span></td></tr>
+  <tr><td><b>场景依据</b></td><td>六阶段旅程（进入→定位→选题→交付→登记→复盘）与每日使用节奏（早选题/午生产/晚数据）匹配；与 Bot 版同源同口径，老用户继承逻辑（FR-01）降低迁移成本。</td><td><span class="tag ok">通过</span></td></tr>
+</table>
+
+<h3>1.2 需求层缺口（按重要度排序）</h3>
+
+<div class="gap high">
+  <span class="lvl tag warn">高 · 解法不彻底</span><b class="t">N1 「沉默用户触达」并未被订阅消息真正解决</b>
+  <p>订阅消息是一次性授权模型：授权来自<b>用户在小程序内的点击</b>。活跃用户每次打开可累积额度；但连续多日不打开的用户同样收不到日报——P3 从「每天说话续期」放宽为「不定期打开续期」，约束变了形式但未消除。PRD §2.1 未明示这一残留约束，评审者可能误以为 P3 已完全解决。</p>
+  <p><b>修订建议</b>：① §2.1 明示残留约束，把「待读红点 + 打开必达」（FR-07 已有）定位为兜底体验而非补救；② 验证<b>关联服务号（公众号）模板消息</b>作为第二触达通道——关注一次即可长期触达，才能真正覆盖沉默用户；③ 高价值事件（某篇笔记数据突增）用一次性通知强化「值得回来」的钩子。<span class="tbd">[服务号模板类目可用性 TBD]</span></p>
+</div>
+
+<div class="gap high">
+  <span class="lvl tag warn">高 · 成本风险</span><b class="t">N2 免费额度与用量控制机制缺位</b>
+  <p>v1.4.0 后每个用户的消耗是真实货币（雷达搜索 + LLM 评分 + 生图，人均几分钱/天起）。PRD 将会员套餐标 TBD 合理，但把「额度控制」整个跳过了——不限量的免费生产意味着成本无上界，这与商业化前提直接冲突。FR-08 只做了「成本展示」，没有「成本约束」。</p>
+  <p><b>修订建议</b>：新增 P0 功能「用量额度」：免费用户每日 N 条选题查看、每日 M 次生产，超额引导（升级/次日再来）；额度规则进 §7 共享规则一处定义。定价金额可以 TBD，<b>额度机制不能 TBD</b>——它决定服务端是否需要计费闸门。</p>
+</div>
+
+<div class="gap high">
+  <span class="lvl tag warn">高 · 审核硬门槛</span><b class="t">N3 内容安全与账号合规缺位</b>
+  <p>AI 生成的文案与图片在小程序内展示、复制并流向小红书，属微信审核与平台规范的重点对象；PRD §8 只列了类目资质，未提内容安全机制。此外有账号体系的小程序需提供<b>账号注销</b>、隐私政策/用户协议入口，否则过审受阻。</p>
+  <p><b>修订建议</b>：新增 P0 功能「内容安全」：文本与图片在交付前过安全检测，不通过即拦截并提示重生成；「我的」页补账号注销与协议入口。此项不解决，类目资质过审也可能被驳回。</p>
+</div>
+
+<div class="gap">
+  <span class="lvl tag p1">中 · 体验断点</span><b class="t">N4 「搬运摩擦」未被显式建模</b>
+  <p>小程序无法代发布到小红书，用户必须跨 App 搬运：复制文案→存图→切 App→发布→回来登记。这是本产品最特殊的体验断点，但 PRD 只在 FR-05/FR-06 内隐含处理；登记步骤一旦被遗忘，效果回流（代运营核心卖点）就断了源头。</p>
+  <p><b>修订建议</b>：FR-05 增加发布跟办清单（四步 checklist 卡片），生产 Tab 对「已交付未登记」任务置顶提醒——<b>登记率是效果回流的北极星前置指标</b>，值得一个显式机制。</p>
+</div>
+
+<div class="gap">
+  <span class="lvl tag p1">中 · 依赖风险</span><b class="t">N5 红狐 API 依赖未列入开放问题</b>
+  <p>选题抓取与效果回采的命脉是第三方红狐 API，其稳定性与配额政策变化直接冲击核心体验。§8 四项 TBD 均为微信侧，漏掉了这条最大的外部依赖。</p>
+  <p><b>修订建议</b>：§8 补一行；FR-03/FR-06 补降级语义——抓取失败回落「昨日清单 + 标注」，回采失败保留上次数据（已有，补抓取侧即对称）。</p>
+</div>
+
+<div class="gap">
+  <span class="lvl tag p2">低 · 增强机会</span><b class="t">N6 数据的对外呈现能力缺位（代运营汇报场景）</b>
+  <p>代运营客户需要向其甲方汇报效果，PRD 将多账号管理推给网页后台（合理），但缺少轻量替代：小程序内生成<b>可分享的数据周报海报</b>（保存图片即发群/发甲方），成本远低于网页后台，价值直接。</p>
+  <p><b>修订建议</b>：P1 增补「数据周报分享海报」；同时补「分享选题卡」作为获客裂变入口（PRD 当前完全没有增长机制）。</p>
+</div>
+
+<h2><span class="no">§2</span>功能情况评审（与 Bot Agent 对照）</h2>
+
+<h3>2.1 对照矩阵：Bot 已上线能力 → 小程序承载</h3>
+<p>对照基线为 Bot 端 v1.4.0 实际能力（15 条指令 + 后台机制，代码级核对）。判定图例：<span class="tag ok">✅ 覆盖/增强</span> <span class="tag warn">⚠️ 缺口/降级过深</span> <span class="tag cut">➖ 建议明确不做</span></p>
+<table>
+  <tr><th style="width:34px">#</th><th style="width:168px">Bot 能力</th><th style="width:130px">Bot 入口</th><th>小程序承载（PRD）</th><th style="width:56px">判定</th></tr>
+  <tr><td>1</td><td>当日选题清单（Top5+仿写角度）</td><td><code>/选题</code></td><td>FR-03 首页卡片流（评分可视化、全量展开）</td><td><span class="tag ok">✅ 增强</span></td></tr>
+  <tr><td>2</td><td>立即抓取</td><td><code>/选题 抓取</code></td><td>FR-03「重新抓取」</td><td><span class="tag ok">✅</span></td></tr>
+  <tr><td>3</td><td>历史清单 / 指定日期</td><td><code>/选题 列表·MM-DD</code></td><td>FR-03 P1 历史切换</td><td><span class="tag ok">✅ 降级合理</span></td></tr>
+  <tr><td>4</td><td>临时主题探索（门槛放开）</td><td><code>/主题 词1,词2</code></td><td>FR-03 P1「主题探索」+探索标注</td><td><span class="tag ok">✅</span></td></tr>
+  <tr><td>5</td><td>确认生产</td><td><code>/确认 N</code></td><td>FR-04「照这个写」（任务号沿用）</td><td><span class="tag ok">✅</span></td></tr>
+  <tr><td>6</td><td>换角度</td><td><code>/换角度 N 描述</code></td><td>FR-04 换角度入口</td><td><span class="tag ok">✅</span></td></tr>
+  <tr><td>7</td><td>生产进度查询</td><td><code>/状态</code></td><td>FR-04 实时步进页（完成推送召回）</td><td><span class="tag ok">✅ 增强</span></td></tr>
+  <tr><td>8</td><td>成品交付（拆 6–9 条消息推送）</td><td>消息流</td><td>FR-05 单页一次呈现（消灭拆条、不占配额）</td><td><span class="tag ok">✅ 核心改进</span></td></tr>
+  <tr><td>9</td><td>视频笔记补生成</td><td><code>/视频 [任务ID]</code></td><td>FR-05 仅 P2「展示入口」</td><td><span class="tag warn">⚠️ 降级过深</span></td></tr>
+  <tr><td>10</td><td>直发文本仿写</td><td><code>/仿写 内容</code></td><td>FR-09 表单化直发</td><td><span class="tag ok">✅</span></td></tr>
+  <tr><td>11</td><td>拉模式：粘贴链接仿写（图文/视频）</td><td>直发链接</td><td>FR-09</td><td><span class="tag ok">✅</span></td></tr>
+  <tr><td>12</td><td>爆款显式拆解（多模态看图）</td><td>拉模式内嵌</td><td>FR-09 内嵌、拆解报告未透出</td><td><span class="tag warn">⚠️ 未透出</span></td></tr>
+  <tr><td>13</td><td>发布登记</td><td><code>/已发布 链接</code></td><td>FR-06（增加解绑重绑+确认）</td><td><span class="tag ok">✅ 增强</span></td></tr>
+  <tr><td>14</td><td>效果查询 / 手动回采</td><td><code>/效果 [任务ID]</code></td><td>FR-06 看板+增量+刷新</td><td><span class="tag ok">✅ 增强</span></td></tr>
+  <tr><td>15</td><td>成本账本（任务/7天）</td><td><code>/成本 [任务ID]</code></td><td>FR-08 单篇+汇总</td><td><span class="tag ok">✅</span></td></tr>
+  <tr><td>16</td><td>定位查看/设置/重置</td><td><code>/定位</code>（模板）</td><td>FR-02 三步向导 + 我的页编辑</td><td><span class="tag ok">✅ 增强</span></td></tr>
+  <tr><td>17</td><td>生图通道切换（ark/gpt/doubao）</td><td><code>/生图通道</code></td><td>FR-04 仅失败重试时换通道</td><td><span class="tag warn">⚠️ 缺常驻入口</span></td></tr>
+  <tr><td>18</td><td>直接生图（通道实测工具）</td><td><code>/生图 描述</code></td><td>未纳入</td><td><span class="tag cut">➖ 明确不做</span></td></tr>
+  <tr><td>19</td><td>推送失败补发队列</td><td>queue_push 机制</td><td>FR-07 站内待读红点（打开必达）</td><td><span class="tag ok">✅ 等价替代</span></td></tr>
+  <tr><td>20</td><td>多用户隔离（个人清单/记账）</td><td>bot_id + uid 目录</td><td>FR-01 + §7.3 uid 硬隔离</td><td><span class="tag ok">✅</span></td></tr>
+  <tr><td>21</td><td>帮助指令</td><td><code>/help</code></td><td>未定义</td><td><span class="tag warn">⚠️ 缺新手指南</span></td></tr>
+  <tr><td>22</td><td>交付质量报告（质检标注）</td><td>交付时附带</td><td>未透出</td><td><span class="tag warn">⚠️ 未透出</span></td></tr>
+  <tr><td>23</td><td>未带指令长文本暂存确认</td><td>pending_direct 机制</td><td>FR-09 表单化（天然防误触发）</td><td><span class="tag ok">✅</span></td></tr>
+  <tr><td>24</td><td>每日雷达推送（重方案各评各推）</td><td>radar_push_loop</td><td>FR-03 + FR-07 选题日报</td><td><span class="tag ok">✅</span></td></tr>
+  <tr><td>25</td><td>每日效果回采 + 增量日报（30 天窗口）</td><td>metrics_collection_loop</td><td>FR-06 + FR-07 数据日报（窗口口径一致）</td><td><span class="tag ok">✅</span></td></tr>
+</table>
+<p class="note"><b>小结</b>：25 项中 ✅ 19 项（其中 6 项为增强）、⚠️ 5 项、➖ 1 项。PRD 对 Bot 核心旅程的转译质量高——「清单可视化、交付单页化、进度推送化」三处均优于 Bot 版；缺口集中在<b>长尾工具能力</b>（视频、生图通道、帮助、质检）与<b>能力透出</b>（拆解报告）。</p>
+
+<h3>2.2 功能缺口修正建议</h3>
+<table>
+  <tr><th style="width:56px">编号</th><th style="width:170px">缺口</th><th>建议处置</th><th style="width:64px">优先级</th></tr>
+  <tr><td>F-9</td><td>视频补生成降为 P2</td><td>升 P1：任务详情页「生成视频版」按钮 + 完成订阅通知（生产端已支持，纯前端接线）。若坚持 P2，需书面记录理由并同步代运营客户预期。</td><td><span class="tag p0">P0 决策</span></td></tr>
+  <tr><td>F-12</td><td>爆款拆解不透出</td><td>交付页增加「拆解笔记」折叠区（拆解维度 + vision 标注），小白能学到「为什么这样仿写」，是差异化学习价值。</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>F-17</td><td>生图通道无常驻入口</td><td>默认托管（符合小白哲学）+「我的 → 高级设置」P2 入口；FR-04 失败换通道文案与此统一。</td><td><span class="tag p2">P2</span></td></tr>
+  <tr><td>F-18</td><td>直接生图未纳入</td><td>写入 §3.2「明确不做」（工具性功能，与小白旅程无关），避免评审歧义。</td><td><span class="tag p2">P2</span></td></tr>
+  <tr><td>F-21</td><td>缺新手指南</td><td>「我的 → 新手指南」承载 onboarding 之外的长尾疑问（登记链接找不到？图片没存上？）。</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>F-22</td><td>质检结果不透出</td><td>交付页「质检通过」徽章（标题党/字数/图片规格），付费信任信号。</td><td><span class="tag p1">P1</span></td></tr>
+</table>
+
+<h3>2.3 FR 逐条使用性速评</h3>
+<table>
+  <tr><th style="width:70px">FR</th><th style="width:60px">判定</th><th>要点</th></tr>
+  <tr><td>FR-01 登录</td><td><span class="tag ok">✅</span></td><td>静默登录正确；Bot 数据继承是亮点（老用户零成本迁移）。建议补注销入口（见 N3）。</td></tr>
+  <tr><td>FR-02 定位引导</td><td><span class="tag ok">✅</span></td><td>三步向导对小白友好；建议补「一键用示例开始」；线框步骤序与 FR 文案不一致（见 U10）。</td></tr>
+  <tr><td>FR-03 今日选题</td><td><span class="tag ok">✅</span></td><td>个人清单回退逻辑清晰、空态三分类完备；四维评分条对小白信息密度偏高（见 U4 折叠方案）。</td></tr>
+  <tr><td>FR-04 生产任务</td><td><span class="tag ok">✅</span></td><td>失败双动作（重试/换通道）合理；预估时长 TBD 待实测校准；建议失败任务重试前确认（防重复消耗）。</td></tr>
+  <tr><td>FR-05 成品交付</td><td><span class="tag ok">✅</span></td><td>一次呈现消灭拆条是核心改进；补跟办清单（N4）与图片过期重取已有 ✓。</td></tr>
+  <tr><td>FR-06 效果看板</td><td><span class="tag ok">✅</span></td><td>总量+增量+趋势完整；解绑二次确认 ✓；30 天窗口与 Bot 口径一致 ✓。</td></tr>
+  <tr><td>FR-07 订阅消息</td><td><span class="tag warn">⚠️</span></td><td>授权节点设计克制（单日≤1次）值得肯定；但见 N1——需明示残留约束并验证服务号备选。</td></tr>
+  <tr><td>FR-08 成本明细</td><td><span class="tag ok">✅</span></td><td>口径清晰、「以账单为准」稳妥；缺「额度约束」半边（N2）。</td></tr>
+  <tr><td>FR-09 直发仿写</td><td><span class="tag ok">✅</span></td><td>表单化优于 Bot 自由文本；视频提文案超时降级已定义 ✓。</td></tr>
+</table>
+
+<h2><span class="no">§3</span>效果情况评审（frontend-design 框架 + 渲染实测）</h2>
+
+<h3>3.1 渲染实测结果</h3>
+<div class="facts">
+  <div class="fact"><b>0 px</b><span>水平溢出（scrollWidth−innerWidth=−15）</span></div>
+  <div class="fact"><b>2/2</b><span>思源宋体 / 思源黑体 CDN 加载成功</span></div>
+  <div class="fact"><b>11,189 px</b><span>全文高度（长文档，见 D1 目录建议）</span></div>
+  <div class="fact"><b>0 处</b><span>重叠 / 溢出 / 错位 / 挤压缺陷</span></div>
+</div>
+<p>4 张分区截图（刊头、手机线框、FR 卡片、开放问题表格）人工复核：排版规整、层次清晰、留白舒适、无渲染缺陷。线框层发现的均为<b>语义规则未定义</b>问题而非渲染缺陷。</p>
+
+<h3>3.2 调性与排版：成立</h3>
+<ul>
+  <li><b>「旅行编辑部」调性成立</b>：暖纸底 + 衬线刊头 + 直角引号 + §章节符号，形成「专业编辑出版物」的权威感而非 SaaS 后台感；红色使用克制（仅行动/注意节点），功能与美学统一。</li>
+  <li><b>色彩层级清晰</b>：主标题与正文约 4:1 的字号比、粗细对比明确，符合杂志「快速扫描—深度阅读」双模式。</li>
+  <li><b>小程序端直接可复用</b>：红色功能性分配原则（仅 CTA/警示用珊瑚、数据用墨绿）可直接迁移到小程序设计规范。</li>
+</ul>
+
+<h3>3.3 UI 修订清单（随设计稿落实，编号 U1–U10）</h3>
+<table>
+  <tr><th style="width:52px">编号</th><th style="width:190px">问题</th><th>修订建议</th><th style="width:56px">级别</th></tr>
+  <tr><td>U1</td><td><b>评分条颜色与数值无映射规则</b>（线框中 9.5 分配沙金、8.1 分配深绿，语义矛盾）</td><td>定义映射：≥9 松林绿 / 8–9 沙金 / &lt;8 纸灰；或统一色仅用长度表达。设计稿必须落规则，否则开发各写各的。</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>U2</td><td><b>CTA 主次逻辑未定义</b>（首卡实心、次卡描边，用户无法推断规则）</td><td>实心 = 综合推荐 Top1（或人设契合最高），卡片加「今日首推」徽章；其余统一描边。</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>U3</td><td><b>热度 chip 状态规则隐含未声明</b></td><td>明确：热度 ≥80 显示珊瑚 hot 底色，否则灰签；写入组件规范。</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>U4</td><td><b>首页卡片信息密度过高</b>（标题+指标+四维条+角度+CTA，首屏仅见 1–2 条）</td><td>默认展示：标题 + 热度 + 综合分徽章 + 最高维标签 + CTA；四维条与仿写角度折叠进卡详情（点击展开）。首屏保证 ≥3 条。</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>U5</td><td><b>定位引导流程干扰</b>（底部 tabbar 可中途跳走、步骤指示弱、赛道选中态缺失、跳过按钮易误触）</td><td>向导页隐藏 tabbar；步骤改节点+连线式；赛道单选画出选中态；补「一键用示例开始」；跳过按钮下移并与主按钮拉开间距。</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>U6</td><td><b>数据页语义色不全</b>（增量用绿 ✓，负增量未定义；「已趋稳」单一标签）</td><td>负增量用珊瑚；推广数据叙事三态：冲榜中（沙金）/ 平稳（墨绿）/ 长尾（纸灰），口语化标签全列表统一。</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>U7</td><td><b>数字单位混用</b>（1.2万 vs 3400）</td><td>统一格式化规则：≥1万 显示 X.X万，否则原值；看板与清单共用。</td><td><span class="tag p2">P2</span></td></tr>
+  <tr><td>U8</td><td><b>字体落地成本未评估</b>（小程序不能直接引 webfont）</td><td>思源宋体走 wx.loadFontFace 网络加载 + 标题子集化（仅标题字符集，体积可控）；降级栈 PingFang→系统黑体；V1 锁定浅色模式避免半深半浅。</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>U9</td><td><b>真实端字号/平台习惯未定义</b>（线框字号为示意）</td><td>设计稿明确：正文 ≥12px；导航胶囊按钮左侧避让；登记列表解绑改<b>左滑操作</b>（符合微信习惯）；下拉刷新沿用。</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>U10</td><td><b>线框与 FR-02 步骤定义不一致</b>（线框第 2 屏同屏出现人设+赛道，FR 定义为 ①赛道②人设③关键词）</td><td>二选一：修正线框为三屏各一焦点；或 FR-02 改为「①人设+赛道同屏 ②关键词」，两端同步。</td><td><span class="tag p0">P0</span></td></tr>
+</table>
+
+<h3>3.4 文档本身的改进（D1–D2）</h3>
+<ul>
+  <li><b>D1</b>：全文 11,189px 无目录锚点，评审翻阅成本高——补 sticky 目录或页首锚点导航。</li>
+  <li><b>D2</b>：内页（FR 卡片区）可较刊头更紧凑（行距/卡片间距 −15%），平衡长文档阅读效率与杂志感。</li>
+</ul>
+
+<h2><span class="no">§4</span>修订建议总清单</h2>
+
+<div class="rev">
+  <h4><span class="tag p0">P0</span> 进开发前必改（5 项）</h4>
+  <ol>
+    <li><b>R1</b>（N2）新增「用量额度」P0 功能：免费额度 + 服务端计费闸门，规则入 §7 共享定价/额度节。</li>
+    <li><b>R2</b>（N3）新增「内容安全」P0 功能（文本/图片交付前检测）+ 账号注销 + 隐私政策入口。</li>
+    <li><b>R3</b>（N1）§2.1 明示订阅消息残留约束；验证服务号模板消息备选通道；明确「待读红点」为兜底体验。</li>
+    <li><b>R4</b>（F-9）视频生成升 P1 或书面确认维持 P2 的理由。</li>
+    <li><b>R5</b>（F-18/F-21 + U1/U2/U4/U10）Bot 缺口收口：「直接生图」入明确不做、新手指南排期；设计稿落实 U1/U2/U4/U10 四项语义规则。</li>
+  </ol>
+</div>
+
+<div class="rev">
+  <h4><span class="tag p1">P1</span> 体验增强（5 项）</h4>
+  <ol>
+    <li><b>R6</b>（N4）发布跟办清单 + 未登记任务置顶提醒（登记率 = 效果回流的转化前置）。</li>
+    <li><b>R7</b>（F-12/F-22）交付页「拆解笔记」折叠区 + 「质检通过」徽章。</li>
+    <li><b>R8</b>（N6）数据周报分享海报 + 分享选题卡（代运营汇报 + 获客裂变，PRD 当前无增长机制）。</li>
+    <li><b>R9</b>（U5/U6/U8/U9）设计稿阶段落实引导流程修正、数据叙事标签、字体落地与平台习惯规范。</li>
+    <li><b>R10</b>（F-21/F-12 之外的排期项）「我的 → 新手指南」内容编写（与 R5 分工：R5 定入口，R10 定内容）。</li>
+  </ol>
+</div>
+
+<div class="rev">
+  <h4><span class="tag p2">P2</span> 记录在案（4 项）</h4>
+  <ol>
+    <li><b>R11</b>（F-17）生图通道高级设置入口；<b>R12</b>（N5）红狐依赖入 §8 + 抓取降级语义；<b>R13</b>（U3/U7）chip 规则与单位格式化；<b>R14</b>（D1/D2）PRD 补目录锚点。</li>
+  </ol>
+</div>
+
+<h2><span class="no">§5</span>评审结论</h2>
+<table>
+  <tr><th style="width:150px">维度</th><th>结论</th></tr>
+  <tr><td><b>需求情况</b></td><td>痛点真实、方向合理；但需正视两点：订阅消息对沉默用户的触达是「缓解」而非「解决」（N1）；免费额度机制缺位使商业化前提不完整（N2）。两者均为需求层而非实现层问题，必须在 PRD 层修订。</td></tr>
+  <tr><td><b>功能情况</b></td><td>对 Bot Agent 的转译质量高：25 项能力 19 项覆盖（6 项增强），核心旅程全面优于 Bot 版；5 项缺口中视频生成优先级是唯一需要重新决策的项（F-9），其余为透出与入口问题。</td></tr>
+  <tr><td><b>效果情况</b></td><td>渲染实测零缺陷，「旅行编辑部」调性成立且可直接迁移为小程序设计规范；线框层 4 项语义规则（U1/U2/U4/U10）必须在设计稿阶段定义，否则会在开发期产生歧义。</td></tr>
+  <tr><td><b>总体</b></td><td><b>有条件通过（8.2/10）</b>。完成 R1–R5 修订后即可进入开发；P1 清单建议随 MVP 迭代（R6 登记率机制与代运营卖点是强关联，宜早不宜迟）。</td></tr>
+</table>
+
+<div class="foot">
+  <span>PRD 评审报告 · 小红书仿写助手小程序版 v1.0</span>
+  <span>2026-10-08 · 方法：文档审读 + 渲染实测 + Bot v1.4.0 代码级对照</span>
+</div>
+
+</div>
+</body>
+</html>
