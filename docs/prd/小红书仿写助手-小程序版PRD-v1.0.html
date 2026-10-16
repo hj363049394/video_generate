@@ -140,6 +140,18 @@ tr:last-child td{border-bottom:none}
 .p-badge{display:inline-block;font-size:8px;font-weight:700;color:#fff;background:var(--coral);border-radius:99px;padding:1px 6px;margin-left:3px;vertical-align:1px}
 .p-foot{font-size:8px;color:var(--ink-soft);text-align:center}
 .p-example{font-size:9px;font-weight:700;color:var(--green);border:1px dashed #C6D6C9;border-radius:7px;padding:4px 8px;background:#EDF3EE;display:inline-block}
+/* v1.2：数据闭环扩展元素 */
+.steps7{display:flex;flex-direction:column;margin:12px 0}
+.step7{display:flex;gap:12px;padding:7px 0 7px 16px;border-left:2px solid var(--line);margin-left:8px;position:relative}
+.step7::before{content:"";position:absolute;left:-6px;top:13px;width:10px;height:10px;border-radius:50%;background:var(--coral);border:2px solid var(--paper)}
+.step7 b{font-family:var(--serif);color:var(--green);flex-shrink:0;min-width:88px;font-size:13.5px}
+.step7 span{font-size:13px;color:var(--ink);line-height:1.6}
+.agent-chat{display:flex;flex-direction:column;gap:8px;margin:12px 0;max-width:440px}
+.msg{max-width:84%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.55;border:1px solid var(--line)}
+.msg.user{align-self:flex-end;background:var(--green);color:#fff;border-color:var(--green)}
+.msg.bot{align-self:flex-start;background:var(--card)}
+.msg.bot b{font-family:var(--serif)}
+.sig{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:#EDF3EE;color:var(--green);border:1px solid #C6D6C9;margin:1px 2px 1px 0}
 </style>
 </head>
 <body>
@@ -147,19 +159,19 @@ tr:last-child td{border-bottom:none}
 
 <header>
   <div class="kicker">XHS REWRITE ASSISTANT · PRODUCT REQUIREMENTS</div>
-  <h1>小程序版 PRD：把「编辑部」装进微信</h1>
-  <p class="sub">小红书仿写助手 · 微信小程序形态 —— 面向自媒体小白与代运营客户的合规主入口</p>
+  <h1>响应式 Web 版 PRD：把「编辑部」装进浏览器与微信</h1>
+  <p class="sub">爆款拆解仿写助手 · 响应式 Web（移动 H5 + 桌面增强）+ 服务号三合一 —— 面向腰部博主、高频创作者与代运营主理人的数据闭环创作工具</p>
   <div class="rule"></div>
   <div class="meta">
-    <span><b>版本</b> v1.1（评审修订稿）</span>
-    <span><b>日期</b> 2026-10-08</span>
-    <span><b>上游文档</b> 设计文档 v1.1 · v1.4.0 变更 · <a href="../reports/小红书仿写助手-PRD评审报告-2026-10/index.html">评审报告</a></span>
-    <span><b>状态</b> 评审修订完成，可进开发 <span class="tbd">[TBD：产品名与小程序类目]</span></span>
+    <span><b>版本</b> v1.2（数据闭环扩展 + 形态改判）</span>
+    <span><b>日期</b> 2026-10-17</span>
+    <span><b>上游文档</b> 设计文档 v1.1 · v1.4.0 变更 · <a href="../reports/小红书仿写助手-PRD评审报告-2026-10/index.html">评审报告</a> · 同步源：MD 版 PRD v1.3</span>
+    <span><b>状态</b> 形态已改判响应式 Web（R19）；产品名「爆款拆解仿写助手」 <span class="tbd">[TBD：域名备案主体落定]</span></span>
   </div>
 </header>
 
 <div class="lede">
-  v1.4.0 已在微信 Bot 上跑通完整闭环：<strong>定位 → 每日专属选题 → 确认生产 → 成品交付 → 发布登记 → 每日数据回采</strong>。但 Bot 作为商业化载体存在三大约束（推送配额、会话保活、风控），且指令交互对自媒体小白门槛过高。本 PRD 定义<strong>微信小程序版</strong>：以可视化界面承载既有生产能力，以订阅消息解决合规触达，让「不会用指令的人」也能完成从选题到效果复盘的全流程。<br>v1.1 依据评审结论补齐<strong>用量额度控制</strong>与<strong>内容安全合规</strong>两项 P0，明示订阅消息触达的残留约束，并将视频生成、发布跟办清单等纳入 P1。
+  v1.4.0 已在微信 Bot 上跑通完整闭环：<strong>定位 → 每日专属选题 → 确认生产 → 成品交付 → 发布登记 → 每日数据回采</strong>。v1.2 HTML 依据 2026-10 系列决策完成两轮升级：<strong>形态改判</strong>——主入口从微信小程序改为响应式 Web（移动 H5 + 桌面增强），服务号承担「入口+触达+登录」三合一，官网收款页为收款主通道（R19）；<strong>数据闭环扩展</strong>——新增四项全市场空白功能：爆款规律引擎（FR-16）、翻红计划（FR-17）、AI 味检测（FR-18）、对话式 Agent（FR-19），产品叙事升级为「<strong>不只帮你写下一篇，还帮你救活上一批，并把规律存下来越用越准</strong>」。目标用户从自媒体小白上移至腰部博主/高频创作者/代运营（R18），赛道全面开放。完整决策依据见 MD 版 PRD v1.3 附录 B。
 </div>
 
 <nav class="toc">
@@ -174,7 +186,7 @@ tr:last-child td{border-bottom:none}
   <li><span class="tag evi">已落地</span> 生产线：红狐抓取 → 数值+语义四维评分 → 仿写 → 图文卡片 → 视频按需生成；多用户重方案（每人按自己的关键词/人设独立评分、独立推送清单）已上线。</li>
   <li><span class="tag evi">已落地</span> 效果回流：<code>/已发布</code> 登记发布链接，每日定时回采赞藏评并推送增量日报；成本账本可查单篇花销。</li>
   <li><span class="tag evi">已验证</span> 微信 Bot（ClawBot iLink）单号可服务多用户，但存在 §1.2 三大约束；飞书替代方案已被应用商店驳回（非企业办公类应用）。</li>
-  <li><span class="tag evi">已确认</span> 目标用户：自媒体小白（大学生、小红书新手主理人，旅行赛道为主）；近期将接入代运营客户——效果数据展示是其付费核心理由。</li>
+  <li><span class="tag evi">已确认</span> 目标用户（v1.2 分层重构，R18）：<strong>核心付费用户 = 腰部个人博主（粉丝 1千–5万，周更 1–3 篇，¥49 档）与高频创作者（日更/准日更，¥99 档）</strong>；代运营主理人为高价值延伸（¥199+ 档，效果数据展示是付费核心理由）；素人新手为漏斗层（免费+¥0.99 体验卡）；企业级明确不做。<strong>赛道全面开放</strong>——关键词订阅机制按用户自定义赛道运作，不设类目限制。</li>
 </ul>
 
 <h3>1.2 痛点清单</h3>
@@ -189,21 +201,24 @@ tr:last-child td{border-bottom:none}
 
 <h2 id="s2"><span class="no">§2</span>解决方案与产品形态</h2>
 
-<h3>2.1 形态决策</h3>
-<p><strong>决策：以微信小程序为主入口，订阅消息为合规触达通道，网页管理后台（另立项）服务主理人，Bot 降级为可选辅助渠道。</strong></p>
+<h3>2.1 形态决策（v1.2 改判，R19）</h3>
+<p><strong>决策：以响应式 Web 应用（移动 H5 + 桌面增强，同一 URL 同一代码库）为主入口；认证服务号承担「入口 + 触达 + 登录」三合一基建；官网收款页为收款主通道；小程序降为 P2 观察项。</strong></p>
 <table>
   <tr><th style="width:120px">端</th><th>定位</th><th style="width:230px">解决的痛点</th></tr>
-  <tr><td><b>微信小程序</b></td><td>创作者主入口：定位、选题、生产、交付、效果查看全流程可视化。</td><td>P1 合规载体（官方容器无封号失联风险）、P4 零指令门槛、P5 可视化</td></tr>
-  <tr><td><b>订阅消息</b></td><td>关键节点触达：选题日报、任务完成、数据日报（详见 FR-07）。</td><td>P2 按需触达不占 Bot 配额、P3 <strong>缓解</strong>（残留约束见下）</td></tr>
-  <tr><td><b>网页后台</b></td><td>主理人/代运营视角：多客户账号管理、成本对账、效果汇总报表。</td><td>多账号批量管理不适合手机端（另立项，不在本 PRD 范围）</td></tr>
-  <tr><td><b>微信 Bot</b></td><td>降级为可选渠道：老用户过渡期保留，不再新增能力。</td><td>—</td></tr>
+  <tr><td><b>响应式 Web</b>（主）</td><td>创作者主入口：移动端覆盖「刷到→拆解→取走产物」轻交互（复制文案/长按存图/提交链接），桌面端承载长文案编辑、数据看板、视频上传等重交互。</td><td>P4 零指令门槛、P5 可视化、桌面专业体验、免发版审核</td></tr>
+  <tr><td><b>认证服务号</b></td><td>三合一基建：① 入口（菜单/模板消息→H5）② 触达（模板消息，沉默用户覆盖优于小程序订阅消息）③ 登录（网页授权静默——微信内免登录）。</td><td>P2 合规触达、P3 沉默用户可达</td></tr>
+  <tr><td><b>对话式 Agent</b>（FR-19）</td><td>服务号对话框 = 移动端最短输入路径：「微信里转发链接，爆款就拆好了」。</td><td>移动端输入摩擦最小化</td></tr>
+  <tr><td><b>官网收款页</b></td><td>三层漏斗收款主通道（浏览器/桌面端完成，微信内不收款）；兑换码站外补充。</td><td>收款合规（无 iOS 虚拟支付约束、无 30% IAP 抽成）</td></tr>
+  <tr><td><b>微信小程序</b>（P2）</td><td>观察项：上线后若移动端数据异常再补；后端 REST 前端无关，沉没成本 ≈ 0。</td><td>微信内即点即用（远期）</td></tr>
+  <tr><td><b>微信 Bot</b>（ClawBot）</td><td>实验通道：种子用户过渡期保留，不承诺 SLA；15 条指令意图识别逻辑平移至 FR-19。</td><td>—</td></tr>
 </table>
-<p class="note"><b>触达残留约束（评审 N1，v1.1 新增）</b>：订阅消息为一次性授权模型，授权来自用户在小程序内的点击——连续多日未打开的用户同样收不到推送。P3 由「每天说话续期」放宽为「不定期打开续期」，是<strong>缓解而非消除</strong>。兜底体验为「站内待读红点 + 打开必达」（FR-07）；高价值事件用即时通知强化回访动机；P1 起验证关联<strong>服务号模板消息</strong>作为沉默用户的第二触达通道（§8 待验证）。</p>
+<p class="note"><b>改判依据（完整论证见 MD 版 PRD v1.3 附录 B.2）</b>：竞品实证（10 家同类产品 5 家纯网页、收款均在官网）；iOS 虚拟支付约束（小程序虚拟商品必须接虚拟支付且 iOS 走 Apple IAP 抽成 30%，独立官网收款不受此约束）；付费主力工作场景在桌面（长文案编辑/数据看板/批量管理）；「手机发布」与产品形态无关——发布发生在小红书 App，本产品只负责「取走产物」，响应式 H5 完全覆盖。</p>
 
-<h3>2.2 为什么不是 App / 纯 H5</h3>
+<h3>2.2 为什么不是小程序优先 / App</h3>
 <ul>
-  <li><strong>App</strong>：下载安装对小白用户是第一道流失口；微信生态内传播（朋友圈/群/小程序卡片）无法直达。</li>
-  <li><strong>纯 H5</strong>：微信内无法申请订阅消息授权，触达问题（P2/P3）无解；会话保活问题依旧。</li>
+  <li><strong>小程序（原决策，v1.2 改判）</strong>：iOS 禁虚拟支付、IAP 30% 抽成、每版审核拖慢迭代、小屏损害编辑与看板体验；核心优势（即点即用+订阅消息）已由服务号三合一覆盖 80%——降为 P2 观察项而非取消。</li>
+  <li><strong>App</strong>：下载安装是第一道流失口；单人团队无双端维护带宽；微信生态内传播无法直达。</li>
+  <li><strong>桌面专属网站</strong>（排除「假 Web」形态）：移动端轻交互链路必须覆盖——响应式设计为硬要求，同一代码库自适应。</li>
 </ul>
 
 <h2 id="s3"><span class="no">§3</span>范围</h2>
@@ -217,7 +232,7 @@ tr:last-child td{border-bottom:none}
 <h3>3.2 优先级边界</h3>
 <table>
   <tr><th style="width:60px">批次</th><th>内容</th></tr>
-  <tr><td><span class="tag p0">P0</span></td><td>FR-01 登录与账号 · FR-02 定位引导 · FR-03 今日选题 · FR-04 生产任务 · FR-05 成品交付 · FR-06 发布登记与效果看板 · FR-07 订阅消息触达 · FR-10 用量额度 · FR-11 内容安全与账号合规</td></tr>
+  <tr><td><span class="tag p0">P0</span></td><td>FR-01 登录与账号 · FR-02 定位引导 · FR-03 今日选题 · FR-04 生产任务 · FR-05 成品交付 · FR-06 发布登记与效果看板 · FR-07 触达通知（v1.3 通道改判：服务号模板消息） · FR-10 用量额度 · FR-11 内容安全与合规</td></tr>
   <tr><td><span class="tag p1">P1</span></td><td>FR-08 成本明细页 · FR-09 直发仿写（粘贴链接/长文本）· FR-12 新手指南 · FR-13 分享与增长 · 视频生成入口与发布跟办清单（FR-04/05）· 历史清单日期切换 · 主题探索（对应 Bot <code>/主题</code>）</td></tr>
   <tr><td><span class="tag p2">P2</span></td><td>主理人多客户视图 · 网页管理后台 · 生图通道高级设置（「我的 → 高级设置」，默认托管）</td></tr>
 </table>
@@ -304,8 +319,8 @@ tr:last-child td{border-bottom:none}
       ① 确认即建任务入队（同 Bot <code>/确认 N</code>），同一选题可多次生成，任务号区分。<br>
       ② 进度页展示四阶段步进条：拆解仿写 → 配图 → 交付（文案 + 图文卡片），每阶段完成即点亮；预估时长以「约 1–3 分钟」量级文案呈现，<span class="tbd">[TBD：实测后校准]</span>。<br>
       ③ 「换角度」入口：任务页改写仿写角度后重新生产（同 Bot <code>/换角度 N</code>）。<br>
-      ④ 用户离开小程序后生产继续；完成靠订阅消息（FR-07）召回。<br>
-      ⑤ 「生成视频版」入口（P1，评审 R4 升级）：已交付任务详情页发起，生产端已支持，完成经订阅消息通知。<br>
+      ④ 用户离开页面后生产继续；完成靠服务号模板消息（FR-07）召回。<br>
+      ⑤ 「生成视频版」入口（P1，评审 R4 升级）：已交付任务详情页发起，生产端已支持，完成经模板消息通知。<br>
       ⑥ 失败重试需二次确认（防重复消耗额度；失败额度自动返还，见 FR-10）。
     </dd>
     <dt>状态与异常</dt><dd>失败任务在「生产」Tab 常驻展示失败原因（文案生成失败/生图通道失败），提供「重试」与「换生图通道」两个动作；重试生成新任务，原任务保留可追溯。</dd>
@@ -335,27 +350,28 @@ tr:last-child td{border-bottom:none}
       ① 粘贴小红书链接（<code>xiaohongshu.com</code>/<code>xhslink.com</code>），校验合法性后关联该用户最近一条<strong>未登记的已交付任务</strong>；关联关系登记后可解绑重绑（解除前需确认）。<br>
       ② 每日系统定时回采近 30 天内发布笔记的赞藏评（回采窗口与 Bot 共用配置口径）；数据页展示：赞/藏/评三卡（总量 + 今日增量）与近 30 天趋势。<br>
       ③ 手动「立即刷新」单条笔记（每次刷新计一次详情抓取消耗，成本记入该用户账本）。<br>
-      ④ 增量日报由订阅消息推送（FR-07），数据页为完整看板。
+      ④ 增量日报由服务号模板消息推送（FR-07），数据页为完整看板。
     </dd>
     <dt>空态/异常</dt><dd>无已发布笔记：空态引导回交付页。单条回采失败不影响其余条目；失败项标注「上次成功数据 + 失败时间」。</dd>
   </dl>
 </div>
 
 <div class="fr">
-  <div class="fr-head"><span class="fr-id">FR-07</span><span class="fr-name">订阅消息触达</span><span class="tag p0">P0</span></div>
+  <div class="fr-head"><span class="fr-id">FR-07</span><span class="fr-name">触达通知（v1.3 通道改判：服务号模板消息）</span><span class="tag p0">P0</span></div>
   <dl>
     <dt>模板</dt><dd>
       ① <strong>选题日报</strong>：「今日 N 条选题已就绪，前 3 条标题摘要」→ 点击进首页。<br>
       ② <strong>任务完成</strong>：「你的笔记已生成（任务号）」→ 点击进交付页。<br>
-      ③ <strong>数据日报</strong>：「昨日你的笔记 +X 赞 +Y 藏」→ 点击进数据页。
+      ③ <strong>数据日报</strong>：「昨日你的笔记 +X 赞 +Y 藏」→ 点击进数据页。<br>
+      ④ <strong>翻红结论</strong>（v1.3，FR-17）：「翻新观察结束：《标题》见效/无效」→ 点击进翻红报告页。
     </dd>
     <dt>规则</dt><dd>
-      ① 订阅消息为一次性授权模型：每次用户授权可推送一条。授权收集节点固定在价值交换时刻——提交定位后（换任务完成通知）、复制文案后（换数据日报）、点开数据页后（换次日选题日报），<strong>绝不弹窗轰炸</strong>；单日单用户最多请求 1 次授权。<br>
-      ② 无授权或推送失败：内容降级为站内待读（首页红点 + 角标计数），下次打开必达。<br>
+      ① <strong>主通道 = 服务号模板消息</strong>：已关注用户一次关注长期可触达（对沉默用户覆盖优于小程序订阅消息的一次性授权模型）。关注引导固定在价值交换节点——提交首个任务后、查看数据页时，<strong>绝不弹窗轰炸</strong>；单日单用户最多引导 1 次。<br>
+      ② 未关注 / 推送失败：内容降级为站内待读（首页红点 + 角标计数），下次打开必达。<br>
       ③ 推送内容包含核心信息量（标题/增量数字），即使不点开也有价值。<br>
       ④ <span class="tbd">[TBD]</span> 模板类目可用性与字段上限以微信审核为准，文案模板预留可替换。
     </dd>
-    <dt>与 Bot 的关系</dt><dd>小程序用户默认不再走 Bot 推送；未迁移老用户维持 Bot 通道直至引导迁移完成。</dd>
+    <dt>与 Bot 的关系</dt><dd>Web 用户默认不再走 Bot 推送；未迁移老用户维持 Bot 通道直至引导迁移完成。</dd>
   </dl>
 </div>
 
@@ -377,6 +393,147 @@ tr:last-child td{border-bottom:none}
     <dt>触发</dt><dd>首页「+ 自由仿写」：粘贴小红书笔记链接，或直接输入首行标题+正文。</dd>
     <dt>规则</dt><dd>与 Bot 拉模式同源：链接 → 抓详情（视频笔记提取口播文案）→ 按用户定位仿写；纯文本 → 直接生产。探索与仿写共用 FR-04 任务流。</dd>
     <dt>异常</dt><dd>链接无效/抓取失败给出明确原因；视频提文案超时降级为仅看图拆解并标注。</dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-14</span><span class="fr-name">多平台拆解输入</span><span class="tag p1">P1</span><span class="tag evi">v1.2 补录</span></div>
+  <dl>
+    <dt>触发</dt><dd>「自由仿写」粘贴 B站 / YouTube / 抖音视频链接；或上传本地视频文件。</dd>
+    <dt>规则</dt><dd>
+      ① <strong>链接通道</strong>：平台自动识别——小红书（红狐，现状）/ B站 / YouTube（元数据+字幕+关键帧）/ 抖音（第三方解析 <span class="tbd">[TBD：服务商选型]</span>）；解析失败引导上传通道。<br>
+      ② <strong>上传通道</strong>（全平台兜底，合规首选）：抽音轨转写（ASR）+ 关键帧抽取 → 同一拆解管线；时长上限 10 分钟 <span class="tbd">[TBD]</span>。<br>
+      ③ 拆解产物与小红书拉模式同构，下游仿写/图卡/视频生产线全复用，不因平台分叉。<br>
+      ④ <strong>合规红线</strong>：仅拆解「结构与文案」用于原创仿写；不搬运原视频画面/音频成片。
+    </dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-15</span><span class="fr-name">视频多规格输出</span><span class="tag p1">P1</span><span class="tag evi">v1.2 补录</span></div>
+  <dl>
+    <dt>触发</dt><dd>已交付任务「生成视频版」增加规格选择。</dd>
+    <dt>规则</dt><dd><strong>9:16 竖版</strong>（抖音/快手/Shorts/视频号）与 <strong>16:9 横版</strong>（B站）两套参数化规格档，复用现有 TTS + 图卡合成链路，不新增生产线；独立子任务计号计费。</dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-16</span><span class="fr-name">爆款规律引擎（赛道模板提炼）</span><span class="tag p1">P1</span><span class="tag evi">v1.3 新增</span></div>
+  <dl>
+    <dt>定位</dt><dd>把「单篇拆解」升级为「多篇聚合拆解」——单篇爆款含偶然因素，多篇共性结构才是可迁移规律。竞品分析确认全市场无此能力。</dd>
+    <dt>触发</dt><dd>「选题」页 →「提炼赛道模板」；或「数据」页 →「把爆款变成模板」。</dd>
+    <dt>三步管线</dt><dd>
+      <div class="flow">
+        <span class="st">① 圈选样本</span><span class="ar">→</span>
+        <span class="st">② 对齐拆解</span><span class="ar">→</span>
+        <span class="st">③ 共性统计</span><span class="ar">→</span>
+        <span class="st done">④ 生成模板</span><span class="ar">→</span>
+        <span class="st">⑤ 喂给仿写生产</span><span class="ar">⇢</span>
+        <span class="st fail">⑤b 回采反写个人适配（P2）</span>
+      </div>
+      ① 自动圈选（默认）：按定位关键词取雷达近 30 天 Top 20；或手动勾选 5–50 篇。<br>
+      ② 统一维度：钩子类型 / 结构骨架 / 情绪曲线 / 标签组合 / 发布时段 / 互动增速形态（回采数据）。<br>
+      ③ 输出各槽位<strong>选项分布</strong>而非单一答案——例「开头钩子：反常识 71% / 提问 20%」「平均 4.2 段，段均 43 字」。<br>
+      ④ 可填空骨架 + 槽位选项分布 + 原文例证；可保存、命名、分享图片。<br>
+      ⑤ 仿写任务可选「按模板生成」——引用模板骨架而非单篇拆解。<br>
+      ⑤b 模板产出的笔记回采后效果自动标注回模板（「此模板在你的账号上高于你的均值 35%」）——从「市场统计」进化为「个人适配版」。
+    </dd>
+    <dt>模板生命周期</dt><dd>
+      <div class="flow">
+        <span class="st">building 生成中</span><span class="ar">→</span>
+        <span class="st done">ready 可用</span><span class="ar">→</span>
+        <span class="st">adapting 个人适配（P2）</span><span class="ar">→</span>
+        <span class="st fail">deprecated 已过气（可重提）</span>
+      </div>
+      保鲜期：模板头部展示「样本时间窗 + 最近验证时间」；超 90 天未验证标注「可能过气」。
+    </dd>
+    <dt>额度与边界</dt><dd>一次提炼计 1 次生产额度（FR-10）；样本 &lt;5 篇不允许发起；模板为结构规律，不含原文明文搬运（§3.3 红线）。</dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-17</span><span class="fr-name">翻红计划（存量笔记翻新）</span><span class="tag p1">P1</span><span class="tag evi">v1.3 新增</span></div>
+  <dl>
+    <dt>定位</dt><dd>博主不缺新笔记，缺的是救活已发布的存量。全部竞品都在做「增量生产」，无人做「存量运营」——识别潜力股恰恰需要回采时间序列数据。一篇翻红 ≈ 一篇新爆文，成本远低于写新篇。</dd>
+    <dt>算法依据</dt><dd>
+      <strong>候选池</strong>：已登记回采 ≥14 天、仍在 30 天回采窗口内的笔记。潜力股 = 两条信号同时命中：
+      <table style="margin:8px 0">
+        <tr><th style="width:110px">信号</th><th>定义</th><th>依据</th></tr>
+        <tr><td><b>S1 历史验证</b></td><td>发布 72h 内赞藏评总量位于该用户全部笔记<strong>前 30%</strong>（账号内相对分位）</td><td>内容本体曾被市场验证——排除「内容差」这个不可优化变量，失败原因在「包装」或「时机」</td></tr>
+        <tr><td><b>S2 增长停滞</b></td><td>近 7 天互动增量 &lt; 2</td><td>互动归零即退出推荐池；翻新（编辑触发重审与部分再推荐 <span class="tbd">[Assumption,TBD]</span>）机会成本低</td></tr>
+      </table>
+      <strong>诊断信号</strong>（为什么沉了 → 优化方向）：
+      <span class="sig">藏赞比偏高 → 改标题钩子与封面</span>
+      <span class="sig">评赞比偏高 → 换更大流量标签</span>
+      <span class="sig">增速前快后慢 → 全面翻新</span>
+      <span class="sig">对照赛道模板找结构偏离点</span><br>
+      <em>数据边界诚实声明：小红书不向第三方开放曝光/点击，算法全部基于账号内相对比较，不做跨账号绝对值判断。</em>
+    </dd>
+    <dt>交互逻辑（七步闭环）</dt><dd>
+      <div class="steps7">
+        <div class="step7"><b>① 入口</b><span>数据页「翻红计划」卡片——有潜力股时红点徽章 +「发现 N 篇潜力股」</span></div>
+        <div class="step7"><b>② 潜力股列表</b><span>封面缩略 + 三卡数据 + 诊断标签；「为什么是潜力股」折叠说明（S1/S2 命中详情，算法透明化）</span></div>
+        <div class="step7"><b>③ 诊断报告</b><span>历史表现曲线（72h vs 近7天）+ 编辑口吻归因（「藏的人多、赞的人少——内容有用，但标题没让人心动」）+ 与赛道模板偏离点</span></div>
+        <div class="step7"><b>④ 优化方案</b><span>新标题 ×3（不同钩子方向）+ 封面建议 + 标签调整建议；全部可编辑，可只采纳部分</span></div>
+        <div class="step7"><b>⑤ 执行跟办</b><span>四步 checklist：复制新标题 → 改封面 → 去小红书编辑已发布笔记 → 回来点「已完成编辑」</span></div>
+        <div class="step7"><b>⑥ 观察期</b><span>自动延续回采 7 天（复用每日回采，零额外消耗）；「翻红观察中 · 第 N 天」；翻红前基线 vs 翻红后增量双轴呈现</span></div>
+        <div class="step7"><b>⑦ 结论</b><span>见效（翻新后 7 天增量 ≥ 翻新前 2 倍）/ 无效；结论推模板消息；见效结构回流 FR-16 模板库</span></div>
+      </div>
+    </dd>
+    <dt>状态机</dt><dd>
+      <div class="flow">
+        <span class="st">candidate 候选</span><span class="ar">→</span>
+        <span class="st">diagnosed 已诊断</span><span class="ar">→</span>
+        <span class="st">optimizing 优化中</span><span class="ar">→</span>
+        <span class="st">observing 观察期7天</span><span class="ar">→</span>
+        <span class="st done">verdict 见效</span><span class="ar">/</span>
+        <span class="st fail">无效</span><span class="ar">→</span>
+        <span class="st">archived 归档</span>
+      </div>
+      任意状态可「放弃翻新」→ archived（记录原因）。
+    </dd>
+    <dt>额度与约束</dt><dd>诊断+方案生成计 1 次生产额度；观察期回采免费（手动刷新按 FR-06 计费）；同一笔记同时仅一条活跃记录；每月发起上限 <span class="tbd">[TBD：建议免费 2 次/月，付费 8 次/月——防高频编辑触发平台风控]</span>；未登记笔记无法翻新（翻红依赖回采数据，与 FR-05 登记率北极星同向）。</dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-18</span><span class="fr-name">AI 味检测与去 AI 味改写</span><span class="tag p1">P1</span><span class="tag evi">v1.3 新增</span></div>
+  <dl>
+    <dt>定位</dt><dd>政策联动的防御性刚需——平台已处置 120 万+ AI 托管账号并治理「AI 批量同质化」；博主的真实焦虑是「被限流」。与「人工过稿」战略纪律同构。</dd>
+    <dt>触发</dt><dd>任务交付时<strong>自动附带</strong>评分（不扣额度）；「我的 → AI 味检测」可手动检测任意文本。</dd>
+    <dt>评分模型</dt><dd>AI 痕迹评分 0–100（越高越像 AI）：可量化信号（句长方差 / 连接词密度 / 段落均质度 / emoji 节奏）+ 语义信号（口语化程度 / 个人化细节 / 「人味」表达）；权重 <span class="tbd">[TBD：人写/AI 文本对校准]</span>。</dd>
+    <dt>档位与动作</dt><dd>
+      <table>
+        <tr><th style="width:90px">档位</th><th style="width:80px">分值</th><th>展示与动作</th></tr>
+        <tr><td><b>安心</b></td><td>&lt;30</td><td>绿色徽章「读起来像你写的」</td></tr>
+        <tr><td><b>建议改</b></td><td>30–60</td><td>沙金徽章 + 高危片段划线标注 + 一键「去 AI 味改写」</td></tr>
+        <tr><td><b>强烈建议</b></td><td>&gt;60</td><td>珊瑚徽章 + 改写按钮高亮 +「批量同质化内容是平台治理对象」提示</td></tr>
+      </table>
+    </dd>
+    <dt>改写规则与边界</dt><dd>保留信息结构，改写方向 = 口语化 + 个人化（按人设插第一人称）+ 节奏不均质化；改写后自动复检。固定文案「评分帮助降低同质化风险，不代表平台审核结论」；不改变 FR-11 内容安全流程。</dd>
+  </dl>
+</div>
+
+<div class="fr">
+  <div class="fr-head"><span class="fr-id">FR-19</span><span class="fr-name">对话式 Agent（服务号对话框）</span><span class="tag p1">P1</span><span class="tag evi">v1.3 新增</span></div>
+  <dl>
+    <dt>定位</dt><dd>移动端最短输入路径——「微信里转发链接，爆款就拆好了」。竞品全是工具网站形态，无人做自有载体的原生对话式拆解；复用 ClawBot 15 条指令意图识别逻辑。</dd>
+    <dt>对话示意</dt><dd>
+      <div class="agent-chat">
+        <div class="msg user">http://xhslink.com/xxxx（刚刷到的爆款）</div>
+        <div class="msg bot"><b>已开始拆解</b>《3 个平价行李箱真实测评》<br>平台：小红书 · 预计 3 分钟 · 完成后通知你<br>（额度：今日剩余 4 次）</div>
+        <div class="msg user">选题</div>
+        <div class="msg bot"><b>今日 Top 3</b><br>1. 反常识收纳术 9.2 分<br>2. 周末citywalk路线 8.8 分<br>3. 出差护肤极简清单 8.6 分<br>回复 1/2/3 直接写</div>
+        <div class="msg user">2</div>
+        <div class="msg bot"><b>已入队</b> · 任务号 T-1024 · 完成后通知你</div>
+        <div class="msg user">换个开头，更口语一点</div>
+        <div class="msg bot"><b>已重写开头</b>（L2 追问打磨，共享任务上下文）<br>新版本 v2 已生成，点击查看全文 ↓</div>
+      </div>
+    </dd>
+    <dt>指令表（L1）</dt><dd>粘贴链接 → 自动拆解；「选题」→ Top 3 摘要；回复数字 → 确认生产；「效果」→ 昨日增量卡；「翻红」→ 潜力股提示；「成本」→ 近 7 天摘要；「帮助」→ 指令菜单。L2（P1 后半）：成品卡片后 48h 内自然语言追问（「换个开头」「更口语化」）。</dd>
+    <dt>通道规则</dt><dd>用户发消息后 48h 内客服消息即时回复 <span class="tbd">[TBD：条数上限]</span>；超窗事件通知走模板消息；失败降级链 = 客服消息 → 模板消息 → 站内待读。</dd>
+    <dt>边界</dt><dd>复杂操作一律引导 H5（「这个去网页操作更顺手」）；微信内不收款（iOS 公众号 H5 虚拟支付约束）——额度引导到官网收款页；视频不在对话内直发（下载体验差）；无法识别的消息兜底回复指令菜单，不做自由聊天。</dd>
+    <dt>鉴权与遗产</dt><dd>服务号 openid 与 Web 账号打通（网页授权）；对话操作权限同 H5（uid 硬隔离）。ClawBot 本体保留为种子用户实验通道；企微群 Bot（代运营协作）列 P2。</dd>
   </dl>
 </div>
 
@@ -544,9 +701,10 @@ tr:last-child td{border-bottom:none}
 <h3>7.1 通知策略（跨模块统一）</h3>
 <table>
   <tr><th style="width:110px">事件</th><th>通道与时机</th><th>降级</th></tr>
-  <tr><td>选题就绪</td><td>订阅消息，每日雷达完成后（默认 8:00 档）</td><td>首页红点待读</td></tr>
-  <tr><td>任务完成 / 失败</td><td>订阅消息，状态变更即时</td><td>生产 Tab 常驻 + 待读</td></tr>
-  <tr><td>数据日报</td><td>订阅消息，每日回采后（默认 9:00 档）；<strong>仅当日有增量才推</strong></td><td>数据页查看</td></tr>
+  <tr><td>选题就绪</td><td>服务号模板消息，每日雷达完成后（默认 8:00 档）</td><td>首页红点待读</td></tr>
+  <tr><td>任务完成 / 失败</td><td>服务号模板消息，状态变更即时</td><td>生产 Tab 常驻 + 待读</td></tr>
+  <tr><td>数据日报</td><td>服务号模板消息，每日回采后（默认 9:00 档）；<strong>仅当日有增量才推</strong></td><td>数据页查看</td></tr>
+  <tr><td>翻红观察结论（v1.3）</td><td>服务号模板消息，观察期满即时</td><td>数据页翻红报告</td></tr>
   <tr><td>授权请求</td><td>仅价值交换节点弹出，单日单用户 ≤1 次</td><td>静默跳过</td></tr>
 </table>
 
@@ -570,7 +728,7 @@ tr:last-child td{border-bottom:none}
 <table>
   <tr><th style="width:200px">问题</th><th>影响</th><th style="width:150px">状态</th></tr>
   <tr><td>小程序类目与资质（内容创作/效率工具类目是否需要额外资质）</td><td>能否过审、上架周期</td><td class="tbd">TBD · 提审前确认</td></tr>
-  <tr><td>订阅消息模板可用性（日报/任务类模板字段与频控）</td><td>FR-07 触达能力边界</td><td class="tbd">TBD · 申请模板验证</td></tr>
+  <tr><td>服务号模板消息类目与认证时效（v1.3 主通道）</td><td>FR-07/FR-19 触达与对话能力边界</td><td class="tbd">TBD · 认证后申请模板验证</td></tr>
   <tr><td>定价与免费额度（免费用户每日清单条数/生产篇数）</td><td>成本明细是否展示金额、会员入口呈现</td><td class="tbd">TBD · 商业化评审</td></tr>
   <tr><td>老 Bot 用户迁移节奏（强制/引导双轨期时长）</td><td>双通道并行成本</td><td class="tbd">TBD · 上线后定</td></tr>
   <tr><td>红狐依赖（笔记抓取与生图备源均为第三方转发，可用性/限流未知）</td><td>抓取降级语义（空态已定义重试路径）与生图通道 B/C 可用性</td><td class="tbd">TBD · 外部依赖跟踪</td></tr>
@@ -579,6 +737,18 @@ tr:last-child td{border-bottom:none}
 <h2 id="rev"><span class="no">§9</span>修订记录</h2>
 <table>
   <tr><th style="width:90px">版本</th><th style="width:110px">日期</th><th>说明</th></tr>
+  <tr>
+    <td><b>v1.2</b></td><td>2026-10-17</td><td>
+      依据 2026-10 系列产品决策（竞品调研 10 家 / 平台政策分析 / 商业模式分析）完成两轮升级，同步源：MD 版 PRD v1.3：
+      <ul style="margin:6px 0 0;padding-left:20px">
+        <li><b>形态改判（R19）</b>：主入口小程序 → 响应式 Web（移动 H5 + 桌面增强）；服务号升级「入口+触达+登录」三合一（网页授权静默登录）；官网收款页为收款主通道；小程序降 P2 观察项。§2.1/§2.2 重写。</li>
+        <li><b>用户分层重构（R18）</b>：核心付费用户上移至腰部博主（¥49）+ 高频创作者（¥99）+ 代运营（¥199+）；小白降为漏斗层；企业级不做；<b>赛道全面开放</b>。§1.1 重写。</li>
+        <li><b>数据闭环功能组合（R20）</b>：新增 FR-16 爆款规律引擎（多篇聚合提炼赛道模板 + 回采反写个人适配）、FR-17 翻红计划（存量笔记翻新，含算法依据与七步交互闭环）、FR-18 AI 味检测（政策联动防御性刚需）、FR-19 对话式 Agent（服务号对话框，ClawBot 指令逻辑平移）。产品叙事：「不只帮你写下一篇，还帮你救活上一批，并把规律存下来越用越准」。</li>
+        <li><b>补录 v1.2 多平台扩展</b>：FR-14 多平台拆解输入、FR-15 视频多规格输出（此前仅存在于 MD 版）。</li>
+        <li><b>战略纪律确立（R21）</b>：不打通用生成市场 / 「人工过稿」做成品牌资产 / 尽快建立数据飞轮。完整决策依据（竞品分析、政策环境、形态改判论证、用户分层依据）见 MD 版 PRD v1.3 附录 B。</li>
+      </ul>
+    </td>
+  </tr>
   <tr>
     <td><b>v1.1</b></td><td>2026-10-15</td><td>
       依三维度评审报告（有条件通过，8.2/10）完成修订，落实全部 P0 修订项：
@@ -596,8 +766,8 @@ tr:last-child td{border-bottom:none}
 </table>
 
 <div class="foot">
-  <span>小红书仿写助手 · 小程序版 PRD v1.1</span>
-  <span>评审修订稿 · 2026-10-15 · 上游：设计文档 v1.1 / v1.4.0 变更记录 / 评审报告 2026-10</span>
+  <span>爆款拆解仿写助手 · 响应式 Web 版 PRD v1.2</span>
+  <span>数据闭环扩展 + 形态改判 · 2026-10-17 · 上游：MD 版 PRD v1.3 / 设计文档 v1.1 / v1.4.0 变更记录 / 评审报告 2026-10</span>
 </div>
 
 </div>
