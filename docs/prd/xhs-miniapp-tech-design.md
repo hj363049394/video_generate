@@ -1,0 +1,685 @@
+# 小红书仿写助手 · 小程序版技术方案
+
+| 文档信息 | 内容 |
+|---|---|
+| **版本** | v1.0 |
+| **日期** | 2026-10-16 |
+| **需求依据** | 《小程序版 PRD v1.1》（docs/prd/xhs-miniapp-prd-v1.1.md）——13 项 FR、§6.4 组件语义规则、§7 共享规则 |
+| **可行性依据** | 《技术可行性分析 v1.0》（docs/prd/xhs-miniapp-tech-feasibility.md）——结论：方案 A 同进程挂载，合规链并行启动 |
+| **代码基线** | agent/ v1.4.0（重方案 / 效果回流 / 成本账本已上线），本文所有「现有」均指该基线 |
+| **架构决策** | D1 方案 A 同进程 · D2 原生小程序 · D3 本机磁盘 + 签名 URL · D4 SQLite WAL 单进程写 · D5 绑定码继承 · D6 MVP 仅文本安全检测 |
+
+---
+
+## 目录
+
+- [1 目标与范围](#1-目标与范围)
+- [2 总体架构](#2-总体架构)
+- [3 数据设计](#3-数据设计)
+- [4 接口设计](#4-接口设计)
+- [5 关键流程](#5-关键流程)
+- [6 模块详细设计](#6-模块详细设计)
+- [7 配置设计](#7-配置设计)
+- [8 安全设计](#8-安全设计)
+- [9 部署与运维](#9-部署与运维)
+- [10 测试与验收](#10-测试与验收)
+- [11 里程碑](#11-里程碑)
+- [12 演进路线（方案 B）](#12-演进路线方案-b)
+- [13 FR 追溯矩阵](#13-fr-追溯矩阵)
+- [14 开放技术问题](#14-开放技术问题)
+
+---
+
+## 1 目标与范围
+
+### 1.1 目标
+
+在同一进程内为现有 Bot Agent 增加小程序 API 层与触达基础设施，使 PRD v1.1 的 13 项 FR 全部落地；生产/数据链路（雷达、仿写、图卡、成本、回采、状态机）**零重写复用**，新建工作收敛为：API 壳、登录绑定、额度引擎、订阅消息、内容安全、签名资产、小程序前端。
+
+### 1.2 范围
+
+| 包含 | 不包含（另立项/远期） |
+|---|---|
+| FastAPI 同进程挂载 + 全部 REST 接口 | 网页管理后台（主理人多客户视图，P2） |
+| 登录、绑定码继承、账号注销 | 微信支付/订单系统（定价评审后另出方案，接口预留 `plan` 字段） |
+| 额度引擎、订阅消息、站内待读、内容安全 | 图片异步内容检测（`mediaCheckAsync`，提审加固阶段） |
+| 签名资产服务、质检结构化改造 | 数据库迁移 PostgreSQL / Worker 拆分（§12 触发后） |
+| 小程序前端 5 页 + 向导 + 详情页 | 直接生图、自动发布到小红书（PRD §3.3 明确不做） |
+
+### 1.3 与可行性文档的差异声明
+
+可行性分析预估「新增 3 张表」，本方案细化为 **5 张**（+`inbox`、+`task_rel`），原因：
+
+- `pending_push` 是 Bot 通道的**纯文本补发队列**，无法承载站内待读所需的结构化通知（类型/跳转载荷/已读状态）→ 新增 `inbox`；
+- PRD §7.4「同一任务重试不重复扣额」需要在**不改 tasks 表结构**的前提下记录重试链 → 新增 `task_rel`。
+
+其余架构结论（同进程挂载、SQLite WAL、绑定码、HMAC 签名资产）与可行性文档一致，不再重复论证。
+
+---
+
+## 2 总体架构
+
+### 2.1 架构图（方案 A：同进程挂载）
+
+```
+微信小程序（原生 WXML/WXSS，5 页 + 向导 + 详情）
+   │  HTTPS（已备案域名，request/downloadFile 合法域名同域）
+   ▼
+Nginx（单 VPS：TLS 终结 + 反向代理，不暴露目录）
+   ├─ /api/*            → FastAPI ⊕ Bot 同进程（共享 asyncio 事件循环）
+   │    ├─ auth         wx.login code2session → openid ⇄ uid 映射 + 绑定码继承
+   │    ├─ routes       选题 / 任务 / 交付登记 / 数据看板 / 额度 / 成本（读写 SQLite）
+   │    ├─ quota        额度引擎（服务端闸门，FR-10 唯一裁决点）
+   │    ├─ notifier     通道路由（§5.4）：Bot 通道 / 订阅消息通道 / 站内待读兜底
+   │    ├─ wxclient     access_token 中心缓存 + subscribeMessage.send + msgSecCheck
+   │    └─ assets       签名 URL 签发与校验 → workspace 文件
+   │
+   ├─ 现有执行体（零改动复用）
+   │    ├─ Router._run_task        任务执行器（queued→rewriting→imaging→delivered/failed）
+   │    ├─ radar_push_loop         每日雷达：全局清单 + 每用户独立评分（重方案）
+   │    ├─ metrics_collection_loop 每日回采：近 30 天赞藏评 + 增量
+   │    └─ costing                 成本账本（ContextVar scope 绑定，记账不改）
+   │
+   └─ SQLite（state.{bot}.db，WAL，单进程写）
+        tasks / user_profiles / cost_log / pending_push   ← 现有，零迁移
+        openid_map / quota / sub_auth / inbox / task_rel  ← 新增 5 表
+```
+
+### 2.2 进程模型
+
+| 运行形态 | 命令 | 用途 |
+|---|---|---|
+| Bot + API（生产） | `python3 main.py --profile {p} --api` | 单进程同时服务微信 Bot 与小程序 |
+| 仅 API（联调/灰度） | `python3 main.py --api-only` | 不启动微信适配器，跑雷达/回采循环 + API |
+| 仅 Bot（回退） | `python3 main.py --profile {p}` | 现状不变，作为回退开关 |
+
+共存要点：`uvicorn.Server` 以 `asyncio.create_task` 挂入主循环。**坑位**：`uvicorn.Server.serve()` 默认安装自己的信号处理器，会接管 SIGINT/SIGTERM 导致 Bot 退出逻辑失效——启动前须禁用（`server.install_signal_handlers = lambda: None`），由 `main.run()` 统一处理退出。
+
+### 2.3 新增代码组织
+
+```
+agent/
+  api/                      # 全部新增后端
+    __init__.py
+    app.py                  # FastAPI 实例、路由注册、uvicorn 共存入口
+    auth.py                 # code2session、HMAC token、绑定码签发/核销
+    deps.py                 # FastAPI 依赖：get_uid（token→uid）、db、quota 门
+    schemas.py              # pydantic 请求/响应模型（统一包络）
+    quota.py                # 额度引擎（§6.3）：唯一写 quota 表的模块
+    notifier.py             # Notifier 抽象 + Bot/Mini 实现 + 通道路由（§5.4）
+    wxclient.py             # access_token 单飞缓存、subscribeMessage.send、msgSecCheck
+    assets.py               # 签名 URL 签发/校验（HMAC-SHA256）
+    routes/
+      auth.py  profile.py  topics.py  tasks.py
+      metrics.py  quota.py  costs.py  notify.py  inbox.py
+  bot/router.py             # 小改：质检结构化、安全拦截钩子、完成回调走 Notifier、retry 记 task_rel
+  bot/quality.py            # 小改：新增 build_quality_report() -> dict（纯函数）
+  main.py                   # 小改：--api/--api-only、循环推送目标改走 Notifier
+miniprogram/                # 小程序前端（独立工程，§6.8）
+```
+
+依赖新增：`fastapi`、`uvicorn`（其余全部标准库/现有依赖；`pycryptodome` 不需要，HMAC 用标准库 `hmac`）。
+
+---
+
+## 3 数据设计
+
+### 3.1 现有表（零迁移，直接复用）
+
+| 表 | 小程序用法 | 备注 |
+|---|---|---|
+| `tasks` | 全部读写；进度轮询读 `status`；交付页读 `detail`（topic JSON）+ workspace 产物 | `uid` 即隔离边界（§7.3） |
+| `user_profiles` | 定位读写（FR-02） | 与 Bot `/定位` 同源同格式 |
+| `cost_log` | FR-08 只读（`costing.summary`） | scope=任务ID / radar:日期 / adhoc |
+| `pending_push` | 不动；仅 Bot 通道补发队列继续使用 | 小程序兜底走 `inbox`（§1.3） |
+
+### 3.2 新增表 DDL
+
+```sql
+-- openid ⇄ uid 映射 + 绑定码（FR-01，§5.1）
+CREATE TABLE IF NOT EXISTS openid_map(
+    openid      TEXT PRIMARY KEY,      -- 小程序 openid
+    uid         TEXT NOT NULL,         -- 新用户 = openid；绑定老用户 = 原 wxid_*
+    bind_code   TEXT,                  -- 待核销的一次性绑定码（老用户侧由 Bot 签发）
+    bind_expires REAL,                 -- 绑定码过期（15 分钟）
+    bound_at    REAL,                  -- 绑定完成时间；NULL = 未绑定的新用户
+    created     REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_openmap_uid ON openid_map(uid);
+
+-- 每日额度（FR-10；date 为北京时间 YYYY-MM-DD，换日即自然重置，无需定时任务）
+CREATE TABLE IF NOT EXISTS quota(
+    uid         TEXT NOT NULL,
+    date        TEXT NOT NULL,
+    list_served INTEGER NOT NULL DEFAULT 0,   -- 当日清单是否已计费下发（0/1）
+    list_viewed INTEGER NOT NULL DEFAULT 0,   -- 当日已下发选题条数
+    produced    INTEGER NOT NULL DEFAULT 0,   -- 当日净占用生产次数（不变式见 §5.2）
+    PRIMARY KEY(uid, date)
+);
+
+-- 订阅消息授权额度（FR-07：一次「允许」= 一次可发送）
+CREATE TABLE IF NOT EXISTS sub_auth(
+    uid          TEXT NOT NULL,
+    template_key TEXT NOT NULL,            -- topic_daily / task_done / metrics_daily
+    remain       INTEGER NOT NULL DEFAULT 0,
+    updated      REAL,
+    PRIMARY KEY(uid, template_key)
+);
+
+-- 站内待读（FR-07 降级兜底：首页红点 + 角标，打开必达）
+CREATE TABLE IF NOT EXISTS inbox(
+    id     INTEGER PRIMARY KEY AUTOINCREMENT,
+    uid    TEXT NOT NULL,
+    kind   TEXT NOT NULL,                  -- topic_daily / task_done / task_failed / metrics_daily / register_remind
+    payload TEXT NOT NULL,                 -- JSON：{title, jump, digest}（跳转路径 + 核心信息量）
+    created REAL NOT NULL,
+    read_at REAL                           -- NULL = 未读
+);
+CREATE INDEX IF NOT EXISTS idx_inbox_unread ON inbox(uid, read_at);
+
+-- 任务派生关系（不改 tasks 表结构；重试链 + 渠道来源）
+CREATE TABLE IF NOT EXISTS task_rel(
+    task_id  TEXT PRIMARY KEY,             -- 新任务
+    retry_of TEXT,                         -- 被重试的失败任务；非重试为 NULL
+    origin   TEXT NOT NULL DEFAULT 'miniapp'  -- miniapp / bot（对账与通道路由用）
+);
+```
+
+### 3.3 uid 规则（一处定义）
+
+| 用户 | uid 取值 | 说明 |
+|---|---|---|
+| 小程序新用户 | `uid = openid` | 微信 openid 为字母数字串，可直接作 `workspace/{bot}/users/{safe_uid}/` 目录名；与 Bot `wxid_*` 命名空间天然隔离 |
+| 绑定继承的 Bot 用户 | `uid = 原 wxid_*` | `openid_map.openid → wxid_*`；继承定位/任务/发布记录/成本（§5.1） |
+
+**通道路由判定**：`uid ∈ openid_map` → 小程序通道；否则 → Bot 通道（未迁移老用户维持 Bot 推送，PRD FR-07）。
+
+### 3.4 workspace 文件布局（不变）
+
+```
+workspace/{bot}/
+  topic_list_{date}.json                    # 全局清单（无定位用户回退）
+  users/{safe_uid}/
+    topic_list_{date}.json                  # 用户专属清单（重方案）
+    {task_id}/
+      images/*.jpg  xhs_copy.txt  analysis.json
+      quality_report.txt  video.mp4         # 现有产物
+```
+
+---
+
+## 4 接口设计
+
+### 4.1 约定
+
+- Base：`https://{备案域名}/api`；JSON over HTTPS；除 `POST /auth/login` 外均带 `Authorization: Bearer {token}`。
+- 统一包络：`{"code": 0, "message": "ok", "data": {...}}`；`code != 0` 时前端按 §4.4 错误码表处理。
+- 时间戳统一 unix 秒；日期统一北京时间 `YYYY-MM-DD`（服务端以 `Asia/Shanghai` 换算，客户端不自行判断重置点）。
+- 异步接口（生产/抓取/回采）返回 `202 + 任务/受理标识`，前端轮询或等订阅消息。
+
+### 4.2 接口清单（P0 19 个 / P1 4 个）
+
+| # | 方法 | 路径 | FR | 说明 |
+|---|---|---|---|---|
+| 1 | POST | `/auth/login` | 01 | `{code}` → code2session → 签发 token；返回 `{token, uid, has_profile, is_bound, unread}` |
+| 2 | POST | `/auth/bind` | 01 | `{bind_code}` → 核销并继承 Bot 数据；返回合并统计 |
+| 3 | POST | `/account/deactivate` | 11 | 注销：二次确认由前端承担，服务端清数据 + 解绑（§8.3） |
+| 4 | GET | `/profile` | 02 | 当前定位（persona/keywords/updated） |
+| 5 | PUT | `/profile` | 02 | 保存定位 → 触发首份专属清单（异步）；返回 `{topic_state: "generating"}` |
+| 6 | GET | `/topics?date=` | 03 | 今日/历史清单；内含额度服务、空态三分类、降级标注（§5.6） |
+| 7 | POST | `/topics/refresh` | 03 | 按需重抓（异步受理）；每用户每日限 2 次 `42903` `[TBD：限次随成本评估]` |
+| 8 | POST | `/topics/explore` | 03 | P1 主题探索（门槛放开，响应标注 `explore: true`） |
+| 9 | POST | `/tasks` | 04 | `{topic_index, angle?}` → 额度校验 → 入队；`202 {task_id}` |
+| 10 | GET | `/tasks?view=unregistered\|all` | 04/05 | 生产 Tab 列表；`unregistered` 含 48h 未登记置顶提醒条 |
+| 11 | GET | `/tasks/{id}` | 04/05 | 详情：状态步进、图片签名 URL、文案、质检徽章、拆解折叠、登记态 |
+| 12 | POST | `/tasks/{id}/retry` | 04 | 重试：二次确认由前端承担；服务端按 §5.2 处理额度 |
+| 13 | POST | `/tasks/{id}/angle` | 04 | 换角度重新生产（新任务，正常扣额） |
+| 14 | POST | `/tasks/{id}/video` | 04 | P1 视频子任务（独立计号计费，走既有 `/视频` 路径） |
+| 15 | POST | `/publish` | 06 | `{url}` → 校验域名 → 关联最近一条未登记已交付任务 |
+| 16 | DELETE | `/publish/{task_id}` | 06 | 解绑（保留最后一次 metrics 快照，停止回采） |
+| 17 | POST | `/metrics/{task_id}/refresh` | 06 | 手动刷新单条（成本记该用户账本，不计额度） |
+| 18 | GET | `/metrics` | 06 | 看板：三卡（总量+今日增量）、30 天趋势、三态标签、失败项标注 |
+| 19 | GET | `/quota` | 10 | 余量 + 重置时间（首页刊头条、我的页） |
+| 20 | GET | `/costs?task_id=\|days=` | 08 | 单篇明细 / 近 7 天汇总（付费展示金额，免费仅用量，§7） |
+| 21 | POST | `/notify/report` | 07 | `requestSubscribeMessage` 回调后上报 `{template_keys[]}` → `sub_auth.remain+1` |
+| 22 | GET | `/inbox` | 07 | 站内待读列表 + 未读数；已读上报：`POST /inbox/read` |
+| 23 | GET | `/assets/{uid}/{task_id}/{file}` | 05 | 签名静态资源（§5.7）；`?exp=&sig=` |
+| 24 | GET | `/metrics/weekly` | 12 | P1 周报海报数据（增量聚合 + 最佳笔记） |
+| 25 | GET | `/guide` | 13 | P1 新手指南内容（亦可纯前端静态，二选一实现） |
+
+### 4.3 关键响应结构（节选）
+
+```jsonc
+// GET /topics —— 额度服务 + 空态 + 降级，一段响应全部表达（PRD FR-03/FR-10）
+{
+  "code": 0, "data": {
+    "date": "2026-10-16",
+    "state": "ok",                 // ok | generating | empty_filtered | failed | no_list
+    "degraded": false,             // true = 展示的是昨日清单（回落降级）
+    "explore": false,
+    "items": [ /* 默认层+展开层字段按 §6.4 信息分级原样下发，前端不做二次截断 */ ],
+    "total": 12, "locked_count": 7, "locked_reason": "quota",
+    "quota": {"limit": 5, "served": 5, "remain": 0}
+  }
+}
+
+// GET /tasks/{id} —— 交付页一次取全（PRD FR-05：交付一次呈现全部成品）
+{
+  "code": 0, "data": {
+    "task_id": "t20261016_xxxx", "status": "delivered",
+    "stages": {"rewrite": "done", "imaging": "done", "deliver": "done"},
+    "images": [{"url": "https://…/assets/…?exp=…&sig=…", "cover": true}],
+    "copy": {"title": "…", "body": "…", "tags": ["…"]},
+    "quality": {"passed": true, "checks": [{"key": "title_bait", "label": "标题党检测", "passed": true, "detail": ""}]},
+    "analysis": {"dimensions": ["…"], "vision_used": true},
+    "published": {"url": "…", "registered_at": 0, "metrics": {"likes": 12, "collects": 3, "comments": 1}},
+    "follow_up": [{"key": "copy", "done": true}, {"key": "save", "done": false},
+                  {"key": "publish", "done": false}, {"key": "register", "done": false}]
+  }
+}
+```
+
+### 4.4 错误码表（服务端唯一出口）
+
+| code | HTTP | 语义 | 前端行为 |
+|---|---|---|---|
+| 0 | 200 | 成功 | — |
+| 40101 | 401 | token 无效/过期 | 静默 `wx.login` 重登换发（用户无感），失败才提示 |
+| 40301 | 403 | 绑定码无效/过期 | 提示重新在 Bot 发 `/绑定` |
+| 40401 | 404 | 任务不存在 | 返回列表页 |
+| 40402 | 404 | 清单不存在 | 按空态三分类渲染（state 字段） |
+| 40901 | 409 | 内容安全拦截（交付被拦） | 「内容需调整，正在重新生成」态 |
+| 40902 | 409 | 链接已被其他任务关联 | 提示先解绑或选择其他任务 |
+| 42201 | 422 | 链接格式非法（非 xiaohongshu.com/xhslink.com） | 输入框即时校验文案 |
+| 42202 | 422 | 定位不完整（人设/关键词至少一项） | 回向导对应步骤 |
+| 42901 | 429 | 生产额度不足 | 按钮置灰 + 升级引导（FR-10） |
+| 42902 | 429 | 选题额度不足 | locked 条目 + 升级引导 |
+| 42903 | 429 | 抓取频率限制 | 提示明日再试 |
+| 50001 | 500 | 内部错误 | 重试 + 反馈入口 |
+| 50301 | 502 | 抓取上游失败 | 回落昨日清单（degraded=true） |
+| 50401 | 504 | 上游超时 | 同 50301 |
+
+---
+
+## 5 关键流程
+
+### 5.1 登录与绑定码继承（FR-01，可行性 §3.1 方案 a）
+
+```
+小程序 wx.login(code)
+  → POST /auth/login
+  → wxclient.code2session(code) → openid
+  → openid_map 查 openid：
+      命中 → uid = map.uid（老用户/已绑定）
+      未命中 → uid = openid，插入 openid_map（新用户，bound_at=NULL）
+  → 签发 token = HMAC(token_secret, openid|exp30d) → 返回
+```
+
+绑定码继承（老用户把 Bot 数据带到小程序）：
+
+```
+① 老用户在 Bot 发「/绑定」→ Router 生成 6 位一次性码
+   写 openid_map(uid=wxid_*, bind_code=码, bind_expires=now+15min)   ← 预留行，openid 先置 ""
+② 小程序登录后输码 → POST /auth/bind
+   → 查 bind_code 匹配且未过期 → 将该行 openid 更新为新用户 openid
+   → 删除步骤①前新用户自己 uid=openid 产生的空数据（定位/任务若无则跳过）
+   → bound_at=now；此后该 uid 走小程序通道（§5.4 通道路由自动切换）
+③ 新用户登录若发现 openid_map 已有同 openid（绑定发生在登录后）→ 下次 token 校验自动生效
+```
+
+边界（PRD FR-01）：绑定码错误/过期 → `40301`，数据按新用户继续可用；继承失败不阻塞浏览。
+
+### 5.2 生产额度：扣减与返还不变式（FR-10 / PRD §7.4）
+
+PRD 两条规则「失败自动返还」+「重试不重复扣额」若直接组合会产生漏洞（失败返还后重试免费 → 成功白嫖）。本方案以**不变式**消歧：
+
+> **任何时刻：`quota.produced` = 进行中任务数 + 已交付任务数**（同一选题反复生产的每次生产独立计，任务号区分）。
+
+实现规则（quota.py 唯一裁决）：
+
+| 动作 | produced | 说明 |
+|---|---|---|
+| 新生产入队成功（POST /tasks、/angle） | +1 | 扣额时机=入队成功（PRD §7.4） |
+| 任务终态 failed | −1 | 自动返还（Router 状态机回调） |
+| **重试**入队（task_rel.retry_of 非空） | +1 | **重新占用**：原任务已返还，重试把该额度核销回来 |
+| 重试任务失败 | −1 | 同返还，可无限次重试，链条上净占用恒 ≤1 |
+
+示例：入队(+1) → 失败(−1，用户额度恢复) → 重试(+1，净占用回到 1) → 交付。用户视角「失败不亏、重试不重复扣」，系统视角永无负泄漏。**此为实现口径的权威定义**，PRD §7.4 语义不变。
+
+- 校验点：`POST /tasks`、`/angle`、`/retry` 入队前；`produced >= free_productions` → `42901`。
+- 选题额度：GET /topics 首次下发时 `list_viewed = min(len(items), free_list_items)`，`list_served=1`；同日重复 GET 不再计费（防小白反复打开被扣）；「重新抓取」覆盖清单后重置 `list_served` 允许再计一次。
+- 付费档：`quota` 校验读取 `plan(uid)`（MVP 恒为 free），未来付费仅改该函数。
+
+### 5.3 交付与内容安全拦截（FR-05 / FR-11）
+
+```
+_run_task 现有链路（rewrite → originality → layout → imagepack → deliver）
+  新增钩子（router.py 小改）：
+  ① rewrite 产出 xhs_copy 后：msgSecCheck(title+body, openid)
+     ├─ 通过 → 继续（现状路径）
+     ├─ 不通过 → 自动重写一次（同 task scope 计费，进度页显示「内容需调整，正在重新生成」）
+     │    └─ 连续 2 次不通过 → status=failed，detail="内容安全拦截，已转人工处理提示"
+     └─ Bot 通道任务（无 openid）→ 跳过检测，质检报告标注「未检测（Bot 渠道）」
+  ② FR-09 直发输入（链接抓取的文本 / 表单正文）→ 入队前同规则预检
+  ③ 图片：MVP 沿用生图通道自带审核（D6）；mediaCheckAsync 列提审加固（§14）
+```
+
+### 5.4 触达通道路由（FR-07 / PRD §7.1 三通道）
+
+收敛为 `Notifier` 抽象，替换 main.py 两循环与 Router 完成回调中对 `adapter.push_text` 的直调：
+
+```python
+class MiniNotifier:                      # uid ∈ openid_map
+    async def push(self, uid, kind, payload) -> str:
+        if remain = sub_auth[uid, kind] > 0:
+            r = wxclient.subscribe_send(uid, kind, payload)
+            if r == 0:        sub_auth.remain -= 1; return "sent"
+            if r == 43101:    sub_auth.remain = 0   # 授权已失效，同步状态
+        inbox.insert(uid, kind, payload)        # 无授权/失败 → 站内待读兜底
+        return "inbox"
+
+class BotNotifier:                       # uid ∉ openid_map（未迁移老用户）
+    async def push(self, uid, kind, payload):
+        text = render_text(kind, payload)    # 复用现有 format_* 文案
+        try: await adapter.push_text(uid, text)
+        except Exception: router.queue_push(uid, text)   # 现有补发队列
+```
+
+`route(uid)` 依 §3.3 判定；调用方 6 处接入：雷达用户清单推送、数据日报、任务完成、任务失败、48h 未登记提醒（新定时）、高价值事件（P1 数据突增）。**同端互斥**由通道路由天然保证（一个 uid 只命中一条通道）。48h 未登记提醒为新增轻量定时（每日 1 轮，扫 `delivered` 且未登记且超 48h 的任务，每任务只提醒 1 次——用 `inbox`/推送是否已发过来去重）。
+
+### 5.5 每日雷达双端改造（FR-03 / FR-07）
+
+`radar_push_loop` 现有结构不变（全局雷达 + 每用户独立评分），仅改推送目标：
+
+- 全局清单：仍推 `home_uid`（Bot 通道，主理人视角）；
+- 用户清单：`all_user_profiles()` 遍历结果中，小程序用户（uid ∈ openid_map）走 `MiniNotifier.push(kind="topic_daily")`——payload 含前 3 条标题摘要（PRD FR-07 模板字段）；
+- 新小程序用户保存定位（PUT /profile）后**立即触发一次**个人雷达（同进程直调 `run_radar(user_id=uid)`，不再等次日 8 点）——PRD FR-02「提交即生成首份专属清单」。
+
+### 5.6 清单接口的空态与降级（FR-03）
+
+GET /topics 服务端裁决 `state`：
+
+| state | 条件 | 前端渲染 |
+|---|---|---|
+| generating | 用户刚保存定位，首份清单未落盘 | 「清单生成中」抓取态 |
+| ok | 专属清单存在（或回退全局清单 + `fallback: true` 标注） | 卡片流（回退时显著标注「通用清单 · 设置定位后更准」） |
+| empty_filtered | 清单存在但达标条目为空 | 漏斗数据（抓取 N → 达标 0）+ 放宽关键词建议 |
+| failed | 用户触发的按需抓取失败且无历史 | 失败原因 + 重试 |
+| no_list | 无任何清单 | 「去设置定位」引导 |
+
+降级（评审 N5）：专属/全局清单抓取异常时，读**昨日**清单文件并在响应中置 `degraded: true`，前端显著标注「数据为昨日 · 抓取暂时不可用」，不白屏。
+
+### 5.7 静态资产签名（FR-05 / 风险 R7）
+
+- 签发：任务详情响应组装时，对每个图片路径生成 `exp = now + 7d`、`sig = HMAC-SHA256(asset_secret, f"{uid}/{task_id}/{file}|{exp}")`；
+- 校验：assets 路由校验 sig 与 exp（FastAPI 侧单点实现，HMAC secret 与签发同源）；UID 路径段必须与 token 解出的 uid 一致（**双保险**：签名 + 归属校验，跨用户枚举无法通过）；
+- MVP 由 FastAPI `FileResponse` 直出（单 VPS、图卡小、QPS 低）；若后续带宽成瓶颈，切 Nginx `secure_link`（同一 HMAC 算法），接口签名不变；
+- 「重新取图」（FR-05 异常）：GET /tasks/{id} 重新签发即可（exp 过期自然触发）。
+
+### 5.8 效果回采与数据叙事（FR-06）
+
+`metrics_collection_loop` 逻辑零改动，仅日报推送走 Notifier。GET /metrics 聚合时计算三态标签（服务端唯一口径，前端只渲染）：
+
+```
+surging  冲榜中：发布 ≤7 天 且 日均增量 ≥ surging_min_daily_delta
+steady   平稳：其余
+longtail 长尾：发布 >14 天 且 日增量 ≈ 0        ← 阈值入 config，随上线数据校准 [TBD]
+```
+
+单条回采失败不影响其余（现状语义保留）：响应中该条带 `last_ok_at` 与 `last_error`，前端标注「上次成功数据 + 失败时间」。
+
+---
+
+## 6 模块详细设计
+
+### 6.1 鉴权（api/auth.py）
+
+- token：`base64(payload).sig`，`payload = openid|exp`；HMAC-SHA256，secret 来自 `miniapp.token_secret`（≥32 字节随机值，入 config/env，不入库）。
+- 校验依赖 `get_uid`：解 token → openid → openid_map 查 uid → 注入请求上下文；openid_map 无记录（已注销）→ 40101。
+- 无 refresh-token 机制：`wx.login` 本身静默，过期后前端静默重登换发即可（PRD「登录态静默保持」）。
+- `session_key` 不落库、不下发前端（MVP 无需解密手机号；D5 采用绑定码）。
+
+### 6.2 wxclient（api/wxclient.py）
+
+- `access_token` 中心缓存：内存 + `asyncio.Lock` 单飞刷新，提前 5 分钟过期；**40001/42001 时强制刷新一次并重放请求**（防并发下的旧 token 抖动）。
+- `subscribe_send(uid, kind, payload)`：按 template_key 组装 data 字段（模板文案字段预留可替换，PRD FR-07.6）；errcode 映射：0 成功 / 43101 授权失效（sub_auth 清零）/ 其他 → inbox 兜底。
+- `msg_sec_check(openid, text)`：`scene` 与字段以最新接口文档为准 `[TBD]`；超长文本分次检测（标题+正文 ≤ 2500 字符约束）。
+- 服务号通道：MVP 预留接口位（`Notifier` 的第三个实现类），待服务号认证与模板验证通过后接入（§14）。
+
+### 6.3 额度引擎（api/quota.py）
+
+quota 表唯一写入方；全部操作在单进程内用 `sqlite3` 事务完成，无需分布式锁。对外仅 3 个函数：
+
+```python
+check(uid, kind) -> (allowed: bool, quota_view)     # POST /tasks 与 GET /topics 调用
+consume(uid, kind, n=1)                             # 入队成功/首次下发
+refund(uid, kind, n=1)                              # 任务 failed 回调
+```
+
+日期键统一北京时间；0 点换日由主键 `(uid, date)` 自然切分，**无需重置定时任务**。
+
+### 6.4 质检结构化（bot/quality.py 小改）
+
+新增 `build_quality_report(...) -> dict`（checks 数组，key/label/passed/detail），现有 `render_quality_report` 改为消费该 dict 渲染文本——Bot 端交付消息形态不变（回归零风险），小程序交付页徽章读 dict（经 GET /tasks/{id} 下发）。
+
+### 6.5 Router 侧小改清单（bot/router.py）
+
+| 改动点 | 内容 | 对应 |
+|---|---|---|
+| 重试登记 | retry 入口写 `task_rel(new_id, retry_of=old_id)` | §5.2 |
+| 完成回调 | `_run_task` 终态处调用 `notifier.push(kind=task_done/task_failed)` | §5.4 |
+| 安全钩子 | 交付前 msgSecCheck + 拦截重写流 | §5.3 |
+| 绑定指令 | `/绑定` 签发一次性码写 openid_map | §5.1 |
+| 质检调用 | 改用 build_quality_report 取 dict | §6.4 |
+
+### 6.6 小程序前端（miniprogram/，原生栈）
+
+**页面清单**（底部四 Tab + 2 独立页，对应 PRD §6.3）：
+
+| 路由 | 页面 | FR | 要点 |
+|---|---|---|---|
+| `pages/index` | 选题（Tab1） | 03/10 | 刊头（日期+余量条）、卡片流（首推实心 CTA）、下拉刷新、空态三分类、降级横幅 |
+| `pages/onboarding` | 定位向导（非 Tab，隐藏 tabbar） | 02 | 三步一屏、节点连线进度、一键示例、隐藏 tabbar 用自定义导航实现 |
+| `pages/produce` | 生产（Tab2） | 04/05 | 进行中步进卡、失败卡（重试+换通道）、48h 未登记置顶提醒条 |
+| `pages/delivery` | 交付详情（`?task_id=`） | 05 | 质检徽章区、图卡轮播+保存、文案复制、跟办 checklist、拆解折叠区 |
+| `pages/data` | 数据（Tab3） | 06 | 三卡（总量+增量色）、30 天趋势、三态标签、左滑解绑、登记入口 |
+| `pages/mine` | 我的（Tab4） | 08/10/11/13 | 额度全景、成本入口、协议、新手指南、注销 |
+| `pages/register` | 登记发布链接（从跟办清单/数据页进） | 06 | 粘贴→校验→关联确认 |
+
+**组件语义规则落地**（PRD §6.4 为验收强约束，写进 `miniprogram/utils/semantic.js` 单一实现，页面不得自行解释）：
+
+| 规则 | 实现位置 |
+|---|---|
+| 评分条颜色映射（≥9.0 墨绿 / 8.0–8.9 沙金 / <8.0 纸灰 #C9BFA8） | `semantic.scoreColor(v)` |
+| CTA 主次（首推实心珊瑚 + 徽章，其余描边） | index 页 `is_first_pick = (index === firstPickIndex)`，服务端下发标记 |
+| 热度 chip（≥80 珊瑚底白字 / <80 纸灰签） | `semantic.hotChip(v)` |
+| 单位格式化（≥1万 → `X.X万`，清单与看板同函数） | `semantic.fmtCount(n)` |
+| 增量色（正墨绿/负珊瑚/零纸灰） | `semantic.deltaColor(n)` |
+| 数据叙事三态 | 服务端下发 `narrative` 字段，前端仅渲染 |
+| 字号底线（正文 ≥12px / 注释 ≥10px） | 全局 wxss 变量 `--fs-body: 28rpx` 等 |
+
+**设计 Tokens**（PRD §6.2）落 `miniprogram/app.wxss` CSS 变量：米纸白 `#FAF6EF` 底、珊瑚 `#E8553F` 主 CTA、墨绿 `#1F3D2B` 数据、沙金 `#D9A441` 预警、纸边 `#E5DCCB` 描边、卡片 1px 纸边 + 2px 偏移硬影 + 12px 圆角；卡片 stagger 入场 50ms；按钮按压 0.97；深色模式不做。
+
+**字体**：思源宋体仅标题/数字，`pyftsubset` 按页面标题字符集子集化（<100KB）随静态资源发布，`wx.loadFontFace` 加载；失败静默降级 苹方 → 系统黑体（渐进增强，不阻塞首屏）。
+
+**登录态与静默重登**：`utils/request.js` 统一封装——40101 时自动 `wx.login` 重登一次并重放请求；授权上报（`/notify/report`）只在三个价值交换节点调用（提交定位后 / 复制文案后 / 打开数据页后），单日单用户最多 1 次（本地 `wx.storage` 记当日已请求）。
+
+---
+
+## 7 配置设计
+
+`config.yaml` 新增段（示例值，`[TBD]` 项随评审定）：
+
+```yaml
+server:
+  api_host: "127.0.0.1"          # Nginx 反代到本机
+  api_port: 8731
+  public_base: "https://xhs.example.com"   # 备案域名（资产签名域）
+  asset_secret: ""               # ≥32 字节随机，签名 URL
+
+miniapp:
+  app_id: ""
+  app_secret: ""
+  token_secret: ""               # 登录 token HMAC 密钥
+  templates:                     # 订阅消息模板 ID（申请通过后填）
+    topic_daily: ""
+    task_done: ""
+    metrics_daily: ""
+  quota:
+    free_list_items: 5           # [TBD：定价评审] 每日选题查看条数
+    free_productions: 2          # [TBD：定价评审] 每日生产次数
+  refresh_daily_limit: 2         # 每用户每日按需重抓上限
+  content_check: true            # msgSecCheck 开关（提审前必须 true）
+  narrative:                     # 数据叙事三态阈值 [TBD：上线校准]
+    surging_window_days: 7
+    surging_min_daily_delta: 5
+    longtail_days: 14
+```
+
+环境变量回填沿用 `_apply_env` 模式：`WXAPP_APP_SECRET`、`WXAPP_TOKEN_SECRET`、`ASSET_SECRET`。
+
+---
+
+## 8 安全设计
+
+### 8.1 越权防护（PRD §7.3）
+
+- **uid 边界硬隔离**：所有路由经 `get_uid` 依赖取 uid，SQL 一律 `WHERE uid=?`；任务详情额外校验 `task.uid == uid`（防遍历 task_id）。
+- 资产双保险：签名校验 + 路径 uid 与 token uid 一致性校验（§5.7）。
+- 管理类操作（解绑、注销）二次确认由前端承担，服务端执行不可逆动作前再校验归属。
+
+### 8.2 密钥与凭据
+
+- `token_secret` / `asset_secret` / `app_secret` 仅存 config/env，不落库、不进日志；日志不打印 token/openid 全文（前 6 位 + 长度）。
+- 微信 `session_key` 不落库不下发（§6.1）。
+
+### 8.3 注销（FR-11）
+
+`POST /account/deactivate` 事务：
+
+1. `openid_map` 查 uid → 删除该映射（openid 解绑，token 立即失效——`get_uid` 查无记录即 40101）；
+2. 删 `user_profiles / quota / sub_auth / inbox` 对应行；删 `tasks` 该 uid 全部行（含发布记录）；
+3. `cost_log`：按 tasks 收集该用户的 task_id 集合后 `DELETE WHERE scope IN (...)`（`radar:日期` 等公共范围不删，无个人信息）；
+4. 删 workspace `users/{safe_uid}/` 目录；
+5. 数据保留期 `[TBD：随合规确认]`，注销确认页明示数据范围（含继承的 Bot 历史数据一并清除）。
+
+### 8.4 内容安全（FR-11，详见 §5.3）
+
+文本检测强制开启（`content_check: true` 提审前锁定）；连续 2 次拦截转人工；图片沿用生图通道审核 + `mediaCheckAsync` 为提审加固项。
+
+---
+
+## 9 部署与运维
+
+### 9.1 拓扑与前置（合规链，与技术并行启动）
+
+```
+VPS（现有/新建，2C4G 起步）
+  ├─ systemd: xhs-agent.service   # python3 main.py --profile default --api
+  ├─ Nginx: TLS(Let's Encrypt) → 127.0.0.1:8731
+  └─ SQLite: state.default.db（WAL）；每日离线备份（sqlite3 .backup → 异地）
+```
+
+| 前置事项 | 阻塞点 | 状态 |
+|---|---|---|
+| 域名 + ICP 备案 + HTTPS | request 合法域名 | **最先启动**（周期最长） |
+| 小程序主体（个体户/企业） | FR-10 未来付费、类目 | `[TBD：以微信最新政策为准]` |
+| 小程序类目（工具-效率/内容创作） | 提审 | AI 生成内容展示是审核关注点，FR-11 为此准备 |
+| 订阅消息模板 ×3 | FR-07 | 申请文案与类目匹配 |
+| 服务号认证（可选兜底） | 沉默用户触达 | 验证通过前 Notifier 预留接口位 |
+
+### 9.2 监控点（最小集）
+
+- API：uvicorn 访问日志 + 5xx 计数；`42901/42902` 命中率（额度饱和度 → 定价依据）；
+- 触达：订阅消息发送成功/43101/兜底 inbox 比例（触达健康度）；
+- 成本：`costing.recent_scopes` 日汇总（红狐调用量预警，风险 R5）；
+- 进程：systemd `Restart=on-failure`；SQLite WAL 大小告警（checkpoint 异常信号）。
+
+---
+
+## 10 测试与验收
+
+### 10.1 后端单测（pytest）
+
+| 目标 | 用例 |
+|---|---|
+| 额度不变式（§5.2） | 入队/失败返还/重试重新占用/重试失败再返还 → 任意序列后 `produced == 进行中+已交付`；换日重置；超额 42901 |
+| 鉴权 | token 签发/过期/伪造；注销后立即失效；绑定码过期/重放（一次性） |
+| 通道路由 | uid ∈/∉ openid_map 分流；43101 同步清零后落 inbox；Bot 失败入 pending_push |
+| 签名资产 | 过期拒、改路径拒、跨 uid 拒、正确签名通过 |
+| 清单状态 | 空态五分类判定矩阵；降级（昨日回落 + degraded=true）；回退全局清单标注 |
+
+### 10.2 集成冒烟（微信开发者工具 + 测试号）
+
+登录 → 绑定码继承（真实 Bot uid）→ 定位 → 首份清单生成 → 照这个写 → 进度轮询 → 交付页（图/文案/质检/拆解）→ 登记链接 → 手动回采 → 数据页三卡与三态 → 订阅消息（真机）→ 杀进程后 inbox 待读 → 注销后数据清除。
+
+### 10.3 PRD §6.4 语义规则验收（前端）
+
+评分条色值三档取色比对、首推唯一性、chip 阈值、`fmtCount` 边界（9999/10000/15300 → 1.5万）、增量色三态、空态文案与动作按钮齐备——以 `semantic.js` 为唯一实现做快照测试。
+
+---
+
+## 11 里程碑
+
+规模口径同可行性文档（S=1–2 天 / M≈一周 / L=两周+，单人全栈，不含合规等待）。
+
+| 期 | 范围 | 规模 | 验收 |
+|---|---|---|---|
+| **M0 合规链** | 备案、主体、类目、模板申请（与技术并行） | — | 各项受理/通过凭证 |
+| **M1 API 壳** | FastAPI 挂载（uvicorn 共存）、鉴权、绑定码、Notifier 收敛（雷达/回采/完成回调改道）、5 表落库、部署骨架 | M | 测试号走通登录/绑定；老 Bot 推送行为回归不变 |
+| **M2 三页闭环** | /topics /tasks /publish /metrics 接口 + 前端 index/onboarding/produce/delivery/register 六页主流程 | L | 开发者工具全旅程可跑（额度暂放开） |
+| **M3 闸门与安全** | 额度引擎、msgSecCheck 拦截流、质检结构化、签名资产 | S–M | §10.1 单测绿；拦截重写流演练 |
+| **M4 触达** | 订阅消息模板接入、notify/report、inbox 待读与已读、48h 未登记提醒、数据页完整看板 | M | 真机收到三类推送；无授权落 inbox |
+| **M5 补全提审** | 前端语义规则对齐、FR-12/13、成本页、协议与注销、提审材料 | M | §10.3 验收表全过；提审提交 |
+
+依赖关系：M2 依赖 M1（鉴权/Notifier）；M3 可与 M2 后半并行；M4 依赖合规链模板批复；M5 收口。**上线日期由 M0 决定，不由代码决定**——M0 立即启动。
+
+---
+
+## 12 演进路线（方案 B）
+
+触发条件（满足其一即启动）：单进程事件循环拥塞（API P95 明显劣化 / Bot 消息延迟）；需要多机水平扩展；Bot 与 API 需独立发布节奏。
+
+改造路径（可行性 §2.2 细化）：
+
+1. `_run_task` 编排从 Router 抽为独立 Worker（内部已全是 `to_thread` 调 pipeline 纯函数，抽取难度中）；
+2. SQLite → PostgreSQL（本方案 SQL 均为标准写法；5 张新表 DDL 直接迁移）；
+3. 任务分发 DB 轮询起步（不引入 Redis/Kafka）；
+4. `Notifier` 与 `wxclient` 无需改动（本方案已按单职责拆分）。
+
+本方案约束：新代码一律「单进程写 SQLite、pipeline 纯函数、HTTP 层无状态」组织，保证演进零返工。
+
+---
+
+## 13 FR 追溯矩阵
+
+| FR | 关键模块/接口 | 流程 | 里程碑 |
+|---|---|---|---|
+| 01 登录与账号 | api/auth.py、openid_map、/auth/login /auth/bind | §5.1 | M1 |
+| 02 定位引导 | /profile（GET/PUT）、触发首份雷达 | §5.5 | M1/M2 |
+| 03 今日选题 | /topics /topics/refresh、radar_push_loop 改道、state 五分类+降级 | §5.5/§5.6 | M2 |
+| 04 生产任务 | /tasks(+retry/angle/video)、Router._run_task 复用、task_rel | §5.2 | M2（视频 P1→M5） |
+| 05 成品交付 | /tasks/{id}、assets 签名、质检结构化、跟办清单 | §5.7 | M2（徽章/折叠 M3） |
+| 06 效果看板 | /publish /metrics(+refresh)、metrics_collection_loop 复用 | §5.8 | M2/M4 |
+| 07 订阅消息 | wxclient、sub_auth、inbox、Notifier 三通道 | §5.4 | M4 |
+| 08 成本明细 | /costs、costing.summary 复用 | — | M5 |
+| 09 直发仿写 | /tasks（text 源）、入队前预检 | §5.3 | M5 |
+| 10 用量额度 | quota.py、quota 表、429 错误族 | §5.2 | M3 |
+| 11 内容安全与合规 | msgSecCheck 钩子、注销事务、协议页 | §5.3/§8.3 | M3/M5 |
+| 12 分享与增长 | /metrics/weekly、Canvas 海报 | — | M5 |
+| 13 新手指南 | /guide 或前端静态 | — | M5 |
+
+---
+
+## 14 开放技术问题
+
+| 问题 | 影响 | 状态 |
+|---|---|---|
+| msgSecCheck 的 scene 取值与频控细节 | FR-11 接入参数 | `[TBD]` 按最新接口文档验证 |
+| 生图通道（ark/redfox）内容审核覆盖面 | FR-11 图片安全边界 | `[TBD]` 通道实测 |
+| 订阅消息模板字段/频控批复结果 | FR-07 payload 组装 | `[TBD]` 模板申请 |
+| 服务号模板消息类目与主体资质 | 沉默用户兜底通道 | `[TBD]` 验证后接 Notifier 第三实现 |
+| 免费额度 X/Y 与按需重抓限次 | FR-10 数值 | `[TBD]` 定价评审（机制已就绪，改配置即生效） |
+| 红狐 API 备选数据源 | 抓取/回采命脉（风险 R5） | `[TBD]` 调研；降级语义已定义（§5.6/§5.8） |
+| 注销数据保留期 | §8.3 | `[TBD]` 合规确认 |
+| 数据叙事三态阈值 | §5.8 | `[TBD]` 上线后随真实数据校准 |
