@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>爆款拆解仿写助手 · 产品效果图 v1.3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAF6EF;--card:#FFFEFA;--ink:#2B2620;--ink2:#5C544A;--ink3:#8A8072;
+  --coral:#E8553F;--coral-deep:#C93E2A;--coral-soft:#FBEAE4;
+  --pine:#1F3D2B;--pine-deep:#17301F;--pine-soft:#E9F0E6;
+  --gold:#D9A441;--gold-deep:#A87A22;--gold-soft:#F7EEDC;
+  --edge:#E5DCCB;--edge2:#D8CDB8;--gray-score:#C9BFA8;
+  --serif:'Noto Serif SC','Songti SC','STSong',serif;
+  --sans:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--paper);font-family:var(--sans);color:var(--ink);font-size:13px;line-height:1.65}
+body::before{content:"";position:fixed;inset:0;z-index:999;pointer-events:none;opacity:.55;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.05'/></svg>")}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit}
+b,strong{font-weight:700}
+::selection{background:var(--coral-soft)}
+.ic{width:16px;height:16px;flex:none;vertical-align:-3px}
+
+.pres{position:sticky;top:0;z-index:50;background:var(--ink);color:#F4EDDD;padding:14px 22px;display:flex;flex-wrap:wrap;align-items:center;gap:14px 26px;box-shadow:0 6px 24px rgba(43,38,32,.28)}
+.pres-brand{display:flex;align-items:center;gap:12px}
+.p-mark{width:40px;height:40px;border-radius:10px;background:var(--coral);color:#FFF6EE;font-family:var(--serif);font-weight:900;font-size:20px;display:grid;place-items:center;box-shadow:2px 2px 0 rgba(0,0,0,.35)}
+.pres-brand b{font-family:var(--serif);font-size:17px;letter-spacing:1px;display:block}
+.pres-brand i{font-style:normal;font-size:10.5px;color:#B7AB92;letter-spacing:.6px;display:block;margin-top:2px}
+.p-switch{display:flex;border:1px solid #564E40;border-radius:999px;overflow:hidden;margin-left:auto}
+.p-switch button{padding:8px 20px;color:#CBBFA6;font-size:13px;letter-spacing:1px;transition:.2s}
+.p-switch button.on{background:var(--coral);color:#FFF6EE;font-weight:700}
+.p-switch button:not(.on):hover{color:#F4EDDD}
+.pres-hint{flex-basis:100%;font-size:11px;color:#9A8F79;letter-spacing:.4px}
+.pres-hint b{color:#D9A441;font-weight:500}
+
+.canvas{min-height:calc(100vh - 150px);display:grid;place-items:start center;padding:42px 20px 20px}
+.frame{display:none}
+.frame.show{display:block;animation:frameIn .5s cubic-bezier(.22,.9,.36,1) both}
+@keyframes frameIn{from{opacity:0;transform:translateY(22px) scale(.985)}}
+
+.browser{width:min(1180px,100%);border-radius:16px;overflow:hidden;border:1px solid var(--edge2);box-shadow:0 32px 80px rgba(43,38,32,.2);background:var(--card)}
+.browser-bar{height:46px;background:#F1EBDD;display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--edge)}
+.b-dots{display:flex;gap:7px}
+.b-dots span{width:11px;height:11px;border-radius:50%}
+.b-dots span:nth-child(1){background:#E0907F}.b-dots span:nth-child(2){background:#E5C983}.b-dots span:nth-child(3){background:#AFC79E}
+.b-url{flex:1;max-width:430px;margin:0 auto;background:#FFFDF8;border:1px solid var(--edge);border-radius:999px;padding:5px 16px;font-size:11.5px;color:var(--ink3);display:flex;align-items:center;gap:7px;justify-content:center}
+.b-url svg{width:11px;height:11px}
+.browser .viewport{height:762px}
+
+.phone{width:396px;border-radius:48px;background:#221E19;padding:13px;box-shadow:0 32px 80px rgba(43,38,32,.3),inset 0 0 0 2px #3D362C}
+.phone-screen{height:742px;border-radius:36px;overflow:hidden;background:var(--paper);position:relative;display:flex;flex-direction:column}
+#phoneSlot{flex:1;display:flex;flex-direction:column;min-height:0}
+.statusbar{height:34px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;font-size:11.5px;font-weight:700;background:transparent;position:relative;z-index:6}
+.statusbar .s-icons{display:flex;gap:5px;align-items:center}
+.statusbar svg{width:15px;height:15px}
+.island{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:104px;height:26px;border-radius:999px;background:#161310;z-index:7}
+
+.viewport{position:relative;overflow:hidden;flex:1;container-type:inline-size;background:var(--paper)}
+.app{height:100%;display:flex;flex-direction:column;background:var(--paper)}
+.app-stage{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--edge2) transparent}
+.app-stage::-webkit-scrollbar{width:5px}
+.app-stage::-webkit-scrollbar-thumb{background:var(--edge2);border-radius:3px}
+
+.mast{flex:none;background:linear-gradient(#FFFEFA,#FBF6EC)}
+.mast-top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;border-bottom:2.5px solid var(--ink)}
+.mast-brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mast-mark{width:34px;height:34px;border-radius:9px;background:var(--coral);color:#FFF6EE;font-family:var(--serif);font-weight:900;font-size:17px;display:grid;place-items:center;box-shadow:2px 2px 0 rgba(43,38,32,.14);flex:none}
+.mast-name b{font-family:var(--serif);font-size:15.5px;letter-spacing:1.5px;display:block;white-space:nowrap}
+.mast-name i{font-style:normal;font-size:9.5px;color:var(--ink3);letter-spacing:1.2px;display:block;margin-top:1px;white-space:nowrap}
+.mast-side{display:flex;align-items:center;gap:8px}
+.quota-chip{border:1px solid var(--edge2);background:#FFFDF8;border-radius:999px;padding:3px 11px;font-size:10.5px;color:var(--ink2);white-space:nowrap}
+.quota-chip b{color:var(--coral-deep)}
+.mast-user{font-size:10.5px;color:var(--ink3);white-space:nowrap}
+.mast-nav{display:none}
+
+.tabbar{flex:none;display:flex;border-top:1.5px solid var(--ink);background:rgba(255,253,248,.95);padding-bottom:2px}
+.tab{flex:1;display:grid;place-items:center;gap:1px;padding:8px 0 7px;color:var(--ink3);font-size:10px;letter-spacing:1px;transition:.2s;position:relative}
+.tab svg{width:19px;height:19px}
+.tab.on{color:var(--coral-deep);font-weight:700}
+.tab.on::after{content:"";position:absolute;top:-1.5px;left:50%;transform:translateX(-50%);width:26px;height:3px;background:var(--coral);border-radius:0 0 3px 3px}
+
+.page{max-width:660px;margin:0 auto;padding:16px 15px 30px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.page-title{font-family:var(--serif);font-weight:900;font-size:23px;letter-spacing:2px;line-height:1.2}
+.page-sub{font-size:11px;color:var(--ink3);margin-top:4px;letter-spacing:.5px}
+.page-aside{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.snap-note{font-size:10px;color:var(--ink3);letter-spacing:.3px}
+
+.card{background:var(--card);border:1px solid var(--edge);border-radius:12px;box-shadow:3px 3px 0 rgba(43,38,32,.06)}
+.lift{transition:transform .18s ease,box-shadow .18s ease}
+.lift:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 rgba(43,38,32,.09)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;font-weight:700;transition:transform .12s ease,box-shadow .12s ease,background .2s;user-select:none;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn-solid{background:var(--coral);color:#FFF6EE;padding:10px 20px;font-size:13px;box-shadow:2px 2px 0 rgba(43,38,32,.16)}
+.btn-solid:hover{background:var(--coral-deep)}
+.btn-line{border:1.5px solid var(--coral-deep);color:var(--coral-deep);background:transparent;padding:8px 18px;font-size:12.5px}
+.btn-ghost{border:1px solid var(--edge2);color:var(--ink2);background:#FFFDF8;padding:8px 16px;font-size:12px}
+.btn-goldline{border:1.5px dashed var(--gold-deep);color:var(--gold-deep);background:var(--gold-soft);padding:7px 15px;font-size:12px;border-radius:999px}
+.btn:disabled{opacity:.55;cursor:default;transform:none}
+
+.ltag{position:relative;display:inline-flex;align-items:center;padding:3px 10px 3px 21px;background:#FFFDF8;border:1px solid var(--edge2);border-radius:3px 999px 999px 3px;font-size:10.5px;color:var(--ink2);letter-spacing:.5px;white-space:nowrap}
+.ltag::before{content:"";position:absolute;left:8px;top:50%;margin-top:-2.5px;width:5px;height:5px;border-radius:50%;background:var(--paper);border:1.2px solid var(--edge2)}
+.ltag.on{border-color:var(--coral);color:var(--coral-deep);background:var(--coral-soft)}
+.ltag.on::before{border-color:var(--coral)}
+.chip-hot{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;background:var(--coral);color:#FFF6EE;font-size:10.5px;font-weight:700;letter-spacing:.5px;white-space:nowrap}
+.chip-hot svg{width:11px;height:11px}
+.chip-hot.mild{background:var(--gray-score);color:#332C22}
+
+.seal-score{display:inline-grid;place-items:center;width:44px;height:44px;border:2px solid;border-radius:10px;background:#FFFEFA;font-family:var(--serif);font-weight:900;font-size:16px;flex:none;transform:rotate(-3deg)}
+.seal-score.s9{border-color:var(--pine);color:var(--pine)}
+.seal-score.s8{border-color:var(--gold);color:var(--gold-deep)}
+.seal-score.s7{border-color:var(--gray-score);color:#9A8F76}
+
+.stamp{position:absolute;top:12px;right:12px;width:56px;height:56px;border:2px solid var(--coral);outline:1px solid var(--coral);outline-offset:2.5px;border-radius:50%;display:grid;place-items:center;color:var(--coral);font-family:var(--serif);font-weight:900;font-size:12.5px;line-height:1.2;text-align:center;transform:rotate(10deg);opacity:.88;background:rgba(255,254,250,.55);z-index:2;pointer-events:none}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.chips-hint{font-size:10px;color:var(--ink3);margin-left:auto}
+
+.cards{display:grid;gap:14px}
+.tcard{position:relative;padding:15px 15px 13px;cursor:pointer}
+.tcard.first{border-color:var(--coral);box-shadow:4px 4px 0 rgba(232,85,63,.16)}
+.tcard-top{display:flex;gap:8px;align-items:center;margin-bottom:9px;padding-right:60px}
+.tcard-title{font-family:var(--serif);font-weight:700;font-size:15.5px;line-height:1.5;letter-spacing:.3px;padding-right:58px}
+.tcard-meta{display:flex;align-items:center;gap:12px;margin-top:11px}
+.tcard-best{font-size:10.5px;color:var(--ink3)}
+.tcard-best b{color:var(--ink);font-family:var(--serif)}
+.tcard-chev{margin-left:auto;color:var(--ink3);transition:transform .35s;width:18px;height:18px}
+.tcard.x .tcard-chev{transform:rotate(180deg)}
+.tcard-x{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s cubic-bezier(.22,.9,.36,1)}
+.tcard.x .tcard-x{grid-template-rows:1fr}
+.tcard-x-in{overflow:hidden;min-height:0}
+.tcard-x-pad{padding-top:13px;margin-top:12px;border-top:1px dashed var(--edge2)}
+.sbars{display:grid;gap:7px;margin-bottom:12px}
+.sbar{display:grid;grid-template-columns:34px 1fr 30px;align-items:center;gap:9px;font-size:10.5px;color:var(--ink3)}
+.sbar b{font-family:var(--serif);color:var(--ink);text-align:right;font-size:12px}
+.strack{height:6px;background:#F0E9D9;border-radius:3px;overflow:hidden}
+.sfill{display:block;height:100%;border-radius:3px;width:0;transition:width .9s cubic-bezier(.3,1.25,.4,1)}
+.sbar.on .sfill{width:var(--w)}
+.sfill.f9{background:var(--pine)}
+.sfill.f8{background:var(--gold)}
+.sfill.f7{background:var(--gray-score)}
+.ang{margin-bottom:10px}
+.ang b{display:inline-block;font-size:10px;letter-spacing:2px;color:var(--pine);border-bottom:2px solid var(--pine);margin-bottom:5px;font-weight:700}
+.ang p{font-size:12px;color:var(--ink2);line-height:1.7}
+.ang p em{font-style:normal;color:var(--coral-deep);font-weight:700}
+.tcard-cta{display:flex;align-items:center;gap:10px;margin-top:13px}
+.tcard-cta .q{font-size:10px;color:var(--ink3);margin-left:auto}
+
+.explore{margin-top:18px;padding:14px 15px}
+.explore h4{font-family:var(--serif);font-size:13.5px;letter-spacing:1px;margin-bottom:3px}
+.explore p{font-size:10.5px;color:var(--ink3);margin-bottom:10px}
+.explore .chips{margin-bottom:0}
+
+.stag>*{animation:rise .5s cubic-bezier(.22,.9,.36,1) both;animation-delay:calc(var(--i,0)*50ms)}
+@keyframes rise{from{opacity:0;transform:translateY(15px)}}
+
+.view{display:none}
+.view.on{display:block;animation:fadeView .32s ease both}
+@keyframes fadeView{from{opacity:0}}
+.vhead{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.back{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink2);border:1px solid var(--edge2);background:#FFFDF8;border-radius:999px;padding:5px 13px;transition:.15s}
+.back:active{transform:scale(.97)}
+.back svg{width:13px;height:13px}
+.v-title{font-family:var(--serif);font-weight:900;font-size:21px;letter-spacing:2px}
+.v-note{font-size:10.5px;color:var(--ink3);margin:6px 0 16px;letter-spacing:.4px}
+
+.sect{font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:2.5px;color:var(--ink);display:flex;align-items:center;gap:10px;margin:22px 0 11px}
+.sect::after{content:"";flex:1;border-top:1px dashed var(--edge2)}
+.sect .more{font-family:var(--sans);font-size:10.5px;color:var(--coral-deep);letter-spacing:.5px;font-weight:500}
+
+.run-card{padding:14px 15px;margin-bottom:12px}
+.run-top{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.run-title{font-family:var(--serif);font-weight:700;font-size:13.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rstate{font-size:10px;color:var(--coral-deep);letter-spacing:.5px;white-space:nowrap}
+.run-card.fin .rstate{color:var(--pine)}
+.rtrack{height:7px;background:#F0E9D9;border-radius:4px;overflow:hidden;margin-bottom:10px}
+.rfill{display:block;height:100%;background:var(--coral);border-radius:4px;width:0;transition:width 1.4s cubic-bezier(.3,.8,.3,1)}
+.run-card.static .rfill{width:68%;animation:shimmer 2.2s ease-in-out infinite}
+@keyframes shimmer{0%,100%{opacity:1}50%{opacity:.65}}
+.rsteps{display:flex;justify-content:space-between;position:relative}
+.rsteps::before{content:"";position:absolute;top:5px;left:4%;right:4%;border-top:1.5px dashed var(--edge2)}
+.rstep{position:relative;font-size:9.5px;color:var(--ink3);display:grid;justify-items:center;gap:4px;letter-spacing:.5px;background:transparent}
+.rstep i{width:11px;height:11px;border-radius:50%;background:#FFFDF8;border:1.5px solid var(--edge2);z-index:1}
+.rstep.done{color:var(--pine)}
+.rstep.done i{background:var(--pine);border-color:var(--pine)}
+.rstep.run{color:var(--coral-deep);font-weight:700}
+.rstep.run i{border-color:var(--coral);background:var(--coral);box-shadow:0 0 0 3.5px var(--coral-soft);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(232,85,63,.12)}}
+.run-card.fin .rstep{color:var(--pine)}
+.run-card.fin .rstep i{background:var(--pine);border-color:var(--pine)}
+.run-sub{font-size:10px;color:var(--ink3);margin-top:9px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.run-link{color:var(--coral-deep);font-weight:700;font-size:10.5px;cursor:pointer}
+
+.empty-run{padding:22px 18px;text-align:center;font-size:12px;color:var(--ink3)}
+.empty-run .btn{margin-top:12px}
+
+.delivery{padding:15px;margin-bottom:14px}
+.del-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:13px;flex-wrap:wrap}
+.del-head time{font-size:10px;color:var(--ink3)}
+.del-grid{display:grid;gap:14px}
+.del-cover{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--edge2);aspect-ratio:4/3.1;background:#EFE8D8}
+.del-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.imgfail{background:repeating-linear-gradient(45deg,#F3ECDD 0 12px,#EFE7D5 12px 24px)}
+.imgfail::after{content:"胶片冲印中";position:absolute;inset:0;display:grid;place-items:center;font-family:var(--serif);color:var(--ink3);letter-spacing:3px}
+.poster{position:absolute;left:0;right:0;bottom:0;padding:36px 14px 12px;background:linear-gradient(transparent,rgba(20,16,10,.72));color:#FFF9EE;display:grid;gap:2px}
+.poster b{font-family:var(--serif);font-size:19px;font-weight:900;letter-spacing:1.5px;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+.poster span{font-size:9.5px;opacity:.85;letter-spacing:1px;margin-top:3px}
+.del-title{display:flex;align-items:flex-start;gap:8px;font-family:var(--serif);font-weight:700;font-size:15.5px;line-height:1.5}
+.del-title .cp{margin-left:auto;color:var(--ink3);flex:none;padding:3px;transition:.15s}
+.del-title .cp:active{transform:scale(.9)}
+.draft-tabs{display:none;gap:6px;margin:12px 0 8px}
+.draft-tabs.show{display:flex}
+.draft-tabs button{font-size:10.5px;padding:4px 12px;border-radius:999px;border:1px solid var(--edge2);color:var(--ink3);background:#FFFDF8}
+.draft-tabs button.on{border-color:var(--coral);color:var(--coral-deep);background:var(--coral-soft);font-weight:700}
+.draft{margin:12px 0 10px;position:relative;min-height:76px}
+.draft p{font-size:12.5px;line-height:1.85;color:var(--ink);transition:.4s}
+.draft p:not(.show){display:none}
+.ai-flag{background:var(--coral-soft);text-decoration:underline wavy var(--coral) 1px;text-underline-offset:3.5px;padding:0 1px;border-radius:2px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.tags span{font-size:10.5px;color:var(--pine);background:var(--pine-soft);border-radius:999px;padding:2.5px 10px}
+
+.flavor{border:1px dashed var(--edge2);border-radius:10px;padding:13px;background:#FFFCF4}
+.fl-head{display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap}
+.fl-head b{font-size:12px;letter-spacing:1px}
+.fl-head .fr{margin-left:auto;font-size:9.5px;color:var(--ink3)}
+.fl-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 11px;border-radius:999px;font-size:10.5px;font-weight:700}
+.fl-badge.warn{background:var(--gold-soft);color:var(--gold-deep);border:1px solid var(--gold)}
+.fl-badge.safe{background:var(--pine-soft);color:var(--pine);border:1px solid var(--pine)}
+.meter{position:relative;height:10px;border-radius:5px;overflow:visible;display:flex;margin:4px 2px 4px}
+.meter span{height:100%}
+.mz1{width:30%;background:#B9CDB4;border-radius:5px 0 0 5px}
+.mz2{width:30%;background:var(--gold)}
+.mz3{width:40%;background:var(--coral);border-radius:0 5px 5px 0}
+.meter-pin{position:absolute;top:-7px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid var(--ink);margin-left:-6px;transition:left 1s cubic-bezier(.3,1.1,.4,1)}
+.fl-row{display:flex;align-items:center;gap:14px;margin-top:13px}
+.fl-num{font-family:var(--serif);font-weight:900;font-size:34px;line-height:1}
+.fl-num small{font-size:10px;font-weight:500;color:var(--ink3);letter-spacing:1px;display:block;margin-top:2px}
+.fl-scale{font-size:9px;color:var(--ink3);letter-spacing:.3px;line-height:1.9}
+.fl-scale i{font-style:normal;display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:4px;vertical-align:0}
+.fl-flags{font-size:10px;color:var(--coral-deep);margin-top:9px}
+.fl-note{font-size:9.5px;color:var(--ink3);margin-top:8px;padding-top:8px;border-top:1px dashed var(--edge2)}
+.fl-act{margin-top:12px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.fl-act .ok-note{font-size:10px;color:var(--pine);font-weight:700}
+.del-acts{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
+
+.hist{display:grid;gap:9px}
+.hrow{display:flex;align-items:center;gap:10px;padding:11px 13px;font-size:12px}
+.hrow .hno{font-family:var(--serif);color:var(--ink3);font-size:11px;flex:none}
+.hrow .ht{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{flex:none;font-size:9.5px;padding:2.5px 9px;border-radius:999px;letter-spacing:.5px}
+.pill.ok{background:var(--pine-soft);color:var(--pine)}
+.pill.run{background:var(--coral-soft);color:var(--coral-deep)}
+.pill.fail{background:var(--gold-soft);color:var(--gold-deep)}
+.hrow .hlink{flex:none;color:var(--coral-deep);font-weight:700;font-size:10.5px;cursor:pointer}
+.hrow .hnote{flex:none;font-size:9.5px;color:var(--gold-deep)}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:15px}
+.stat{padding:11px 8px 9px;text-align:center}
+.stat b{display:block;font-family:var(--serif);font-weight:900;font-size:19px;color:var(--pine)}
+.stat span{font-size:9.5px;color:var(--ink3);letter-spacing:1px}
+.stat .neg b{color:var(--coral-deep)}
+.stat .zero b{color:var(--gray-score)}
+
+.entry-card{padding:15px;margin-bottom:12px;position:relative;cursor:pointer}
+.entry-card.eternal:active{transform:scale(.98)}
+.ec-head{display:flex;align-items:center;gap:10px}
+.ec-badge{width:9px;height:9px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 3.5px var(--coral-soft);animation:pulse 1.6s infinite;flex:none}
+.entry-card h3{font-family:var(--serif);font-size:15px;font-weight:900;letter-spacing:1px}
+.entry-card p{font-size:10.5px;color:var(--ink3);margin-top:5px}
+.ec-cta{position:absolute;right:13px;bottom:12px;font-size:10.5px;color:var(--coral-deep);font-weight:700}
+.entry-card.gold h3{color:var(--gold-deep)}
+.entry-card.gold .ec-cta{color:var(--gold-deep)}
+
+.notes-list{display:grid;gap:10px}
+.nrow{display:flex;align-items:center;gap:11px;padding:10px 12px}
+.nrow .thumb{width:44px;height:44px;border-radius:8px;overflow:hidden;border:1px solid var(--edge2);flex:none;position:relative}
+.nrow .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.nrow .nmain{flex:1;min-width:0}
+.nrow .nt{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nrow .nm{font-size:9.5px;color:var(--ink3);margin-top:3px;display:flex;gap:8px;align-items:center}
+.nrow .spark{flex:none;width:52px;height:24px}
+.nrow .delta{flex:none;font-family:var(--serif);font-weight:900;font-size:13px;text-align:right;min-width:38px}
+.delta.up{color:var(--pine)}
+.delta.zero{color:var(--gray-score)}
+.delta.down{color:var(--coral-deep)}
+.nchip{flex:none;font-size:9px;padding:2px 8px;border-radius:999px;letter-spacing:.5px;font-weight:700}
+.nchip.rush{background:var(--coral);color:#FFF6EE}
+.nchip.steady{background:var(--pine);color:#EFF4EC}
+.nchip.longtail{background:var(--gray-score);color:#332C22}
+
+.me-grid{display:grid;gap:13px}
+.profile{padding:16px;display:flex;align-items:center;gap:13px}
+.avatar{width:52px;height:52px;border-radius:14px;background:var(--pine);color:#F2EBDA;font-family:var(--serif);font-weight:900;font-size:22px;display:grid;place-items:center;flex:none;box-shadow:2px 2px 0 rgba(43,38,32,.12)}
+.profile .pn{font-family:var(--serif);font-weight:900;font-size:16px}
+.profile .pu{font-size:10px;color:var(--ink3);margin-top:3px;letter-spacing:.5px}
+.wx-bind{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;color:var(--pine);background:var(--pine-soft);border-radius:999px;padding:2.5px 10px;margin-top:6px}
+.me-card{padding:15px}
+.me-card h4{font-family:var(--serif);font-size:13.5px;letter-spacing:2px;margin-bottom:11px;display:flex;align-items:center;gap:8px}
+.me-card h4 .r{margin-left:auto;font-family:var(--sans);font-size:9.5px;color:var(--ink3);letter-spacing:.3px;font-weight:400}
+.pos-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.persona{font-size:11.5px;color:var(--ink2);background:#FFFCF4;border:1px dashed var(--edge2);border-radius:8px;padding:9px 12px;line-height:1.7}
+.persona b{color:var(--coral-deep)}
+.qbar{display:grid;grid-template-columns:64px 1fr 38px;gap:9px;align-items:center;font-size:10.5px;color:var(--ink3);margin-bottom:9px}
+.qbar b{font-family:var(--serif);color:var(--ink);text-align:right}
+.qtrack{height:7px;background:#F0E9D9;border-radius:4px;overflow:hidden}
+.qfill{display:block;height:100%;background:var(--coral);border-radius:4px}
+.cost-row{display:flex;justify-content:space-between;font-size:11.5px;padding:7px 0;border-bottom:1px dashed var(--edge2)}
+.cost-row:last-of-type{border:none}
+.cost-row b{font-family:var(--serif)}
+.cost-total{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;padding-top:9px;margin-top:3px;border-top:1.5px solid var(--ink)}
+.cost-total b{font-family:var(--serif);color:var(--coral-deep);font-size:15px}
+.mrow{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--card);border:1px solid var(--edge);border-radius:12px;font-size:12.5px;cursor:pointer;transition:.15s}
+.mrow:active{transform:scale(.98)}
+.mrow svg{color:var(--ink3);width:15px;height:15px}
+.mrow .arr{margin-left:auto;width:13px;height:13px;color:var(--edge2)}
+.mrow small{font-size:9.5px;color:var(--ink3);margin-left:4px}
+.mrow.danger{color:var(--coral-deep)}
+
+.rv-done{padding:13px 15px;margin-bottom:14px;display:flex;gap:11px;align-items:center;background:var(--pine-soft);border-color:#C9D6C4}
+.rv-done .ok-ic{width:34px;height:34px;border-radius:50%;background:var(--pine);color:#EFF4EC;display:grid;place-items:center;flex:none}
+.rv-done b{font-size:12.5px;color:var(--pine-deep)}
+.rv-done p{font-size:10.5px;color:#4E6349;margin-top:3px}
+.rv-card{padding:13px;margin-bottom:12px;cursor:pointer}
+.rv-card:active{transform:scale(.98)}
+.rv-top{display:flex;gap:11px}
+.rv-cover{width:64px;height:64px;border-radius:9px;overflow:hidden;border:1px solid var(--edge2);flex:none;position:relative}
+.rv-cover img{width:100%;height:100%;object-fit:cover}
+.rv-title{font-family:var(--serif);font-weight:700;font-size:13px;line-height:1.5}
+.rv-nums{display:flex;gap:12px;margin-top:7px;font-size:10px;color:var(--ink3)}
+.rv-nums b{font-family:var(--serif);color:var(--ink);font-size:12.5px;margin-left:3px}
+.rv-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.dtag{font-size:9.5px;padding:2.5px 9px;border-radius:999px;background:var(--gold-soft);color:var(--gold-deep);border:1px dashed var(--gold)}
+.why{margin-top:11px;border-top:1px dashed var(--edge2);padding-top:10px}
+.why summary{font-size:10.5px;color:var(--coral-deep);cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:5px}
+.why summary::-webkit-details-marker{display:none}
+.why summary svg{width:12px;height:12px;transition:.3s}
+.why[open] summary svg{transform:rotate(180deg)}
+.why .why-in{font-size:10.5px;color:var(--ink2);margin-top:8px;line-height:1.8}
+.why .sig{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
+.why .sig .s-y{color:var(--pine);font-weight:900;flex:none}
+
+.rv-report{display:grid;gap:13px}
+.rp-head{display:flex;gap:12px;padding:14px}
+.rp-chart{padding:14px}
+.rp-chart h5,.rp-attr h5,.plan h5{font-size:10px;letter-spacing:2.5px;color:var(--ink3);margin-bottom:10px;font-weight:700}
+.rp-chart svg{width:100%;height:auto;display:block}
+.chart-legend{display:flex;gap:16px;font-size:10px;color:var(--ink2);margin-top:9px}
+.chart-legend i{display:inline-block;width:16px;border-top:2.5px solid;margin-right:5px;vertical-align:3px}
+.chart-legend .l1 i{border-color:var(--pine)}
+.chart-legend .l2 i{border-color:var(--gold);border-top-style:dashed}
+.rp-attr{padding:14px 14px 12px;background:#FFFDF6;border:1px solid var(--edge);border-radius:12px}
+.rp-attr blockquote{font-family:var(--serif);font-size:13.5px;line-height:1.9;color:var(--ink);border-left:3px solid var(--coral);padding-left:13px}
+.rp-attr blockquote em{font-style:normal;color:var(--coral-deep);font-weight:700}
+.rp-metric{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:12px;font-size:10.5px;color:var(--ink3)}
+.rp-metric b{color:var(--gold-deep)}
+.plan{padding:14px}
+.plan-group{margin-bottom:15px}
+.plan-group .pg-t{font-size:10.5px;color:var(--ink2);font-weight:700;margin-bottom:8px;display:flex;gap:7px;align-items:center}
+.pg-t .ltag{font-size:9px;padding:1.5px 8px 1.5px 18px}
+.title-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--edge2);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:.15s;background:#FFFEFB}
+.title-opt:hover{border-color:var(--coral)}
+.title-opt .opt-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--edge2);flex:none;transition:.15s}
+.title-opt p{flex:1;font-size:12.5px;font-weight:500}
+.title-opt .adopt{font-size:9.5px;color:var(--ink3);flex:none}
+.title-opt.adopted{border-color:var(--coral);background:var(--coral-soft)}
+.title-opt.adopted .opt-dot{border-color:var(--coral);background:radial-gradient(circle,var(--coral) 0 4.5px,transparent 5px)}
+.title-opt.adopted .adopt{color:var(--coral-deep);font-weight:700}
+.advice{font-size:11.5px;color:var(--ink2);background:#FFFCF4;border:1px dashed var(--edge2);border-radius:9px;padding:10px 12px;line-height:1.8}
+.advice b{color:var(--ink)}
+.advice .add{color:var(--pine);font-weight:700}
+.advice .rm{color:var(--coral-deep);font-weight:700;text-decoration:line-through}
+.todo{display:grid;gap:8px}
+.todo li{list-style:none;display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--edge2);border-radius:10px;cursor:pointer;background:#FFFEFB;font-size:12px;transition:.15s;user-select:none}
+.todo li .box{width:17px;height:17px;border-radius:5px;border:1.5px solid var(--edge2);flex:none;display:grid;place-items:center;color:transparent;transition:.2s}
+.todo li .box svg{width:11px;height:11px}
+.todo li .tno{font-family:var(--serif);color:var(--ink3);font-size:11px}
+.todo li.done{border-color:var(--pine);background:var(--pine-soft)}
+.todo li.done .box{background:var(--pine);border-color:var(--pine);color:#EFF4EC}
+.todo li.done span{color:#4E6349}
+.rv-cta{display:grid;gap:9px}
+.rv-cta .fine{font-size:9.5px;color:var(--ink3);text-align:center}
+
+.obs-card{padding:16px}
+.obs-state{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.obs-state h3{font-family:var(--serif);font-weight:900;font-size:16px;color:var(--coral-deep);letter-spacing:1px}
+.day-dots{display:flex;gap:5px;margin:10px 0 16px}
+.day-dots i{width:26px;height:7px;border-radius:4px;background:#F0E9D9}
+.day-dots i.f{background:var(--coral)}
+.day-dots i.cur{background:var(--gold);animation:shimmer 1.6s infinite}
+.obs-bars{display:grid;gap:12px;margin-bottom:14px}
+.ob{display:grid;grid-template-columns:86px 1fr 40px;gap:10px;align-items:center;font-size:10.5px;color:var(--ink3)}
+.ob .track{height:14px;background:#F0E9D9;border-radius:7px;overflow:hidden}
+.ob .fill{display:block;height:100%;border-radius:7px;width:0;transition:width 1s cubic-bezier(.3,1.15,.4,1)}
+.ob.on .fill{width:var(--w)}
+.ob b{font-family:var(--serif);font-size:13px;color:var(--ink);text-align:right}
+.obs-note{font-size:11px;color:var(--ink2);background:var(--gold-soft);border:1px dashed var(--gold);border-radius:9px;padding:10px 12px;line-height:1.75}
+.obs-note b{color:var(--gold-deep)}
+
+.tpl-card{padding:15px;margin-bottom:13px}
+.tpl-head{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.tpl-head h3{font-family:var(--serif);font-weight:900;font-size:16px;letter-spacing:1px}
+.tpl-status{margin-left:auto;font-size:9.5px;padding:3px 10px;border-radius:999px;letter-spacing:.5px;font-weight:700}
+.tpl-status.ready{background:var(--pine);color:#EFF4EC}
+.tpl-status.adapting{background:#FFFDF8;color:var(--gold-deep);border:1px dashed var(--gold)}
+.fresh{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:10px;color:var(--ink3);margin:9px 0 12px}
+.fresh b{color:var(--ink)}
+.fresh .warn{color:var(--gold-deep)}
+.slot{background:#FFFCF4;border:1px dashed var(--edge2);border-radius:10px;padding:12px}
+.slot-t{font-size:10.5px;font-weight:700;color:var(--ink2);margin-bottom:9px;display:flex;justify-content:space-between}
+.slot-t span{font-weight:400;color:var(--ink3)}
+.slotbar{display:flex;height:12px;border-radius:6px;overflow:hidden;margin-bottom:8px}
+.slotbar i{height:100%}
+.slotbar i:nth-child(1){background:var(--pine)}
+.slotbar i:nth-child(2){background:var(--gold)}
+.slotbar i:nth-child(3){background:var(--gray-score)}
+.slot-legend{display:flex;flex-wrap:wrap;gap:5px 14px;font-size:9.5px;color:var(--ink2)}
+.slot-legend i{display:inline-block;width:8px;height:8px;border-radius:2.5px;margin-right:4px}
+.tpl-stats{display:flex;flex-wrap:wrap;gap:5px 16px;margin:12px 0 13px;font-size:10.5px;color:var(--ink2)}
+.tpl-stats b{font-family:var(--serif);color:var(--ink)}
+.tpl-acts{display:flex;gap:9px;flex-wrap:wrap}
+.tpl-note{font-size:10px;color:var(--ink3);margin-top:11px;line-height:1.75}
+.tpl-note b{color:var(--gold-deep)}
+
+.backdrop{position:absolute;inset:0;background:rgba(43,38,32,.42);opacity:0;pointer-events:none;transition:.28s;z-index:40}
+.backdrop.show{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:20px 20px 0 0;transform:translateY(103%);transition:transform .42s cubic-bezier(.22,.9,.3,1);z-index:41;padding:6px 17px 20px;max-height:86%;overflow-y:auto;box-shadow:0 -8px 40px rgba(43,38,32,.18)}
+.sheet.show{transform:none}
+.sheet::before{content:"";display:block;width:38px;height:4.5px;border-radius:3px;background:var(--edge2);margin:8px auto 12px}
+.sheet-head{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.sheet-head b{font-family:var(--serif);font-size:17px;letter-spacing:1.5px}
+.sheet-head .s-topic{font-size:10.5px;color:var(--ink3);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-top:4px}
+.sheet-head .x{font-size:15px;color:var(--ink3);padding:6px 4px}
+.modes{display:grid;gap:10px;margin:14px 0 4px}
+.mode{border:1.5px solid var(--edge2);border-radius:12px;padding:12px 13px;display:flex;gap:11px;cursor:pointer;background:#FFFEFB;transition:.15s}
+.mode:hover{border-color:var(--coral)}
+.mode .mdot{width:18px;height:18px;border-radius:50%;border:2px solid var(--edge2);flex:none;margin-top:2px;transition:.15s}
+.mode .mmain b{font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mode .mmain p{font-size:10.5px;color:var(--ink3);margin-top:3px;line-height:1.6}
+.mode.on{border-color:var(--coral);background:var(--coral-soft);box-shadow:2px 2px 0 rgba(232,85,63,.16)}
+.mode.on .mdot{border-color:var(--coral);background:radial-gradient(circle,var(--coral) 0 5px,transparent 5.5px)}
+.rec{font-size:9px;background:var(--gold);color:#FFFDF6;padding:2px 8px;border-radius:999px;letter-spacing:1px;font-weight:700}
+.tpl-pick{display:none;align-items:center;gap:10px;margin:12px 0 2px;font-size:11.5px;color:var(--ink2)}
+.tpl-pick.show{display:flex;animation:fadeView .3s}
+.tpl-pick select{flex:1;border:1px solid var(--edge2);background:#FFFDF8;border-radius:9px;padding:8px 10px;font-family:inherit;font-size:11.5px;color:var(--ink)}
+.sheet-foot{display:grid;gap:8px;margin-top:16px}
+.sheet-foot .fine{font-size:9.5px;color:var(--ink3);text-align:center}
+.sheet .fine b{color:var(--coral-deep)}
+.radio-line{display:flex;align-items:flex-start;gap:10px;padding:12px 13px;border:1.5px solid var(--edge2);border-radius:12px;margin-bottom:9px;cursor:pointer;transition:.15s;background:#FFFEFB}
+.radio-line .mdot{width:17px;height:17px;border-radius:50%;border:2px solid var(--edge2);flex:none;margin-top:1px}
+.radio-line.on{border-color:var(--coral);background:var(--coral-soft)}
+.radio-line.on .mdot{border-color:var(--coral);background:radial-gradient(circle,var(--coral) 0 4.5px,transparent 5px)}
+.radio-line b{font-size:12.5px}
+.radio-line p{font-size:10.5px;color:var(--ink3);margin-top:2px}
+.warn-note{font-size:10px;color:var(--gold-deep);background:var(--gold-soft);border-radius:8px;padding:8px 11px;margin-top:10px;line-height:1.7}
+
+.toast{position:absolute;left:50%;bottom:88px;transform:translate(-50%,10px);background:var(--ink);color:#F7F0DF;padding:10px 19px;border-radius:11px;font-size:12px;opacity:0;transition:.28s;z-index:60;pointer-events:none;box-shadow:3px 3px 0 rgba(0,0,0,.18);max-width:86%;text-align:center;letter-spacing:.3px}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+.wx{flex:1;min-height:0;display:flex;flex-direction:column;background:#EDEDED}
+.wx-nav{flex:none;height:46px;background:#F7F7F7;border-bottom:1px solid #E0E0E0;display:flex;align-items:center;padding:0 12px;gap:10px;font-size:15px;font-weight:700;color:#1A1A1A}
+.wx-nav .back-i{font-size:19px;color:#1A1A1A;font-weight:400}
+.wx-ava-s{width:26px;height:26px;border-radius:7px;background:var(--coral);color:#FFF6EE;font-family:var(--serif);font-weight:900;font-size:13px;display:grid;place-items:center}
+.wx-nav .dots3{margin-left:auto;letter-spacing:2px;font-weight:900}
+.wx-body{flex:1;overflow-y:auto;padding:14px 12px 18px;scrollbar-width:thin}
+.wx-time{text-align:center;font-size:10px;color:#9B9B9B;margin:6px 0 12px}
+.msg{display:flex;gap:9px;margin-bottom:14px;animation:msgIn .34s cubic-bezier(.22,.9,.36,1) both}
+@keyframes msgIn{from{opacity:0;transform:translateY(9px) scale(.96)}}
+.msg.user{justify-content:flex-end}
+.msg .ava{width:35px;height:35px;border-radius:8px;background:var(--coral);color:#FFF6EE;font-family:var(--serif);font-weight:900;font-size:16px;display:grid;place-items:center;flex:none}
+.bub{max-width:76%;padding:10px 13px;font-size:13.5px;line-height:1.6;position:relative;white-space:pre-wrap;word-break:break-word}
+.msg.agent .bub{background:#FFF;border-radius:4px 12px 12px 12px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.msg.user .bub{background:#95EC69;border-radius:12px 4px 12px 12px;color:#0F3B00}
+.bub .lnk{display:flex;align-items:center;gap:7px}
+.bub .lnk svg{color:#576B95;flex:none}
+.bub .lnk small{display:block;font-size:10px;color:#8C9AAE;font-weight:400}
+.typing{display:inline-flex;gap:4px;padding:13px 15px}
+.typing i{width:6px;height:6px;border-radius:50%;background:#C6C6C6;animation:tp 1.1s infinite}
+.typing i:nth-child(2){animation-delay:.18s}
+.typing i:nth-child(3){animation-delay:.36s}
+@keyframes tp{35%{transform:translateY(-4px);background:#9B9B9B}}
+.wxcard{background:#F7F7F7;border-radius:9px;padding:11px 12px;margin-top:4px;font-size:12px;color:#333}
+.wxcard .wxcard-t{font-weight:700;font-size:11px;color:#576B95;letter-spacing:1px;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.wxcard .wxrow{display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed #E3E3E3;align-items:flex-start}
+.wxcard .wxrow:last-child{border:none}
+.wxcard .sc{font-family:var(--serif);font-weight:900;flex:none;width:26px;height:26px;border:2px solid;border-radius:7px;display:grid;place-items:center;font-size:11px;background:#fff;transform:rotate(-3deg)}
+.wxcard .sc.s9{border-color:var(--pine);color:var(--pine)}
+.wxcard .sc.s8{border-color:var(--gold);color:var(--gold-deep)}
+.wxcard .wxrow p{flex:1;line-height:1.5}
+.wxcard .wxrow p small{display:block;color:#999;font-size:10px;margin-top:2px}
+.wxcard .wx-foot{font-size:10.5px;color:#999;margin-top:7px}
+.wxcard .wx-stat{display:flex;justify-content:space-around;text-align:center;margin:7px 0 3px}
+.wxcard .wx-stat b{font-family:var(--serif);font-size:17px;color:var(--pine);display:block}
+.wxcard .wx-stat span{font-size:10px;color:#8A8A8A}
+.wx-btn{display:inline-block;margin-top:8px;background:#FFF;border:1px solid #E1E1E1;border-radius:999px;padding:5px 14px;font-size:11px;color:#576B95;font-weight:700;cursor:pointer}
+.wx-btn:active{background:#F0F0F0}
+.wx-quick{flex:none;display:flex;gap:7px;padding:9px 11px;overflow-x:auto;background:#F7F7F7;border-top:1px solid #E7E7E7;scrollbar-width:none}
+.wx-quick::-webkit-scrollbar{display:none}
+.wx-quick button{flex:none;border:1px solid #DCDCDC;background:#FFF;border-radius:999px;padding:6px 14px;font-size:12px;color:#555}
+.wx-quick button:active{background:#EFEFEF}
+.wx-input{flex:none;display:flex;align-items:center;gap:9px;padding:9px 11px 13px;background:#F7F7F7}
+.wx-input input{flex:1;border:none;background:#FFF;border-radius:6px;padding:9px 11px;font-size:13.5px;font-family:inherit;outline:none}
+.wx-input .send{width:32px;height:32px;border-radius:50%;background:#1A1A1A;color:#FFF;display:grid;place-items:center;flex:none}
+.wx-input .send svg{width:16px;height:16px}
+.wx-input .send:active{transform:scale(.92)}
+
+.pres-notes{margin-top:34px;padding:18px 26px 26px;border-top:1.5px solid var(--ink);display:grid;gap:10px}
+.pn-tone{font-family:var(--serif);font-size:13px;letter-spacing:1px}
+.pn-tone b{color:var(--coral-deep)}
+.pn-sw{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:10.5px;color:var(--ink3)}
+.sw{display:inline-flex;align-items:center;gap:5px}
+.sw i{width:13px;height:13px;border-radius:4px;border:1px solid rgba(43,38,32,.15);display:inline-block}
+.pn-rules{font-size:10.5px;color:var(--ink2);line-height:2;letter-spacing:.3px}
+.pn-rules b{color:var(--ink)}
+
+@container (min-width:720px){
+  .mast-top{padding:20px 30px 14px}
+  .mast-name b{font-size:21px}
+  .mast-name i{font-size:10.5px}
+  .mast-nav{display:flex;align-items:center;justify-content:center;gap:34px;padding:9px 30px 10px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+  .mast-nav button{font-size:13.5px;letter-spacing:3px;color:var(--ink2);display:flex;align-items:center;gap:8px;padding:3px 2px;border-bottom:2.5px solid transparent;transition:.2s}
+  .mast-nav button em{font-style:normal;font-family:var(--serif);font-size:11px;color:var(--coral)}
+  .mast-nav button.on{color:var(--ink);font-weight:700;border-color:var(--coral)}
+  .mast-nav .nav-note{margin-left:auto;font-size:10.5px;color:var(--ink3);display:flex;align-items:center;gap:5px}
+  .tabbar{display:none}
+  .page{max-width:960px;padding:26px 32px 46px}
+  .page-title{font-size:29px}
+  .page-sub{font-size:12px}
+  .snap-note{font-size:10.5px}
+  .cards{grid-template-columns:1fr 1fr;gap:16px}
+  .tcard.first{grid-column:1/-1}
+  .tcard-title{font-size:17px}
+  .del-grid{grid-template-columns:300px 1fr;align-items:start}
+  .stats{grid-template-columns:repeat(4,1fr);gap:11px}
+  .stat b{font-size:23px}
+  .data-grid{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:start}
+  .data-side{display:grid;gap:12px}
+  .produce-cols{display:grid;grid-template-columns:1.7fr 1fr;gap:16px;align-items:start}
+  .me-grid{grid-template-columns:1fr 1fr;align-items:start}
+  .sheet{left:50%;right:auto;bottom:auto;top:50%;width:580px;max-height:84%;border-radius:18px;transform:translate(-50%,-44%) scale(.94);opacity:0;transition:transform .42s cubic-bezier(.22,.9,.3,1),opacity .3s}
+  .sheet.show{transform:translate(-50%,-50%) scale(1);opacity:1}
+  .sheet::before{display:none}
+  .toast{bottom:56px}
+}
+@media (max-width:430px){
+  .phone{width:100%;max-width:396px}
+  .pres{padding:12px 14px;gap:10px 16px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-compass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2.2 5-5 2.2 2.2-5z"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.2-4.2L15.4 5.6a2 2 0 012.8 0l.2.2a2 2 0 010 2.8L8.2 18.8 4 20z"/><path d="M13.5 7.5l3 3"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16"/><path d="M5 15l4-5 3.5 3L19 6"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 4-5.2 7-5.2s5.8 1.6 7 5.2"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c.6 2.6-4 4.7-4 9a4 4 0 008 0c0-2-1-3.5-2.1-4.6"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4"/><path d="M5 20h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5h5v5"/><path d="M19 5l-8 8"/><path d="M19 14v4a2 2 0 01-2 2H7a2 2 0 01-2-2V8a2 2 0 012-2h4"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 10-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 105.7 5.7l1-1"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10 14"/><path d="M21 3l-7 18-4-8-8-4z"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 11-2.3-5.7"/><path d="M20 4v5h-5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+  <symbol id="i-wx" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4.5a6.3 6.3 0 00-6.3 6.3c0 2 1 3.8 2.5 4.9l-.6 2.3 2.6-1.3c.6.2 1.2.3 1.8.3h.4a5.5 5.5 0 015.4-6.5 5.5 5.5 0 011 .1A6.3 6.3 0 008.5 4.5z"/><path d="M15.5 11.5a5.6 5.6 0 00-5.6 5.6c0 1.6.8 3.1 2 4l-.4 1.6 1.9-.9c.4.1.9.2 1.3.2a5.6 5.6 0 100-10.5z"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9.3 16.5H2.7z"/><path d="M12 10.5v4"/><circle cx="12" cy="17.2" r=".4" fill="currentColor"/></symbol>
+  <symbol id="i-sig" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18l4-11 4 8 3-12 3 9 4-4"/></symbol>
+</svg>
+
+<header class="pres">
+  <div class="pres-brand">
+    <span class="p-mark">拆</span>
+    <div><b>爆款拆解仿写助手</b><i>产品效果图 v1.3 · 响应式 Web + 认证服务号 · 调性「旅行编辑部」</i></div>
+  </div>
+  <nav class="p-switch" id="deviceSwitch">
+    <button data-dev="browser" class="on">桌面 Web</button>
+    <button data-dev="phone">移动 H5</button>
+    <button data-dev="chat">服务号对话</button>
+  </nav>
+  <p class="pres-hint">导览：展开<b>「今日首推」</b>看四维评分 → 点<b>「立即仿写」</b>体验三档生成模式 → 生产页<b>「去 AI 味改写」</b>看复检 → 数据页进<b>「翻红计划」</b>走七步闭环 → 对话页发<b>「选题」</b>试服务号 Agent</p>
+</header>
+
+<main class="canvas">
+
+  <section class="frame browser show" id="frameBrowser">
+    <div class="browser-bar">
+      <div class="b-dots"><span></span><span></span><span></span></div>
+      <div class="b-url"><svg class="ic"><use href="#i-lock"/></svg><span id="urlText">https://chaijie.app/radar — 今日雷达</span></div>
+      <div style="width:52px"></div>
+    </div>
+    <div id="browserSlot">
+
+      <div class="viewport" id="appViewport">
+        <div class="app" id="app">
+
+          <header class="mast">
+            <div class="mast-top">
+              <div class="mast-brand">
+                <span class="mast-mark">拆</span>
+                <div class="mast-name"><b>爆款拆解 · 仿写助手</b><i>VOL.042 · 10月17日 周六 · 编辑部已就绪</i></div>
+              </div>
+              <div class="mast-side">
+                <span class="quota-chip">今日生产 <b id="quotaMast">2/3</b></span>
+                <span class="mast-user">@胶片阿岛</span>
+              </div>
+            </div>
+            <nav class="mast-nav" id="mastNav">
+              <button data-tab="radar" class="on"><em>01</em>选题</button>
+              <button data-tab="produce"><em>02</em>生产</button>
+              <button data-tab="data"><em>03</em>数据</button>
+              <button data-tab="me"><em>04</em>我的</button>
+              <span class="nav-note"><svg class="ic"><use href="#i-wx"/></svg>已绑定服务号 · 模板消息即时触达</span>
+            </nav>
+          </header>
+
+          <div class="app-stage" id="appStage">
+
+            <section class="view on" data-view="radar">
+              <div class="page">
+                <div class="page-head stag">
+                  <div style="--i:0">
+                    <h1 class="page-title">今日雷达</h1>
+                    <p class="page-sub">基于你的定位 · 城市漫游 × 胶片摄影 · 个人专属清单</p>
+                  </div>
+                  <div class="page-aside" style="--i:1">
+                    <span class="snap-note">红狐数据为入库快照 · 08:00 抓取</span>
+                    <button class="btn btn-goldline" id="btnTplRadar"><svg class="ic"><use href="#i-spark"/></svg>提炼赛道模板</button>
+                  </div>
+                </div>
+                <div class="chips stag" style="--i:2">
+                  <span class="ltag on">城市漫游</span><span class="ltag">小众目的地</span><span class="ltag">出行装备</span>
+                  <span class="chips-hint">点卡片展开四维评分与仿写角度</span>
+                </div>
+
+                <div class="cards stag" id="topicCards">
+                  <article class="tcard card lift first" data-topic="在京都的第七天，我终于学会了浪费时光">
+                    <span class="stamp">今日<br>首推</span>
+                    <div class="tcard-top"><span class="ltag">城市漫游</span><span class="chip-hot"><svg class="ic"><use href="#i-flame"/></svg>热度 92</span></div>
+                    <h3 class="tcard-title">在京都的第七天，我终于学会了浪费时光</h3>
+                    <div class="tcard-meta">
+                      <span class="seal-score s9">9.2</span>
+                      <div class="tcard-best">综合推荐分 · 最高维 <b>钩子 9.6</b></div>
+                      <svg class="tcard-chev ic"><use href="#i-chev"/></svg>
+                    </div>
+                    <div class="tcard-x"><div class="tcard-x-in"><div class="tcard-x-pad">
+                      <div class="sbars">
+                        <div class="sbar"><span>钩子</span><div class="strack"><i class="sfill f9" style="--w:96%"></i></div><b>9.6</b></div>
+                        <div class="sbar"><span>结构</span><div class="strack"><i class="sfill f8" style="--w:88%"></i></div><b>8.8</b></div>
+                        <div class="sbar"><span>情绪</span><div class="strack"><i class="sfill f9" style="--w:91%"></i></div><b>9.1</b></div>
+                        <div class="sbar"><span>传播</span><div class="strack"><i class="sfill f8" style="--w:89%"></i></div><b>8.9</b></div>
+                      </div>
+                      <div class="ang"><b>仿写角度</b><p>把「浪费时光」翻译成<em>「把时间还给眼睛」</em>——用反内卷视角写一条你自己的城市漫游路线，结尾落在「什么都不做的一天」。</p></div>
+                      <div class="ang"><b>人设钩子</b><p>胶片摄影师第一人称：一卷只拍 12 张的过期胶卷，逼你慢下来。</p></div>
+                    </div></div></div>
+                    <div class="tcard-cta">
+                      <button class="btn btn-solid cta-write">立即仿写 · 消耗 1 次</button>
+                      <span class="q">失败自动返还额度</span>
+                    </div>
+                  </article>
+
+                  <article class="tcard card lift" data-topic="人均50元！成都老巷子的一天，本地人都在偷偷逛">
+                    <div class="tcard-top"><span class="ltag">城市漫游</span><span class="chip-hot"><svg class="ic"><use href="#i-flame"/></svg>热度 85</span></div>
+                    <h3 class="tcard-title">人均50元！成都老巷子的一天，本地人都在偷偷逛</h3>
+                    <div class="tcard-meta">
+                      <span class="seal-score s8">8.6</span>
+                      <div class="tcard-best">综合推荐分 · 最高维 <b>传播 9.0</b></div>
+                      <svg class="tcard-chev ic"><use href="#i-chev"/></svg>
+                    </div>
+                    <div class="tcard-x"><div class="tcard-x-in"><div class="tcard-x-pad">
+                      <div class="sbars">
+                        <div class="sbar"><span>钩子</span><div class="strack"><i class="sfill f8" style="--w:84%"></i></div><b>8.4</b></div>
+                        <div class="sbar"><span>结构</span><div class="strack"><i class="sfill f8" style="--w:87%"></i></div><b>8.7</b></div>
+                        <div class="sbar"><span>情绪</span><div class="strack"><i class="sfill f8" style="--w:82%"></i></div><b>8.2</b></div>
+                        <div class="sbar"><span>传播</span><div class="strack"><i class="sfill f9" style="--w:90%"></i></div><b>9.0</b></div>
+                      </div>
+                      <div class="ang"><b>仿写角度</b><p><em>数字承诺开头 + 路线清单体</em>，把「本地人视角」做成信息差钩子。</p></div>
+                      <div class="ang"><b>人设钩子</b><p>用「住了五年」的口吻压住攻略感，避免像营销号。</p></div>
+                    </div></div></div>
+                    <div class="tcard-cta"><button class="btn btn-line cta-write">仿写</button></div>
+                  </article>
+
+                  <article class="tcard card lift" data-topic="第一次坐夜班火车，邻座阿姨教我的3个人生道理">
+                    <div class="tcard-top"><span class="ltag">铁道旅行</span><span class="chip-hot"><svg class="ic"><use href="#i-flame"/></svg>热度 88</span></div>
+                    <h3 class="tcard-title">第一次坐夜班火车，邻座阿姨教我的3个人生道理</h3>
+                    <div class="tcard-meta">
+                      <span class="seal-score s8">8.4</span>
+                      <div class="tcard-best">综合推荐分 · 最高维 <b>情绪 9.2</b></div>
+                      <svg class="tcard-chev ic"><use href="#i-chev"/></svg>
+                    </div>
+                    <div class="tcard-x"><div class="tcard-x-in"><div class="tcard-x-pad">
+                      <div class="sbars">
+                        <div class="sbar"><span>钩子</span><div class="strack"><i class="sfill f8" style="--w:86%"></i></div><b>8.6</b></div>
+                        <div class="sbar"><span>结构</span><div class="strack"><i class="sfill f8" style="--w:81%"></i></div><b>8.1</b></div>
+                        <div class="sbar"><span>情绪</span><div class="strack"><i class="sfill f9" style="--w:92%"></i></div><b>9.2</b></div>
+                        <div class="sbar"><span>传播</span><div class="strack"><i class="sfill f8" style="--w:83%"></i></div><b>8.3</b></div>
+                      </div>
+                      <div class="ang"><b>仿写角度</b><p><em>陌生人叙事 + 数字列表</em>，情绪落点放在最后一条「道理」上，前两条只做铺垫。</p></div>
+                      <div class="ang"><b>人设钩子</b><p>胶片感夜车窗影，正好用你那卷夜拍。</p></div>
+                    </div></div></div>
+                    <div class="tcard-cta"><button class="btn btn-line cta-write">仿写</button></div>
+                  </article>
+
+                  <article class="tcard card lift" data-topic="去了趟景德镇才懂，为什么年轻人都在逃离北上广">
+                    <div class="tcard-top"><span class="ltag">小众目的地</span><span class="chip-hot mild"><svg class="ic"><use href="#i-flame"/></svg>热度 76</span></div>
+                    <h3 class="tcard-title">去了趟景德镇才懂，为什么年轻人都在逃离北上广</h3>
+                    <div class="tcard-meta">
+                      <span class="seal-score s7">7.8</span>
+                      <div class="tcard-best">综合推荐分 · 最高维 <b>结构 8.2</b></div>
+                      <svg class="tcard-chev ic"><use href="#i-chev"/></svg>
+                    </div>
+                    <div class="tcard-x"><div class="tcard-x-in"><div class="tcard-x-pad">
+                      <div class="sbars">
+                        <div class="sbar"><span>钩子</span><div class="strack"><i class="sfill f7" style="--w:74%"></i></div><b>7.4</b></div>
+                        <div class="sbar"><span>结构</span><div class="strack"><i class="sfill f8" style="--w:82%"></i></div><b>8.2</b></div>
+                        <div class="sbar"><span>情绪</span><div class="strack"><i class="sfill f7" style="--w:79%"></i></div><b>7.9</b></div>
+                        <div class="sbar"><span>传播</span><div class="strack"><i class="sfill f7" style="--w:76%"></i></div><b>7.6</b></div>
+                      </div>
+                      <div class="ang"><b>编辑部按</b><p>逃离叙事已经卷了——<em>反着写「为什么我留下来」</em>可能更新鲜，供参考。</p></div>
+                      <div class="ang"><b>人设钩子</b><p>拉坯翻车实录自带真实感，别修太干净。</p></div>
+                    </div></div></div>
+                    <div class="tcard-cta"><button class="btn btn-line cta-write">仿写</button></div>
+                  </article>
+                </div>
+
+                <div class="explore card stag" style="--i:6">
+                  <h4>编辑部还在探索</h4>
+                  <p>相邻赛道今天也有动静 · 换个方向看看</p>
+                  <div class="chips">
+                    <button class="ltag" data-explore>铁道旅行</button>
+                    <button class="ltag" data-explore>胶片冲扫</button>
+                    <button class="ltag" data-explore>小城咖啡</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="view" data-view="produce">
+              <div class="page">
+                <div class="page-head stag">
+                  <div style="--i:0">
+                    <h1 class="page-title">生产 · 任务台</h1>
+                    <p class="page-sub">入队即扣额 · 失败自动返还 · 完成推送服务号模板消息</p>
+                  </div>
+                  <div class="page-aside" style="--i:1"><span class="quota-chip">今日生产 <b id="quotaProduce">2/3</b></span></div>
+                </div>
+
+                <div class="produce-cols">
+                  <div>
+                    <div class="sect stag" style="--i:2">进行中<span class="more" id="runEmptyHint">从选题页发起 →</span></div>
+                    <div id="runList">
+                      <div class="run-card card static stag" style="--i:3">
+                        <div class="run-top"><span class="run-title">小城咖啡地图 · 图卡套图（4 张）</span><span class="rstate">图卡渲染中 · 68%</span></div>
+                        <div class="rtrack"><span class="rfill"></span></div>
+                        <div class="rsteps">
+                          <span class="rstep done"><i></i>拆解参考</span>
+                          <span class="rstep done"><i></i>骨架生成</span>
+                          <span class="rstep run"><i></i>风格注入</span>
+                          <span class="rstep"><i></i>图卡渲染</span>
+                        </div>
+                        <div class="run-sub">按模板生成 · 城市漫游 · 反内卷流 · 任务号 T-1023</div>
+                      </div>
+                    </div>
+
+                    <div class="sect stag" style="--i:4">最新交付</div>
+                    <div class="delivery card stag" style="--i:5">
+                      <div class="del-head">
+                        <span class="ltag">最新交付 · T-1021</span>
+                        <time>昨天 21:47 · 模板 + 参考单篇</time>
+                      </div>
+                      <div class="del-grid">
+                        <figure class="del-cover">
+                          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20quiet%20Kyoto%20street%20at%20dawn%2C%20traditional%20machiya%20wooden%20houses%2C%20warm%20morning%20light%2C%20kodak%20portra%20grain%2C%20cinematic%20travel%20editorial&image_size=portrait_4_3" alt="京都晨街封面图卡" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')">
+                          <figcaption class="poster"><b>在京都的第七天</b><b>我把时间还给了眼睛</b><span>@胶片阿岛 · 拆解仿写出品</span></figcaption>
+                        </figure>
+                        <div class="del-body">
+                          <div class="del-title">在京都的第七天，我把时间还给了眼睛<button class="cp" data-copy="标题" aria-label="复制标题"><svg class="ic"><use href="#i-copy"/></svg></button></div>
+                          <div class="draft-tabs" id="draftTabs">
+                            <button data-draft="a" class="on">原稿 · 38 分</button>
+                            <button data-draft="b">改写稿 · 17 分 · 已复检</button>
+                          </div>
+                          <div class="draft">
+                            <p class="draft-a show" id="draftA">来京都的第七天，我终于放慢了脚步。<mark class="ai-flag">首先，清晨的鸭川非常安静，适合散步和思考。</mark>巷子口的咖啡馆，老板娘认得我不加糖。<mark class="ai-flag">其次，这里的每一家小店各有特色，值得细细品味。</mark>我用那卷过期胶片拍了十二张，张张都是慢的。<mark class="ai-flag">总之，慢下来之后，我重新找到了旅行的意义。</mark></p>
+                            <p class="draft-b" id="draftB">来京都的第七天，我把闹钟扔了。六点的鸭川，只有晨跑的爷爷、我，和三只不慌不忙的鸽子。巷口的咖啡店，老板娘已经记得我不加糖。用那卷过期胶片拍了十二张——张张都是慢的。原来把时间还给自己，才是这趟旅行的正事。</p>
+                          </div>
+                          <div class="tags"><span>#京都旅行</span><span>#城市漫游</span><span>#慢生活</span><span>#胶片日常</span></div>
+                          <div class="flavor">
+                            <div class="fl-head"><b>AI 味检测</b><span class="fl-badge warn" id="flBadge">建议改 · 38</span><span class="fr">交付自动检测 · 免费</span></div>
+                            <div class="meter"><span class="mz1"></span><span class="mz2"></span><span class="mz3"></span><span class="meter-pin" id="flPin" style="left:38%"></span></div>
+                            <div class="fl-row">
+                              <div class="fl-num"><span id="flNum">38</span><small>AI 痕迹评分</small></div>
+                              <div class="fl-scale"><i style="background:#B9CDB4"></i>&lt;30 安心<br><i style="background:var(--gold)"></i>30–60 建议改<br><i style="background:var(--coral)"></i>&gt;60 强烈建议</div>
+                            </div>
+                            <div class="fl-flags" id="flFlags">检出 3 处高危句（已划线标注）——句长均质、连接词密度偏高</div>
+                            <div class="fl-act">
+                              <button class="btn btn-solid" id="btnRewrite" style="background:var(--gold-deep);box-shadow:2px 2px 0 rgba(43,38,32,.16)">去 AI 味改写</button>
+                              <span class="ok-note" id="flDone" style="display:none">改写方向：口语化 + 个人化 + 长短句交错 · 已自动复检</span>
+                            </div>
+                            <div class="fl-note">评分帮助降低同质化风险，不代表平台审核结论 · 人工过稿纪律不变</div>
+                          </div>
+                          <div class="del-acts">
+                            <button class="btn btn-ghost" data-copy="全文">复制全文</button>
+                            <button class="btn btn-ghost" id="btnDl">下载图卡</button>
+                            <button class="btn btn-ghost" id="btnShare">分享</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="sect stag" style="--i:6">任务历史</div>
+                    <div class="hist stag" style="--i:7">
+                      <div class="hrow card" style="flex-wrap:wrap;row-gap:4px"><span class="hno">T-1022</span><span class="ht">景德镇拉坯翻车实录（视频脚本）</span><span class="pill fail">失败</span><span class="hnote" style="width:100%;padding-left:46px">额度已自动返还 · 重试不重复扣额</span></div>
+                      <div class="hrow card"><span class="hno">T-1020</span><span class="ht">第一次坐夜班火车，邻座阿姨教我的3个人生道理</span><span class="pill ok">完成</span><span class="hlink" data-goto="data">已发布 · 冲榜中 ↗</span></div>
+                      <div class="hrow card"><span class="hno">T-1019</span><span class="ht">老相机淘货指南 · 图文</span><span class="pill ok">完成</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="view" data-view="data">
+              <div class="page">
+                <div class="page-head stag">
+                  <div style="--i:0">
+                    <h1 class="page-title">数据 · 回采看板</h1>
+                    <p class="page-sub">每日 09:00 回采 · 仅近 30 天发布的笔记 · 昨日有增量才推送日报</p>
+                  </div>
+                  <div class="page-aside" style="--i:1"><span class="snap-note">增量以自建回采序列为准 · 非抓取快照</span></div>
+                </div>
+
+                <div class="stats stag" style="--i:2">
+                  <div class="stat card"><b>+127</b><span>昨日点赞</span></div>
+                  <div class="stat card"><b>+89</b><span>昨日收藏</span></div>
+                  <div class="stat card"><b>+23</b><span>昨日评论</span></div>
+                  <div class="stat card"><b>+18</b><span>昨日涨粉</span></div>
+                </div>
+
+                <div class="data-grid">
+                  <div>
+                    <div class="sect stag" style="--i:3">笔记表现</div>
+                    <div class="notes-list stag" style="--i:4">
+                      <div class="nrow card lift">
+                        <span class="thumb"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20night%20train%20window%20reflection%2C%20city%20bokeh%20lights%2C%20moody%20blue%20hour%2C%20travel%20editorial&image_size=square" alt="夜班火车笔记封面" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')"></span>
+                        <div class="nmain"><div class="nt">第一次坐夜班火车，邻座阿姨教我的3个人生道理</div><div class="nm"><span>发布 3 天</span><span>互动 4,213</span><span class="nchip rush">冲榜中 ↗</span></div></div>
+                        <svg class="spark" viewBox="0 0 56 28" fill="none"><polyline points="2,24 10,22 18,23 26,17 34,13 42,14 50,7 54,4" stroke="#E8553F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span class="delta up">+127</span>
+                      </div>
+                      <div class="nrow card lift">
+                        <span class="thumb"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=hand%20drawn%20citywalk%20route%20map%20on%20cream%20paper%2C%20editorial%20line%20illustration%2C%20dotted%20path%2C%20warm%20tones&image_size=square" alt="citywalk路线图笔记封面" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')"></span>
+                        <div class="nmain"><div class="nt">小城citywalk路线图 · 手绘版</div><div class="nm"><span>发布 9 天</span><span>互动 1.2万</span><span class="nchip steady">平稳</span></div></div>
+                        <svg class="spark" viewBox="0 0 56 28" fill="none"><polyline points="2,17 10,16 18,18 26,15 34,17 42,14 50,16 54,15" stroke="#1F3D2B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span class="delta up">+34</span>
+                      </div>
+                      <div class="nrow card lift">
+                        <span class="thumb"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20Chengdu%20old%20town%20alley%20teahouse%2C%20bamboo%20chairs%2C%20warm%20afternoon%20light%2C%20travel%20editorial&image_size=square" alt="成都巷子笔记封面" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')"></span>
+                        <div class="nmain"><div class="nt">成都老巷子寻宝记：5家本地人才去的茶馆</div><div class="nm"><span>发布 18 天</span><span>互动 2.1万</span><span class="nchip longtail">长尾</span></div></div>
+                        <svg class="spark" viewBox="0 0 56 28" fill="none"><polyline points="2,6 10,9 18,14 26,18 34,21 42,23 50,24 54,25" stroke="#C9BFA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span class="delta zero">+0</span>
+                      </div>
+                      <div class="nrow card lift">
+                        <span class="thumb"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20Jingdezhen%20porcelain%20workshop%2C%20hands%20shaping%20clay%20on%20a%20wheel%2C%20warm%20window%20light%2C%20editorial&image_size=square" alt="景德镇陶艺笔记封面" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')"></span>
+                        <div class="nmain"><div class="nt">景德镇拉坯翻车实录：第一次做陶艺</div><div class="nm"><span>发布 16 天</span><span>互动 8,643</span><span class="nchip longtail">长尾</span></div></div>
+                        <svg class="spark" viewBox="0 0 56 28" fill="none"><polyline points="2,8 10,10 18,15 26,17 34,20 42,22 50,23 54,23" stroke="#C9BFA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span class="delta zero">+0</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="data-side stag" style="--i:5">
+                    <div class="entry-card card lift" id="btnRevive">
+                      <div class="ec-head"><span class="ec-badge"></span><h3>翻红计划</h3></div>
+                      <p>发现 <b style="color:var(--coral-deep)">2 篇潜力股</b> —— S1 历史验证 × S2 增长停滞 双命中，点击看诊断与优化方案</p>
+                      <span class="ec-cta">查看报告 →</span>
+                    </div>
+                    <div class="entry-card card lift gold" id="btnTplData">
+                      <div class="ec-head"><svg class="ic" style="color:var(--gold-deep)"><use href="#i-spark"/></svg><h3>把爆款变成模板</h3></div>
+                      <p>雷达近 30 天已圈选 17 篇爆款 · 一键提炼赛道规律，喂给日常量产</p>
+                      <span class="ec-cta">进入模板库 →</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="view" data-view="me">
+              <div class="page">
+                <div class="page-head stag">
+                  <div style="--i:0"><h1 class="page-title">我的 · 编辑部档案</h1><p class="page-sub">定位 · 额度 · 成本 · 账号</p></div>
+                </div>
+                <div class="me-grid stag" style="--i:1">
+                  <div class="profile card">
+                    <span class="avatar">阿</span>
+                    <div>
+                      <div class="pn">@胶片阿岛</div>
+                      <div class="pu">uid wxo_8f3e···· · 服务号网页授权登录</div>
+                      <span class="wx-bind"><svg class="ic"><use href="#i-wx"/></svg>服务号已绑定 · 模板消息即时触达</span>
+                    </div>
+                  </div>
+                  <div class="me-card card">
+                    <h4>今日额度<span class="r">每日 0 点重置 · 服务端校验为准</span></h4>
+                    <div class="qbar"><span>选题查看</span><div class="qtrack"><span class="qfill" style="width:80%"></span></div><b>8/10</b></div>
+                    <div class="qbar"><span>生产</span><div class="qtrack"><span class="qfill" style="width:66%"></span></div><b id="quotaMe">2/3</b></div>
+                    <div style="margin-top:13px"><button class="btn btn-goldline" id="btnUpgrade">升级额度 · 按次包 / 包月</button></div>
+                    <p style="font-size:9.5px;color:var(--ink3);margin-top:9px">微信内不收款 · 升级页在系统浏览器打开</p>
+                  </div>
+                  <div class="me-card card">
+                    <h4>定位与人设<span class="r">修改次日生效 · 当日可手动重抓</span></h4>
+                    <div class="pos-chips"><span class="ltag on">城市漫游</span><span class="ltag on">胶片摄影</span><span class="ltag">慢节奏</span></div>
+                    <p class="persona">人设：<b>胶片摄影师</b> · 第一人称叙事 · 招牌梗「过期胶卷」——仿写与 AI 味改写均按此人设注入。</p>
+                    <div style="margin-top:12px"><button class="btn btn-ghost" id="btnPos">修改定位</button></div>
+                  </div>
+                  <div class="me-card card">
+                    <h4>成本账本<span class="r">近 7 天 · 生产记任务号</span></h4>
+                    <div class="cost-row"><span>生产 14 次</span><b>¥3.42</b></div>
+                    <div class="cost-row"><span>选题雷达 7 天</span><b>¥0.61</b></div>
+                    <div class="cost-row"><span>效果回采</span><b>¥1.10</b></div>
+                    <div class="cost-total"><span>合计</span><b>¥5.13</b></div>
+                  </div>
+                </div>
+                <div style="display:grid;gap:9px;margin-top:14px" class="stag">
+                  <div class="mrow" data-toast="交付自动检测免费 · 手动检测与改写计入成本账本"><svg class="ic"><use href="#i-spark"/></svg>AI 味检测<small>交付自动附带 · 手动检测计轻量额度</small><svg class="ic arr"><use href="#i-chev"/></svg></div>
+                  <div class="mrow" data-toast="已绑定服务号 · 选题/任务/日报/翻红结论将推送到微信"><svg class="ic"><use href="#i-wx"/></svg>通知设置<small>模板消息 · 关注一次长期有效</small><svg class="ic arr"><use href="#i-chev"/></svg></div>
+                  <div class="mrow" data-toast="注销需二次确认 · 额度与任务数据将清除，详见账号设置"><svg class="ic"><use href="#i-alert"/></svg>账号注销<small>二次确认 · 数据范围说明</small><svg class="ic arr"><use href="#i-chev"/></svg></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="view" data-view="revive">
+              <div class="page">
+                <div class="vhead"><button class="back" id="rvBack"><svg class="ic"><use href="#i-back"/></svg>数据</button></div>
+                <h1 class="v-title" style="margin-top:12px">翻红计划</h1>
+                <p class="v-note">候选池：已登记回采 ≥14 天且仍在窗口内的笔记 · 每日回采后重算 · 一篇翻红 ≈ 一篇新爆文</p>
+
+                <div class="rv-done card stag" style="--i:0">
+                  <span class="ok-ic"><svg class="ic"><use href="#i-check"/></svg></span>
+                  <div><b>《川西小城三日：不带相机的旅行》已见效</b><p>翻新后 7 天增量 214 · 为基线的 3.4 倍 · 结构特征已回流模板库</p></div>
+                </div>
+
+                <div id="rvList" class="stag" style="display:grid;gap:12px">
+                  <div class="rv-card card lift" data-key="a" style="--i:1">
+                    <div class="rv-top">
+                      <span class="rv-cover"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20Chengdu%20old%20town%20alley%20teahouse%2C%20bamboo%20chairs%2C%20warm%20afternoon%20light%2C%20travel%20editorial&image_size=square" alt="成都老巷子封面" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')"></span>
+                      <div style="flex:1;min-width:0">
+                        <div class="rv-title">成都老巷子寻宝记：5家本地人才去的茶馆</div>
+                        <div class="rv-nums">赞<b>2,143</b>藏<b>3,102</b>评<b>96</b></div>
+                      </div>
+                    </div>
+                    <div class="rv-tags"><span class="dtag">藏赞比偏高 1.45</span><span class="dtag">增速前快后慢</span><span class="dtag">发布 18 天</span></div>
+                    <details class="why">
+                      <summary><svg class="ic"><use href="#i-chev"/></svg>为什么是潜力股（算法透明）</summary>
+                      <div class="why-in">
+                        <div class="sig"><span class="s-y">S1 ✓</span><span>历史验证：发布 72h 内赞藏评 5,341，在你全部笔记中排第 2/23（前 30%）——内容本体曾被市场验证</span></div>
+                        <div class="sig"><span class="s-y">S2 ✓</span><span>增长停滞：近 7 天互动增量 +1（阈值 &lt;2）——已退出推荐池，翻新机会成本低</span></div>
+                      </div>
+                    </details>
+                  </div>
+
+                  <div class="rv-card card lift" data-key="b" style="--i:2">
+                    <div class="rv-top">
+                      <span class="rv-cover"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20Jingdezhen%20porcelain%20workshop%2C%20hands%20shaping%20clay%20on%20a%20wheel%2C%20warm%20window%20light%2C%20editorial&image_size=square" alt="景德镇陶艺封面" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')"></span>
+                      <div style="flex:1;min-width:0">
+                        <div class="rv-title">景德镇拉坯翻车实录：第一次做陶艺</div>
+                        <div class="rv-nums">赞<b>6,214</b>藏<b>1,853</b>评<b>412</b></div>
+                      </div>
+                    </div>
+                    <div class="rv-tags"><span class="dtag">评赞比偏高</span><span class="dtag">增速匀速缓慢</span><span class="dtag">发布 16 天</span></div>
+                    <details class="why">
+                      <summary><svg class="ic"><use href="#i-chev"/></svg>为什么是潜力股（算法透明）</summary>
+                      <div class="why-in">
+                        <div class="sig"><span class="s-y">S1 ✓</span><span>历史验证：发布 72h 内赞藏评 6,427，排第 1/23（前 30%）——你账号的最佳开局</span></div>
+                        <div class="sig"><span class="s-y">S2 ✓</span><span>增长停滞：近 7 天互动增量 +0 ——互动归零即沉底</span></div>
+                      </div>
+                    </details>
+                  </div>
+                  <p style="font-size:10px;color:var(--ink3);text-align:center;margin-top:4px">点选一篇 → 诊断报告 → 优化方案 → 执行跟办 → 7 天观察</p>
+                </div>
+
+                <div id="rvReport" style="display:none">
+                  <div class="rv-report">
+                    <div class="rp-head card">
+                      <span class="rv-cover" style="width:72px;height:72px"><img id="rpImg" src="" alt=""></span>
+                      <div style="flex:1;min-width:0">
+                        <div class="rv-title" id="rpTitle" style="font-size:14.5px"></div>
+                        <div class="rv-nums" id="rpNums"></div>
+                        <div class="rv-tags" id="rpTags" style="margin-top:8px"></div>
+                      </div>
+                    </div>
+                    <div class="rp-chart card">
+                      <h5>历史表现 · 72H VS 近 7 天</h5>
+                      <svg viewBox="0 0 280 96" fill="none">
+                        <line x1="8" y1="84" x2="272" y2="84" stroke="#E5DCCB" stroke-width="1.5"/>
+                        <path id="rpPathA" d="M8,80 L36,76 L64,58 L92,42 L120,35 L148,32 L204,29 L272,27" stroke="#1F3D2B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path id="rpPathB" d="M8,74 L64,72 L120,71 L180,70 L272,69" stroke="#D9A441" stroke-width="2.2" stroke-dasharray="5 4" stroke-linecap="round"/>
+                        <circle id="rpDotA" cx="120" cy="35" r="3.4" fill="#1F3D2B"/>
+                      </svg>
+                      <div class="chart-legend"><span class="l1"><i></i>发布 72h（前快后慢 · 吃到首推未进下级流量池）</span><span class="l2"><i></i>近 7 天（停滞）</span></div>
+                    </div>
+                    <div class="rp-attr">
+                      <h5>编辑部归因</h5>
+                      <blockquote id="rpQuote"></blockquote>
+                      <div class="rp-metric" id="rpMetric"></div>
+                    </div>
+                    <div class="plan card">
+                      <h5>优化方案 · 全部可编辑 · 可只采纳部分</h5>
+                      <div class="plan-group">
+                        <div class="pg-t">新标题 ×3（不同钩子方向 · 点选采纳）</div>
+                        <div id="rpTitles"></div>
+                      </div>
+                      <div class="plan-group">
+                        <div class="pg-t">封面建议（风格方向 · 生图走生产额度）</div>
+                        <p class="advice" id="rpCover"></p>
+                      </div>
+                      <div class="plan-group">
+                        <div class="pg-t">话题标签调整</div>
+                        <p class="advice" id="rpTags2"></p>
+                      </div>
+                    </div>
+                    <div class="plan card" style="padding:14px">
+                      <h5>执行跟办 · 四步</h5>
+                      <ul class="todo" id="rvTodo">
+                        <li><span class="box"><svg class="ic"><use href="#i-check"/></svg></span><span class="tno">①</span><span>复制新标题（点击即复制）</span></li>
+                        <li><span class="box"><svg class="ic"><use href="#i-check"/></svg></span><span class="tno">②</span><span>按建议重做封面</span></li>
+                        <li><span class="box"><svg class="ic"><use href="#i-check"/></svg></span><span class="tno">③</span><span>去小红书编辑这篇已发布笔记</span></li>
+                        <li><span class="box"><svg class="ic"><use href="#i-check"/></svg></span><span class="tno">④</span><span>回来点「已完成编辑」，进入 7 天观察</span></li>
+                      </ul>
+                    </div>
+                    <div class="rv-cta">
+                      <button class="btn btn-solid" id="btnReviveGo">发起翻新 · 消耗 1 次生产额度</button>
+                      <span class="fine">观察期回采免费（复用每日回采）· 观察期内不可再次发起 · 每月发起有上限</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="rvObs" style="display:none">
+                  <div class="obs-card card">
+                    <div class="obs-state"><span class="ec-badge"></span><h3 id="obsTitle">成都老巷子寻宝记 · 翻红观察中 第 3 天</h3></div>
+                    <div class="day-dots"><i class="f"></i><i class="f"></i><i class="cur"></i><i></i><i></i><i></i><i></i></div>
+                    <div class="obs-bars">
+                      <div class="ob"><span>翻红前基线<br>7 天增量</span><div class="track"><span class="fill" style="--w:3%;background:var(--gray-score)"></span></div><b>+1</b></div>
+                      <div class="ob"><span>翻红后<br>3 天增量</span><div class="track"><span class="fill" style="--w:62%;background:var(--coral)"></span></div><b>+38</b></div>
+                    </div>
+                    <p class="obs-note">已达「见效」阈值（基线 2 倍 = +2）的判定线之上——<b>按当前增速，预计第 5 天稳定见效</b>。观察期满自动出结论卡并推送服务号；见效笔记的结构特征将回流你的模板库。</p>
+                    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+                      <button class="btn btn-ghost" id="rvObsBack">返回潜力股列表</button>
+                      <button class="btn btn-ghost" id="rvObsData">看完整看板</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="view" data-view="templates">
+              <div class="page">
+                <div class="vhead"><button class="back" id="tplBack"><svg class="ic"><use href="#i-back"/></svg>数据</button></div>
+                <h1 class="v-title" style="margin-top:12px">模板库</h1>
+                <p class="v-note">多篇聚合提炼赛道规律 · 随你的回采数据进化为「个人适配版」——不存在全网同一模板</p>
+
+                <div class="stag" style="display:grid;gap:13px">
+                  <div class="tpl-card card" style="--i:0">
+                    <div class="tpl-head">
+                      <h3>城市漫游 · 反内卷流 <span style="font-size:10px;color:var(--ink3);font-weight:400">v2</span></h3>
+                      <span class="tpl-status ready">可用</span>
+                    </div>
+                    <div class="fresh"><span>样本窗 <b>09/17 – 10/15</b></span><span>样本 <b>17 篇</b></span><span>最近验证 <b>10/16 ✓</b></span></div>
+                    <div class="slot">
+                      <div class="slot-t">开头钩子 · 选项分布<span>非单一答案</span></div>
+                      <div class="slotbar"><i style="width:71%"></i><i style="width:20%"></i><i style="width:9%"></i></div>
+                      <div class="slot-legend"><span><i style="background:var(--pine)"></i>反常识 71%</span><span><i style="background:var(--gold)"></i>提问 20%</span><span><i style="background:var(--gray-score)"></i>其他 9%</span></div>
+                    </div>
+                    <div class="tpl-stats"><span>平均 <b>4.2</b> 段</span><span>段均 <b>43</b> 字</span><span><b>100%</b> 末段互动引导</span><span>封面 <b>65%</b> 大字报式</span></div>
+                    <div class="tpl-acts">
+                      <button class="btn btn-line" id="btnUseTpl">用于生产</button>
+                      <button class="btn btn-ghost" id="btnShareTpl">分享为图片</button>
+                    </div>
+                  </div>
+
+                  <div class="tpl-card card" style="--i:1">
+                    <div class="tpl-head">
+                      <h3>小众目的地 · 悬念流 <span style="font-size:10px;color:var(--ink3);font-weight:400">v1</span></h3>
+                      <span class="tpl-status adapting">个人适配中 · P2</span>
+                    </div>
+                    <div class="fresh"><span>样本 <b>9 篇</b></span><span>回采反写积累中 <b>3/10 篇</b></span></div>
+                    <p class="tpl-note">回采反写：用此模板产出的笔记 → 回采 → 效果自动标注回模板（如「CTR 代理值高于你的均值 35%」）。<b>积累满 10 篇后，模板从「市场统计」进化为你的「个人适配版」</b>，暂不可用于生产。</p>
+                  </div>
+
+                  <button class="btn btn-solid" id="btnRefineNew" style="--i:2"><svg class="ic"><use href="#i-spark"/></svg>提炼新模板 · 消耗 1 次生产额度</button>
+                  <p style="font-size:9.5px;color:var(--ink3);text-align:center;margin-top:-4px">样本 &lt;5 篇不允许发起 · 同关键词 24h 内重复提炼会确认拦截 · 模板为结构规律，不含原文搬运</p>
+                </div>
+              </div>
+            </section>
+
+          </div>
+
+          <nav class="tabbar" id="tabbar">
+            <button class="tab on" data-tab="radar"><svg class="ic"><use href="#i-compass"/></svg>选题</button>
+            <button class="tab" data-tab="produce"><svg class="ic"><use href="#i-pen"/></svg>生产</button>
+            <button class="tab" data-tab="data"><svg class="ic"><use href="#i-chart"/></svg>数据</button>
+            <button class="tab" data-tab="me"><svg class="ic"><use href="#i-user"/></svg>我的</button>
+          </nav>
+
+          <div class="backdrop" id="backdrop"></div>
+
+          <div class="sheet" id="sheetCompose">
+            <div class="sheet-head"><b>发起仿写</b><span class="s-topic" id="cTopic"></span><button class="x" data-close>✕</button></div>
+            <div class="modes" id="modeGroup">
+              <div class="mode" data-mode="direct"><span class="mdot"></span><div class="mmain"><b>直接仿写</b><p>单篇拆解的结构逻辑 · 追单篇锋利感</p></div></div>
+              <div class="mode" data-mode="template"><span class="mdot"></span><div class="mmain"><b>按模板生成</b><p>模板骨架 × 槽位从选项分布采样 · 日常量产、账号风格一致</p></div></div>
+              <div class="mode on" data-mode="plus"><span class="mdot"></span><div class="mmain"><b>模板 + 参考单篇<span class="rec">编辑部推荐</span></b><p>骨架层用模板 · 风格层用拆解 · 兼顾及格线与上限</p></div></div>
+            </div>
+            <div class="tpl-pick show" id="tplPick">使用模板<select id="tplSel"><option>城市漫游 · 反内卷流 v2 · 17 篇样本</option><option disabled>小众目的地 · 悬念流 v1 · 适配中</option></select></div>
+            <div class="sheet-foot">
+              <button class="btn btn-solid" id="btnGen">开始生成 · 消耗 1 次生产额度</button>
+              <span class="fine" id="quotaNote">今日剩余 1 次 · 失败自动返还 · 完成推送服务号</span>
+            </div>
+          </div>
+
+          <div class="sheet" id="sheetRefine">
+            <div class="sheet-head"><b>提炼赛道模板</b><span class="s-topic">城市漫游</span><button class="x" data-close>✕</button></div>
+            <div style="margin-top:12px">
+              <div class="radio-line on"><span class="mdot"></span><div><b>自动圈选（推荐）</b><p>按当前定位关键词，取雷达近 30 天综合评分 Top 20 → 实际命中 17 篇 ✓（下限 10 篇）</p></div></div>
+              <div class="radio-line"><span class="mdot"></span><div><b>手动圈选</b><p>在选题历史 / 已回采笔记中勾选 5–50 篇</p></div></div>
+              <p class="warn-note">同关键词 24 小时内重复提炼会弹出确认拦截 · 一次提炼计 1 次生产额度，对齐拆解与统计成本记入成本账本</p>
+            </div>
+            <div class="sheet-foot"><button class="btn btn-solid" id="btnRefine">开始提炼 · 消耗 1 次生产额度</button></div>
+          </div>
+
+          <div class="toast" id="toast"></div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="frame phone" id="framePhone">
+    <div class="phone-screen app-screen">
+      <div class="island"></div>
+      <div class="statusbar"><span>9:41</span><span class="s-icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 16h3v4H2zM7.5 13h3v7h-3zM13 10h3v10h-3zM18.5 7h3v13h-3z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C8 4.5 4.7 6 .9 8.4l1.7 2.4C5.9 8.8 8.7 7.5 12 7.5s6.1 1.3 9.4 3.3L23 8.4C19.3 6 16 4.5 12 4.5z"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="8" width="17" height="9" rx="2.5"/><rect x="4" y="10" width="11" height="5" rx="1" fill="currentColor" stroke="none"/><path d="M21 11v3" stroke-linecap="round"/></svg></span></div>
+      <div id="phoneSlot"></div>
+    </div>
+  </section>
+
+  <section class="frame phone" id="frameChat">
+    <div class="phone-screen" style="height:742px">
+      <div class="island"></div>
+      <div class="statusbar"><span>9:41</span><span class="s-icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 16h3v4H2zM7.5 13h3v7h-3zM13 10h3v10h-3zM18.5 7h3v13h-3z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C8 4.5 4.7 6 .9 8.4l1.7 2.4C5.9 8.8 8.7 7.5 12 7.5s6.1 1.3 9.4 3.3L23 8.4C19.3 6 16 4.5 12 4.5z"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="8" width="17" height="9" rx="2.5"/><rect x="4" y="10" width="11" height="5" rx="1" fill="currentColor" stroke="none"/><path d="M21 11v3" stroke-linecap="round"/></svg></span></div>
+      <div class="wx">
+        <div class="wx-nav"><span class="back-i">‹</span><span class="wx-ava-s">拆</span>爆款拆解仿写助手<span class="dots3">•••</span></div>
+        <div class="wx-body" id="wxBody">
+          <div class="wx-time">10月17日 周六 09:41</div>
+        </div>
+        <div class="wx-quick" id="wxQuick"></div>
+        <div class="wx-input">
+          <input id="wxInput" placeholder="发指令或粘贴链接…" enterkeyhint="send">
+          <button class="send" id="wxSend" aria-label="发送"><svg class="ic"><use href="#i-send"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pres-notes">
+  <div class="pn-tone">调性 <b>「旅行编辑部」</b>——米纸底 · 衬线刊头 · 车票/行李签标签 · 纸片卡片（1px 纸边 + 2px 偏移硬影）· 拒绝后台仪表盘味</div>
+  <div class="pn-sw">
+    <span class="sw"><i style="background:#FAF6EF"></i>米纸白</span>
+    <span class="sw"><i style="background:#E8553F"></i>落日珊瑚</span>
+    <span class="sw"><i style="background:#1F3D2B"></i>松林墨绿</span>
+    <span class="sw"><i style="background:#D9A441"></i>沙金</span>
+    <span class="sw"><i style="background:#2B2620"></i>墨色</span>
+    <span class="sw"><i style="background:#E5DCCB"></i>纸边</span>
+  </div>
+  <div class="pn-rules">
+    动效：清单 stagger 入场 50ms 间隔 · 按钮按压 0.97 · 进度弹性点亮 · 不做常驻循环动画 ｜
+    语义：评分条 <b>≥9.0 墨绿 · 8.0–8.9 沙金 · &lt;8.0 纸灰</b> ｜ 首推卡<b>实心珊瑚 CTA + 首推印章</b>，其余描边 ｜ 热度 ≥80 珊瑚底、&lt;80 纸灰签 ｜ 增量 正墨绿 · 负珊瑚 · 零纸灰 ｜ 叙事三态 冲榜中/平稳/长尾 ｜ ≥1万 显示 X.X万 ｜ 空态=插画+编辑口吻+下一步动作 ｜ V1 锁定浅色
+  </div>
+</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+
+const viewport=$('#appViewport');
+const stage=$('#appStage');
+const toastEl=$('#toast');
+let toastTimer;
+function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),2400)}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+const TOPICS=[
+ {t:'在京都的第七天，我终于学会了浪费时光',s:'9.2',cls:'s9',a:'把「浪费时光」翻译成「把时间还给眼睛」'},
+ {t:'人均50元！成都老巷子的一天，本地人都在偷偷逛',s:'8.6',cls:'s8',a:'数字承诺开头 + 本地人信息差'},
+ {t:'第一次坐夜班火车，邻座阿姨教我的3个人生道理',s:'8.4',cls:'s8',a:'陌生人叙事，情绪落在最后一条「道理」上'}
+];
+
+let quotaUsed=1,quotaMax=3,taskNo=1024;
+function updateQuota(){$('#quotaMast').textContent=quotaUsed+'/'+quotaMax;$('#quotaProduce').textContent=quotaUsed+'/'+quotaMax;$('#quotaMe').textContent=quotaUsed+'/'+quotaMax;$('#quotaNote').textContent='今日剩余 '+(quotaMax-quotaUsed)+' 次 · 失败自动返还 · 完成推送服务号'}
+
+function playStag(scope){$$('.stag',scope).forEach(g=>{g.classList.remove('stag');void g.offsetWidth;g.classList.add('stag')})}
+function playBars(scope){$$('.sbar,.ob',scope).forEach(b=>{b.classList.remove('on');void b.offsetWidth;setTimeout(()=>b.classList.add('on'),90)})}
+
+const URLMAP={radar:'radar — 今日雷达',produce:'produce — 任务台',data:'data — 回采看板',me:'me — 编辑部档案'};
+let currentTab='radar';
+function switchTab(name){
+  currentTab=name;
+  $$('.view').forEach(v=>v.classList.toggle('on',v.dataset.view===name));
+  $$('#mastNav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
+  $$('#tabbar .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
+  $('#urlText').textContent='https://chaijie.app/'+URLMAP[name];
+  const v=$('.view[data-view="'+name+'"]');
+  playStag(v);stage.scrollTop=0;
+  if(name==='produce')setTimeout(()=>{$('#flPin').style.left=flavorCur==='a'?'38%':'17%'},150);
+  if(name==='revive'||name==='templates')playBars(v);
+}
+
+function openView(name){
+  $$('.view').forEach(v=>v.classList.toggle('on',v.dataset.view===name));
+  $$('#mastNav button').forEach(b=>b.classList.remove('on'));
+  $$('#tabbar .tab').forEach(b=>b.classList.remove('on'));
+  const v=$('.view[data-view="'+name+'"]');
+  playStag(v);playBars(v);stage.scrollTop=0;
+}
+function backToTab(){$$('.view').forEach(v=>v.classList.remove('on'));switchTab(currentTab)}
+
+$$('#mastNav button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+$$('#tabbar .tab').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+
+$$('.tcard').forEach(c=>{
+  c.addEventListener('click',e=>{
+    if(e.target.closest('button'))return;
+    c.classList.toggle('x');
+    if(c.classList.contains('x'))setTimeout(()=>$$('.sbar',c).forEach(b=>b.classList.add('on')),120);
+  });
+});
+
+let composeTopic=TOPICS[0].t,composeMode='plus';
+function openSheet(id){$('#backdrop').classList.add('show');$(id).classList.add('show')}
+function closeSheets(){$('#backdrop').classList.remove('show');$$('.sheet').forEach(s=>s.classList.remove('show'))}
+$('#backdrop').onclick=closeSheets;
+$$('[data-close]').forEach(b=>b.onclick=closeSheets);
+
+$$('.cta-write').forEach(b=>b.onclick=e=>{
+  e.stopPropagation();
+  composeTopic=b.closest('.tcard').dataset.topic;
+  $('#cTopic').textContent='《'+composeTopic+'》';
+  openSheet('#sheetCompose');
+});
+$$('#modeGroup .mode').forEach(m=>m.onclick=()=>{
+  $$('#modeGroup .mode').forEach(x=>x.classList.remove('on'));
+  m.classList.add('on');composeMode=m.dataset.mode;
+  $('#tplPick').classList.toggle('show',composeMode!=='direct');
+});
+const MODE_LABEL={direct:'直接仿写',template:'按模板 · 城市漫游·反内卷流',plus:'模板+参考单篇（推荐档）'};
+
+function addTask(title,modeLabel){
+  const card=document.createElement('div');
+  card.className='run-card card';
+  card.innerHTML='<div class="run-top"><span class="run-title"></span><span class="rstate">排队入队中…</span></div><div class="rtrack"><span class="rfill"></span></div><div class="rsteps"><span class="rstep"><i></i>拆解参考</span><span class="rstep"><i></i>骨架生成</span><span class="rstep"><i></i>风格注入</span><span class="rstep"><i></i>图卡渲染</span></div><div class="run-sub"></div>';
+  card.querySelector('.run-title').textContent=title;
+  card.querySelector('.run-sub').textContent=modeLabel+' · 任务号 T-'+taskNo;
+  $('#runList').prepend(card);
+  const steps=$$('.rstep',card),fill=$('.rfill',card),state=$('.rstate',card);
+  let i=0;
+  (function tick(){
+    if(i>0)steps[i-1].className='rstep done';
+    if(i>=steps.length){
+      card.classList.add('fin');state.textContent='✓ 已完成 · 服务号模板消息已推送';
+      toast('任务完成 · 已推送服务号模板消息，48h 内可回「换个开头」继续打磨');
+      return;
+    }
+    steps[i].className='rstep run';
+    state.textContent=['正在拆解参考…','正在生成骨架…','正在注入人设风格…','正在渲染图卡…'][i];
+    fill.style.width=((i+1)/steps.length*100-3)+'%';
+    i++;setTimeout(tick,1500+Math.random()*450);
+  })();
+}
+
+$('#btnGen').onclick=()=>{
+  closeSheets();
+  toast('已入队 · 任务号 T-'+taskNo+' · 完成后服务号通知你');
+  switchTab('produce');
+  addTask(composeTopic,MODE_LABEL[composeMode]);
+  quotaUsed++;taskNo++;updateQuota();
+};
+
+$$('[data-copy]').forEach(b=>b.onclick=()=>toast('已复制'+b.dataset.copy+' · 去小红书粘贴'));
+$('#btnDl').onclick=()=>toast('图卡已开始下载 · 长按可保存');
+$('#btnShare').onclick=()=>toast('分享卡已生成 · 保存后可直接发笔记');
+$$('[data-goto]').forEach(b=>b.onclick=()=>switchTab(b.dataset.goto));
+$$('[data-explore]').forEach(b=>b.onclick=()=>toast('已加入明日雷达 · 明早 8:00 服务号通知你'));
+$('#btnPos').onclick=()=>toast('定位修改次日生效 · 今日清单可手动重抓');
+$('#btnUpgrade').onclick=()=>toast('微信内不收款 · 已在系统浏览器打开官网升级页');
+$$('.mrow[data-toast]').forEach(r=>r.onclick=()=>toast(r.dataset.toast));
+$('#runEmptyHint')&&($('#runEmptyHint').onclick=()=>switchTab('radar'));
+
+let flavorCur='a';
+function setFlavor(v,animate){
+  flavorCur=v;
+  $('#draftA').classList.toggle('show',v==='a');
+  $('#draftB').classList.toggle('show',v==='b');
+  const score=v==='a'?38:17;
+  $('#flPin').style.left=score+'%';
+  const num=$('#flNum'),from=parseInt(num.textContent)||score;
+  if(animate&&window.requestAnimationFrame){
+    const t0=performance.now();
+    (function step(t){const p=Math.min(1,(t-t0)/900);num.textContent=Math.round(from+(score-from)*p);if(p<1)requestAnimationFrame(step)})(t0);
+  }else num.textContent=score;
+  const badge=$('#flBadge');
+  if(v==='a'){badge.className='fl-badge warn';badge.textContent='建议改 · 38';$('#flFlags').style.display='';$('#flFlags').textContent='检出 3 处高危句（已划线标注）——句长均质、连接词密度偏高'}
+  else{badge.className='fl-badge safe';badge.textContent='安心 · 读起来像你写的';$('#flFlags').style.display='none'}
+  $$('#draftTabs button').forEach(b=>b.classList.toggle('on',b.dataset.draft===v));
+}
+$('#btnRewrite').onclick=async()=>{
+  $('#btnRewrite').disabled=true;$('#btnRewrite').textContent='改写中…';
+  await sleep(900);
+  $('#draftTabs').classList.add('show');
+  setFlavor('b',true);
+  $('#btnRewrite').textContent='已改写 ✓';
+  $('#flDone').style.display='';
+  toast('去 AI 味改写完成 · 已自动复检：17 分 · 安心');
+};
+$$('#draftTabs button').forEach(b=>b.onclick=()=>setFlavor(b.dataset.draft,true));
+
+const REVIVE={
+ a:{img:'https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20Chengdu%20old%20town%20alley%20teahouse%2C%20bamboo%20chairs%2C%20warm%20afternoon%20light%2C%20travel%20editorial&image_size=square',
+    title:'成都老巷子寻宝记：5家本地人才去的茶馆',
+    nums:'赞<b>2,143</b>藏<b>3,102</b>评<b>96</b>',
+    tags:['藏赞比偏高 1.45','增速前快后慢','发布 18 天'],
+    quote:'这篇藏的人多、赞的人少——内容很有用，但标题没让人心动。收藏说明「用得上」，标题却没给出「点开就值」的承诺。<em>优先动标题和封面，正文不必大改。</em>',
+    metric:'<span>藏赞比 <b>1.45</b>（你的均值 0.90 · 1.6 倍偏高）</span><span>对照模板：城市漫游 · 反内卷流</span>',
+    pathA:'M8,80 L36,76 L64,58 L92,42 L120,35 L148,32 L204,29 L272,27',dot:[120,35],
+    titles:[['反常识','人均50的成都一日游，我劝你别做攻略'],['数字承诺','成都老巷子citywalk：3条路线9个茶馆，0踩雷'],['悬念','在成都住了五年，我才找到这条没人排队的巷子']],
+    cover:'大字报式（你的爆款封面 65% 是这个风格）——主字「人均50」放大，巷子实景压暗做底，右下角保留胶片边框。',
+    tags2:'<span class="add">+#成都citywalk</span>（流量池约 3.2 倍于现标签）· <span class="rm">#成都旅游</span> 换下'},
+ b:{img:'https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20Jingdezhen%20porcelain%20workshop%2C%20hands%20shaping%20clay%20on%20a%20wheel%2C%20warm%20window%20light%2C%20editorial&image_size=square',
+    title:'景德镇拉坯翻车实录：第一次做陶艺',
+    nums:'赞<b>6,214</b>藏<b>1,853</b>评<b>412</b>',
+    tags:['评赞比偏高','增速匀速缓慢','发布 16 天'],
+    quote:'评论区很热闹，点赞却跟不上——话题性强但传播面窄。<em>换更大的话题标签、在结尾加一个互动钩子</em>，让讨论出圈。',
+    metric:'<span>评赞比 <b>0.066</b>（你的均值 0.031 · 2.1 倍偏高）</span><span>对照模板：小众目的地 · 悬念流</span>',
+    pathA:'M8,78 L36,72 L64,66 L92,60 L120,55 L148,52 L204,50 L272,48',dot:[148,52],
+    titles:[['反常识','劝你别来景德镇做陶艺，除非你能接受翻车'],['数字承诺','景德镇陶艺初体验：2小时、150元、翻车3次'],['悬念','这只歪掉的碗，烧出来比正品还贵']],
+    cover:'过程实拍九宫格首图——「翻车瞬间」做主图，手工感滤镜，避免摆拍完美瓷器的「广告感」。',
+    tags2:'<span class="add">+#手工日常</span>（互动率高 2.4 倍）· 结尾追加提问「你们第一次做陶艺翻车了吗？」'}
+};
+let reviveKey='a';
+function renderRevive(k){
+  reviveKey=k;const d=REVIVE[k];
+  $('#rpImg').src=d.img;$('#rpTitle').textContent=d.title;$('#rpNums').innerHTML=d.nums;
+  $('#rpTags').innerHTML=d.tags.map(t=>'<span class="dtag">'+t+'</span>').join('');
+  $('#rpQuote').innerHTML=d.quote;$('#rpMetric').innerHTML=d.metric;
+  $('#rpPathA').setAttribute('d',d.pathA);
+  $('#rpDotA').setAttribute('cx',d.dot[0]);$('#rpDotA').setAttribute('cy',d.dot[1]);
+  $('#rpTitles').innerHTML=d.titles.map(t=>'<div class="title-opt"><span class="opt-dot"></span><p>'+t[1]+'</p><span class="ltag">'+t[0]+'</span><span class="adopt">采纳</span></div>').join('');
+  $$('#rpTitles .title-opt').forEach(o=>o.onclick=()=>o.classList.toggle('adopted'));
+  $('#rpCover').textContent=d.cover;$('#rpTags2').innerHTML=d.tags2;
+  $$('#rvTodo li').forEach(li=>li.classList.remove('done'));
+  $('#rvList').style.display='none';$('#rvReport').style.display='';$('#rvObs').style.display='none';
+  playStag($('#rvReport'));
+}
+$$('.rv-card').forEach(c=>c.onclick=()=>renderRevive(c.dataset.key));
+$('#rvBack').onclick=backToTab;
+$('#rvTodo')&&$$('#rvTodo li').forEach((li,i)=>li.onclick=()=>{
+  li.classList.toggle('done');
+  if(i===0&&li.classList.contains('done'))toast('新标题已复制 · 去小红书替换标题');
+});
+$('#btnReviveGo').onclick=()=>{
+  $('#rvReport').style.display='none';$('#rvObs').style.display='';
+  $('#obsTitle').textContent=REVIVE[reviveKey].title.slice(0,12)+'… · 翻红观察中 第 3 天';
+  playBars($('#rvObs'));playStag($('#rvObs'));
+  toast('已发起翻新 · 进入 7 天观察期 · 期满自动出结论并推送服务号');
+};
+$('#rvObsBack').onclick=()=>{$('#rvObs').style.display='none';$('#rvList').style.display='grid';playStag($('#rvList'))};
+$('#rvObsData').onclick=()=>{switchTab('data')};
+$('#btnRevive').onclick=()=>openView('revive');
+$('#btnTplData').onclick=()=>openView('templates');
+$('#tplBack').onclick=backToTab;
+$('#btnRefineNew').onclick=()=>openSheet('#sheetRefine');
+$('#btnRefine').onclick=()=>{closeSheets();toast('已开始提炼 · 样本 17 篇对齐拆解中 · 完成后服务号通知你')};
+$('#btnShareTpl').onclick=()=>toast('模板分享图已生成 · 含槽位分布与保鲜期');
+$('#btnUseTpl').onclick=()=>{
+  composeTopic=TOPICS[0].t;composeMode='template';
+  $$('#modeGroup .mode').forEach(x=>x.classList.toggle('on',x.dataset.mode==='template'));
+  $('#tplPick').classList.add('show');
+  $('#cTopic').textContent='《'+composeTopic+'》';
+  openSheet('#sheetCompose');
+};
+$('#btnTplRadar').onclick=()=>{openView('templates');setTimeout(()=>openSheet('#sheetRefine'),350)};
+
+const frames={browser:$('#frameBrowser'),phone:$('#framePhone'),chat:$('#frameChat')};
+const slots={browser:$('#browserSlot'),phone:$('#phoneSlot')};
+let chatInited=false;
+function switchDevice(dev){
+  Object.values(frames).forEach(f=>f.classList.remove('show'));
+  frames[dev].classList.add('show');
+  $$('#deviceSwitch button').forEach(b=>b.classList.toggle('on',b.dataset.dev===dev));
+  if(dev!=='chat'){slots[dev].appendChild(viewport);playStag($('.view.on'));}
+  if(dev==='chat'&&!chatInited){chatInited=true;chatIntro()}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+$$('#deviceSwitch button').forEach(b=>b.onclick=()=>switchDevice(b.dataset.dev));
+
+const wxBody=$('#wxBody'),wxQuick=$('#wxQuick'),wxInput=$('#wxInput');
+function wxScroll(){wxBody.scrollTop=wxBody.scrollHeight}
+function userSay(html){
+  const m=document.createElement('div');m.className='msg user';
+  m.innerHTML='<div class="bub">'+html+'</div>';
+  wxBody.appendChild(m);wxScroll();
+}
+async function agentSay(html,delay){
+  const t=document.createElement('div');t.className='msg agent';
+  t.innerHTML='<span class="ava">拆</span><div class="bub typing"><i></i><i></i><i></i></div>';
+  wxBody.appendChild(t);wxScroll();
+  await sleep(delay||(600+Math.min(1200,html.length*6)));
+  t.querySelector('.bub').classList.remove('typing');
+  t.querySelector('.bub').innerHTML=html;wxScroll();
+  return t;
+}
+function setChips(list){
+  wxQuick.innerHTML='';
+  list.forEach(c=>{
+    const b=document.createElement('button');b.textContent=c.label;
+    b.onclick=()=>c.fn();
+    wxQuick.appendChild(b);
+  });
+}
+const MAIN_CHIPS=[
+  {label:'选题',fn:()=>runCmd('选题')},
+  {label:'效果',fn:()=>runCmd('效果')},
+  {label:'翻红',fn:()=>runCmd('翻红')},
+  {label:'成本',fn:()=>runCmd('成本')},
+  {label:'帮助',fn:()=>runCmd('帮助')},
+  {label:'模板管理',fn:()=>runCmd('模板管理')}
+];
+function menuCard(){
+  return '<div class="wxcard"><div class="wxcard-t">L1 指令菜单</div>'+
+  '<div class="wxrow"><p>粘贴链接 → 自动识别平台拆解（小红书 / B站 / YouTube / 抖音）</p></div>'+
+  '<div class="wxrow"><p>「选题」→ 今日雷达 Top 3 · 回复 1/2/3 直接写</p></div>'+
+  '<div class="wxrow"><p>「效果」→ 昨日数据日报</p></div>'+
+  '<div class="wxrow"><p>「翻红」→ 潜力股摘要</p></div>'+
+  '<div class="wxrow"><p>「成本」→ 近 7 天用量与金额</p></div>'+
+  '<div class="wx-foot">L2 打磨：成品发出后 48h 内，回复「换个开头 / 更口语化一点 / 第二段展开」可局部重写</div></div>';
+}
+async function chatIntro(){
+  await sleep(500);
+  userSay('<span class="lnk"><svg class="ic"><use href="#i-link"/></svg><span>为什么这届年轻人开始收集火车票根<small>xiaohongshu.com · 图文</small></span></span>');
+  await agentSay('已开始拆解《为什么这届年轻人开始收集火车票根》\n预计 3 分钟 · 完成后在这里通知你\n✓ 额度校验通过 · 今日剩 '+(quotaMax-quotaUsed)+' 次');
+  await agentSay('早上好，编辑部已就绪 ✦\n直接发指令，或点下方快捷键：',500);
+  setChips(MAIN_CHIPS);
+}
+async function runCmd(cmd){
+  userSay(cmd.replace(/</g,'&lt;'));
+  if(cmd==='选题'){
+    await agentSay('今日雷达 · Top 3（08:00 抓取，数据为入库快照）<div class="wxcard">'+
+      TOPICS.map((t,i)=>'<div class="wxrow"><span class="sc '+t.cls+'">'+t.s+'</span><p>'+t.t+'<small>'+t.a+'</small></p></div>').join('')+
+      '<div class="wx-foot">回复 1 / 2 / 3 直接写 · 消耗生产额度</div></div>');
+    setChips([
+      {label:'写 1',fn:()=>pickTopic(0)},{label:'写 2',fn:()=>pickTopic(1)},{label:'写 3',fn:()=>pickTopic(2)},
+      {label:'效果',fn:()=>runCmd('效果')},{label:'帮助',fn:()=>runCmd('帮助')}
+    ]);
+  }else if(cmd==='效果'){
+    await agentSay('昨日增量 · 10月16日<div class="wxcard"><div class="wx-stat"><div><b>+127</b><span>赞</span></div><div><b>+89</b><span>藏</span></div><div><b>+23</b><span>评</span></div></div><div class="wx-foot">最佳：《第一次坐夜班火车…》发布 3 天 · 冲榜中 ↗</div></div>完整看板在网页端更顺手 →');
+    setChips([{label:'打开看板',fn:()=>{switchDevice('browser');switchTab('data')}},{label:'翻红',fn:()=>runCmd('翻红')},...MAIN_CHIPS.slice(3,5)]);
+  }else if(cmd==='翻红'){
+    await agentSay('发现 <b>2 篇潜力股</b> 🟥<div class="wxcard"><div class="wxrow"><p>《成都老巷子寻宝记》<small>S1 历史验证 ✓ × S2 增长停滞 ✓ · 藏赞比 1.45 偏高——标题可再锋利</small></p></div><div class="wxrow"><p>《景德镇拉坯翻车实录》<small>评赞比偏高 · 换更大流量标签 + 结尾互动钩子</small></p></div><div class="wx-foot">诊断报告与优化方案在网页端查看</div></div><span class="wx-btn" data-open-rv>查看完整报告 →</span>');
+    wxBody.querySelector('[data-open-rv]').onclick=()=>{switchDevice('phone');switchTab('data');openView('revive')};
+    setChips(MAIN_CHIPS);
+  }else if(cmd==='成本'){
+    await agentSay('近 7 天账本<div class="wxcard"><div class="wxrow"><p>生产 14 次 · ¥3.42</p></div><div class="wxrow"><p>选题雷达 · ¥0.61</p></div><div class="wxrow"><p>效果回采 · ¥1.10</p></div><div class="wx-foot">合计 ¥5.13 · 成本账本在网页端更清晰</div></div>');
+    setChips(MAIN_CHIPS);
+  }else if(cmd==='帮助'){
+    await agentSay(menuCard());
+    setChips(MAIN_CHIPS);
+  }else if(cmd==='模板管理'){
+    await agentSay('这个去网页操作更顺手——模板管理、定位设置、看板浏览都在网页端。<span class="wx-btn" data-open-tpl>打开网页端 →</span>');
+    wxBody.querySelector('[data-open-tpl]').onclick=()=>{switchDevice('browser');switchTab('data');openView('templates')};
+    setChips(MAIN_CHIPS);
+  }else if(/^[123]$/.test(cmd)){
+    pickTopic(parseInt(cmd)-1);
+  }else{
+    await agentSay('这个我还在学——先看看这些指令：'+menuCard(),700);
+    setChips(MAIN_CHIPS);
+  }
+}
+async function pickTopic(i){
+  userSay(String(i+1));
+  await agentSay('已入队 · 任务号 T-'+taskNo+' ✓\n《'+TOPICS[i].t+'》\n今日剩 '+(quotaMax-quotaUsed-1)+' 次 · 完成后通知你\n（48h 内可回「换个开头」继续打磨）');
+  addTask(TOPICS[i].t,'直接仿写 · 对话式发起');
+  quotaUsed++;taskNo++;updateQuota();
+  setChips(MAIN_CHIPS);
+}
+function sendInput(){
+  const v=wxInput.value.trim();if(!v)return;
+  wxInput.value='';
+  runCmd(v);
+}
+$('#wxSend').onclick=sendInput;
+wxInput.addEventListener('keydown',e=>{if(e.key==='Enter')sendInput()});
+
+playStag($('.view.on'));
+updateQuota();
+</script>
+</body>
+</html>
