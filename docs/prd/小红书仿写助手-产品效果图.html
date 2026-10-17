@@ -36,8 +36,15 @@ b,strong{font-weight:700}
 .p-switch button{padding:8px 20px;color:#CBBFA6;font-size:13px;letter-spacing:1px;transition:.2s}
 .p-switch button.on{background:var(--coral);color:#FFF6EE;font-weight:700}
 .p-switch button:not(.on):hover{color:#F4EDDD}
-.pres-hint{flex-basis:100%;font-size:11px;color:#9A8F79;letter-spacing:.4px}
+.pres-hint{flex-basis:100%;font-size:11px;color:#9A8F79;letter-spacing:.4px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .pres-hint b{color:#D9A441;font-weight:500}
+.p-play{border:1px solid #6B6257;color:#E8DCC3;border-radius:999px;padding:5px 15px;font-size:11.5px;letter-spacing:.5px;transition:.2s;white-space:nowrap}
+.p-play:hover{border-color:var(--coral);color:#FFF}
+.p-play.on{background:var(--coral);border-color:var(--coral);color:#FFF6EE;font-weight:700}
+
+.app[data-fresh] .tabbar{display:none!important}
+.app[data-fresh] .mast-nav,.app[data-fresh] .mast-side{display:none!important}
+.app[data-fresh] .mast-top{justify-content:center}
 
 .canvas{min-height:calc(100vh - 150px);display:grid;place-items:start center;padding:42px 20px 20px}
 .frame{display:none}
@@ -511,6 +518,162 @@ b,strong{font-weight:700}
 .wx-input .send:active{transform:scale(.92)}
 
 .pres-notes{margin-top:34px;padding:18px 26px 26px;border-top:1.5px solid var(--ink);display:grid;gap:10px}
+
+.login-hero{padding:34px 22px 26px;text-align:center}
+.login-hero .big-mark{width:64px;height:64px;border-radius:18px;background:var(--coral);color:#FFF6EE;font-family:var(--serif);font-weight:900;font-size:32px;display:grid;place-items:center;margin:0 auto 14px;box-shadow:3px 3px 0 rgba(43,38,32,.14)}
+.login-hero h2{font-family:var(--serif);font-weight:900;font-size:21px;letter-spacing:2px}
+.login-hero p{font-size:11px;color:var(--ink3);margin-top:6px;letter-spacing:.5px}
+.login-card{padding:20px 18px 16px}
+.login-div{display:flex;align-items:center;gap:10px;margin:16px 0;font-size:10px;color:var(--ink3);letter-spacing:1px}
+.login-div::before,.login-div::after{content:"";flex:1;border-top:1px dashed var(--edge2)}
+.field{display:grid;gap:8px;margin-bottom:10px}
+.field input{border:1.5px solid var(--edge2);border-radius:10px;padding:11px 13px;font-size:13px;font-family:inherit;background:#FFFDF8;outline:none;transition:.15s}
+.field input:focus{border-color:var(--coral)}
+.field .with-btn{display:flex;gap:8px}
+.field .with-btn input{flex:1}
+.code-btn{border:1.5px solid var(--coral-deep);color:var(--coral-deep);border-radius:10px;padding:0 13px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.code-btn:disabled{opacity:.5}
+.wx-qr{display:flex;gap:13px;align-items:center;margin-top:16px;padding:13px;border:1px dashed var(--edge2);border-radius:12px;background:#FFFCF4}
+.qr-fake{width:74px;height:74px;flex:none;border-radius:8px;border:1px solid var(--edge2);background:conic-gradient(var(--ink) 25%,#FFFDF8 0 50%,var(--ink) 0 75%,#FFFDF8 0) 0 0/14.8px 14.8px;padding:7px;background-clip:content-box}
+.wx-qr b{font-size:12px}
+.wx-qr p{font-size:10px;color:var(--ink3);margin-top:4px;line-height:1.7}
+.agree{font-size:10px;color:var(--ink3);margin-top:13px;text-align:center}
+.agree a{color:var(--coral-deep);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+
+.ob-head{padding:18px 18px 0}
+.ob-track{display:flex;align-items:center;gap:0;margin:16px 18px 4px}
+.ob-node{display:grid;justify-items:center;gap:5px;font-size:10px;color:var(--ink3);flex:none;width:74px}
+.ob-node i{width:26px;height:26px;border-radius:50%;border:2px solid var(--edge2);background:#FFFDF8;display:grid;place-items:center;font-family:var(--serif);font-weight:900;font-size:12px;color:var(--ink3);transition:.25s}
+.ob-line{flex:1;height:2px;background:var(--edge2);margin-bottom:18px;transition:.25s}
+.ob-node.cur i{border-color:var(--coral);background:var(--coral);color:#FFF6EE;box-shadow:0 0 0 4px var(--coral-soft)}
+.ob-node.cur{color:var(--coral-deep);font-weight:700}
+.ob-node.done i{border-color:var(--pine);background:var(--pine);color:#EFF4EC}
+.ob-line.done{background:var(--pine)}
+.ob-body{padding:8px 18px 22px;min-height:300px}
+.ob-body h3{font-family:var(--serif);font-weight:900;font-size:18px;letter-spacing:1px;margin-bottom:5px}
+.ob-body .ob-sub{font-size:11px;color:var(--ink3);margin-bottom:16px}
+.ob-chips{display:flex;flex-wrap:wrap;gap:9px}
+.ob-chips label{cursor:pointer}
+.ob-chips input{position:absolute;opacity:0;pointer-events:none}
+.ob-chips .ltag.sel{border-color:var(--coral);color:var(--coral-deep);background:var(--coral-soft);box-shadow:2px 2px 0 rgba(232,85,63,.14)}
+.ob-chips .ltag.sel::before{border-color:var(--coral)}
+.ob-area{width:100%;min-height:96px;border:1.5px solid var(--edge2);border-radius:12px;padding:12px 14px;font-size:13px;font-family:inherit;background:#FFFDF8;outline:none;resize:none;line-height:1.8}
+.ob-area:focus{border-color:var(--coral)}
+.kw-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+.kw-chips span{display:inline-flex;align-items:center;gap:7px;background:var(--pine-soft);color:var(--pine);border-radius:999px;padding:4px 7px 4px 13px;font-size:12px}
+.kw-chips span b{width:16px;height:16px;border-radius:50%;background:rgba(31,61,43,.12);display:grid;place-items:center;font-size:10px;cursor:pointer;font-weight:700}
+.ob-foot{display:flex;gap:10px;padding:0 18px 24px}
+.ob-foot .btn{flex:1}
+.ob-tip{font-size:10px;color:var(--ink3);margin-top:12px;line-height:1.7;background:#FFFCF4;border:1px dashed var(--edge2);border-radius:9px;padding:9px 12px}
+
+.notice-bar{display:flex;align-items:center;gap:10px;padding:11px 13px;margin-bottom:12px;background:var(--gold-soft);border:1px solid var(--gold);border-radius:12px;animation:rise .4s both}
+.notice-bar svg{color:var(--gold-deep);flex:none}
+.notice-bar p{flex:1;font-size:11.5px;color:#6B5220;line-height:1.6}
+.notice-bar p b{color:var(--gold-deep)}
+.notice-bar .btn{flex:none;padding:7px 13px;font-size:11px}
+
+.follow-bar{display:flex;align-items:center;gap:11px;padding:11px 13px;margin-bottom:13px;background:var(--pine-soft);border:1px dashed var(--pine);border-radius:12px;animation:rise .4s both}
+.follow-bar svg{color:var(--pine);flex:none}
+.follow-bar p{flex:1;font-size:11.5px;color:#41563D;line-height:1.6}
+.follow-bar p b{color:var(--pine-deep)}
+.follow-bar .x{color:#7E937A;font-size:14px;padding:2px 5px}
+
+.reddot{position:relative}
+.reddot::after{content:"";position:absolute;top:1px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 2px var(--paper)}
+
+.datesw{display:flex;align-items:center;gap:6px;margin-bottom:13px;flex-wrap:wrap}
+.datesw button.ds{border:1px solid var(--edge2);background:#FFFDF8;border-radius:999px;padding:4px 12px;font-size:10.5px;color:var(--ink2);transition:.15s}
+.datesw button.ds.on{border-color:var(--coral);color:var(--coral-deep);background:var(--coral-soft);font-weight:700}
+.datesw .ds-note{font-size:9.5px;color:var(--gold-deep);background:var(--gold-soft);border-radius:999px;padding:3px 10px;border:1px dashed var(--gold)}
+
+.gen-banner{display:flex;align-items:center;gap:10px;padding:12px 14px;margin-bottom:14px;background:#FFFDF8;border:1px dashed var(--edge2);border-radius:12px;font-size:12px;color:var(--ink2)}
+.gen-banner .spin{width:15px;height:15px;border-radius:50%;border:2.5px solid var(--edge2);border-top-color:var(--coral);animation:spin 1s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.skl{border-radius:10px;background:linear-gradient(90deg,#F0E9D9 25%,#F7F1E2 45%,#F0E9D9 65%);background-size:280% 100%;animation:skl 1.4s infinite}
+@keyframes skl{to{background-position:-140% 0}}
+
+.empty-state{padding:34px 20px;text-align:center}
+.empty-state .es-ill{width:120px;height:78px;margin:0 auto 16px;border:1.5px solid var(--edge2);border-radius:12px;background:repeating-linear-gradient(45deg,#FFFCF2 0 10px,#F7F0DF 10px 20px);position:relative}
+.empty-state .es-ill::after{content:"✦";position:absolute;inset:0;display:grid;place-items:center;font-size:26px;color:var(--gray-score)}
+.empty-state h4{font-family:var(--serif);font-size:15px;margin-bottom:6px;letter-spacing:1px}
+.empty-state p{font-size:11.5px;color:var(--ink2);line-height:1.8}
+.empty-state .funnel{display:inline-flex;gap:6px;align-items:center;font-size:10px;color:var(--ink3);background:#FFFCF4;border:1px dashed var(--edge2);border-radius:999px;padding:4px 13px;margin:10px 0 14px}
+.empty-state .funnel b{color:var(--coral-deep);font-family:var(--serif)}
+
+.qc-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:13px}
+.qc-badge{display:inline-flex;align-items:center;gap:6px;background:var(--pine-soft);border:1px solid var(--pine);color:var(--pine-deep);border-radius:999px;padding:4px 12px;font-size:10.5px;font-weight:700}
+.qc-badge svg{width:12px;height:12px}
+.qc-item{font-size:9.5px;color:var(--ink3);background:#FFFDF8;border:1px solid var(--edge2);border-radius:999px;padding:3px 9px}
+.del-sum{font-size:9.5px;color:var(--ink3);margin-left:auto;letter-spacing:.3px}
+
+.carousel{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px}
+.carousel::-webkit-scrollbar{display:none}
+.carousel figure{flex:none;width:78%;scroll-snap-align:center}
+.car-dots{display:flex;gap:5px;justify-content:center;margin-top:9px}
+.car-dots i{width:6px;height:6px;border-radius:50%;background:var(--edge2)}
+.car-dots i.on{background:var(--coral);width:16px;border-radius:3px}
+
+.breakdown{margin-top:13px;border-top:1px dashed var(--edge2);padding-top:12px}
+.breakdown summary{font-size:11.5px;font-weight:700;color:var(--pine);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px}
+.breakdown summary::-webkit-details-marker{display:none}
+.breakdown summary svg{width:13px;height:13px;transition:.3s}
+.breakdown[open] summary svg{transform:rotate(180deg)}
+.bd-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.bd-cell{background:#FFFCF4;border:1px dashed var(--edge2);border-radius:9px;padding:9px 11px}
+.bd-cell b{font-size:10px;color:var(--ink3);display:block;letter-spacing:1.5px;margin-bottom:4px}
+.bd-cell p{font-size:11px;line-height:1.65}
+.bd-cell p em{font-style:normal;color:var(--coral-deep);font-weight:700}
+
+.checklist{border:1.5px solid var(--edge2);border-radius:12px;padding:12px 13px;margin-top:14px;background:#FFFEFB}
+.checklist h5{font-size:10px;letter-spacing:2.5px;color:var(--ink3);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.checklist h5 span{font-size:9.5px;color:var(--gold-deep);letter-spacing:.3px;font-weight:700}
+
+.xcard{padding:13px;margin-bottom:12px}
+.xcard .xc-top{display:flex;gap:11px}
+.xc-cover{width:86px;height:86px;border-radius:10px;overflow:hidden;border:1px solid var(--edge2);flex:none;position:relative}
+.xc-cover img{width:100%;height:100%;object-fit:cover}
+.xc-main{flex:1;min-width:0}
+.xc-title{font-family:var(--serif);font-weight:700;font-size:13.5px;line-height:1.5}
+.xc-meta{font-size:9.5px;color:var(--ink3);margin-top:5px;display:flex;flex-wrap:wrap;gap:4px 10px}
+.xc-meta b{color:var(--ink2)}
+.xc-row{display:flex;align-items:center;gap:8px;margin-top:9px;flex-wrap:wrap}
+.xc-acts{display:flex;gap:8px;margin-top:11px;padding-top:11px;border-top:1px dashed var(--edge2)}
+.xc-acts .btn{padding:7px 14px;font-size:11.5px}
+.rel-search{padding:13px 15px}
+.rel-search h4{font-family:var(--serif);font-size:13px;margin-bottom:3px}
+.rel-search p{font-size:10px;color:var(--ink3);margin-bottom:10px}
+
+.tiers{display:grid;gap:9px;margin-top:4px}
+.tier{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1.5px solid var(--edge2);border-radius:12px;background:#FFFEFB}
+.tier.cur{border-color:var(--coral);background:var(--coral-soft)}
+.tier b{font-family:var(--serif);font-size:16px;flex:none}
+.tier .t-name{font-size:12px;font-weight:700}
+.tier .t-desc{font-size:9.5px;color:var(--ink3);margin-top:2px}
+.tier .t-tag{margin-left:auto;font-size:9px;color:var(--gold-deep);background:var(--gold-soft);border-radius:999px;padding:2px 8px;white-space:nowrap}
+
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:13px 0 4px}
+.spec{border:1.5px solid var(--edge2);border-radius:12px;padding:12px 11px;text-align:center;cursor:pointer;transition:.15s;background:#FFFEFB}
+.spec .sp-frame{width:52px;height:52px;margin:0 auto 9px;border:2px solid var(--edge2);border-radius:6px;display:grid;place-items:center;color:var(--ink3);font-size:9px;letter-spacing:1px}
+.spec.v .sp-frame{height:74px}
+.spec b{font-size:12.5px;display:block}
+.spec p{font-size:9.5px;color:var(--ink3);margin-top:3px}
+.spec.on{border-color:var(--coral);background:var(--coral-soft);box-shadow:2px 2px 0 rgba(232,85,63,.15)}
+.spec.on .sp-frame{border-color:var(--coral);color:var(--coral-deep)}
+
+.plat-row{display:flex;gap:7px;margin-bottom:11px;flex-wrap:wrap}
+.plat{font-size:10px;padding:3px 11px;border-radius:999px;border:1px solid var(--edge2);color:var(--ink2);background:#FFFDF8}
+.plat.hot{border-color:var(--coral);color:var(--coral-deep);background:var(--coral-soft)}
+.upload-zone{border:1.5px dashed var(--edge2);border-radius:12px;padding:16px;text-align:center;font-size:11.5px;color:var(--ink3);cursor:pointer;transition:.15s;background:#FFFCF4}
+.upload-zone:hover{border-color:var(--coral);color:var(--coral-deep)}
+.upload-zone b{display:block;font-size:12.5px;color:var(--ink);margin-bottom:3px}
+
+.mini-act{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:var(--coral-deep);font-weight:700;cursor:pointer;padding:3px 7px;border-radius:7px;background:var(--coral-soft)}
+.mini-act.gray{color:var(--ink3);background:#F4EEDF}
+.mini-act:active{transform:scale(.95)}
+.mini-act svg{width:11px;height:11px}
+.trend-card{padding:13px 14px;margin-bottom:15px}
+.trend-card h5{font-size:10px;letter-spacing:2.5px;color:var(--ink3);margin-bottom:10px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.trend-card svg{width:100%;height:auto;display:block}
 .pn-tone{font-family:var(--serif);font-size:13px;letter-spacing:1px}
 .pn-tone b{color:var(--coral-deep)}
 .pn-sw{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:10.5px;color:var(--ink3)}
@@ -591,7 +754,7 @@ b,strong{font-weight:700}
     <button data-dev="phone">移动 H5</button>
     <button data-dev="chat">服务号对话</button>
   </nav>
-  <p class="pres-hint">导览：展开<b>「今日首推」</b>看四维评分 → 点<b>「立即仿写」</b>体验三档生成模式 → 生产页<b>「去 AI 味改写」</b>看复检 → 数据页进<b>「翻红计划」</b>走七步闭环 → 对话页发<b>「选题」</b>试服务号 Agent</p>
+  <p class="pres-hint">导览：展开<b>「今日首推」</b>→「立即仿写」三档模式 → 生产页<b>「去 AI 味改写」</b>与跟办清单 → 数据页<b>「翻红计划」</b>七步闭环 → 对话页发<b>「选题」</b><button class="p-play" id="btnFresh">▶ 从登录走一遍新用户旅程</button></p>
 </header>
 
 <main class="canvas">
@@ -634,17 +797,25 @@ b,strong{font-weight:700}
                 <div class="page-head stag">
                   <div style="--i:0">
                     <h1 class="page-title">今日雷达</h1>
-                    <p class="page-sub">基于你的定位 · 城市漫游 × 胶片摄影 · 个人专属清单</p>
+                    <p class="page-sub">今日 12 条选题 · 按你的定位评分 · 今日还可查看 <b style="color:var(--coral-deep)">2 条</b></p>
                   </div>
                   <div class="page-aside" style="--i:1">
                     <span class="snap-note">红狐数据为入库快照 · 08:00 抓取</span>
-                    <button class="btn btn-goldline" id="btnTplRadar"><svg class="ic"><use href="#i-spark"/></svg>提炼赛道模板</button>
+                    <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end">
+                      <button class="mini-act gray" id="btnRefetch"><svg class="ic"><use href="#i-refresh"/></svg>重新抓取</button>
+                      <button class="btn btn-ghost" id="btnFree" style="padding:6px 13px;font-size:11.5px">＋ 自由仿写</button>
+                      <button class="btn btn-goldline" id="btnTplRadar"><svg class="ic"><use href="#i-spark"/></svg>提炼赛道模板</button>
+                    </div>
                   </div>
                 </div>
-                <div class="chips stag" style="--i:2">
-                  <span class="ltag on">城市漫游</span><span class="ltag">小众目的地</span><span class="ltag">出行装备</span>
-                  <span class="chips-hint">点卡片展开四维评分与仿写角度</span>
+                <div class="datesw stag" style="--i:1" id="dateSwitch">
+                  <button class="ds on" data-day="today">今日</button>
+                  <button class="ds" data-day="yday">昨天</button>
+                  <button class="ds" data-day="degrade">10-15</button>
+                  <button class="ds" data-day="empty">10-14</button>
+                  <span class="ds-note" id="dsNote" style="display:none"></span>
                 </div>
+                <div class="gen-banner" id="genBanner" style="display:none"><span class="spin"></span>首份专属清单生成中——按「城市漫游 × 胶片摄影」抓取与评分，完成后卡片自动流入…</div>
 
                 <div class="cards stag" id="topicCards">
                   <article class="tcard card lift first" data-topic="在京都的第七天，我终于学会了浪费时光">
@@ -736,13 +907,73 @@ b,strong{font-weight:700}
                   </article>
                 </div>
 
-                <div class="explore card stag" style="--i:6">
-                  <h4>编辑部还在探索</h4>
-                  <p>相邻赛道今天也有动静 · 换个方向看看</p>
-                  <div class="chips">
-                    <button class="ltag" data-explore>铁道旅行</button>
-                    <button class="ltag" data-explore>胶片冲扫</button>
-                    <button class="ltag" data-explore>小城咖啡</button>
+                <div class="empty-state card stag" id="radarEmpty" style="display:none;--i:3">
+                  <div class="es-ill"></div>
+                  <h4>今天编辑部还没挑出好题</h4>
+                  <p>抓了 87 篇，语义门槛筛后达标 0——这个方向最近太卷了，<br>换个更具体的关键词试试，或者先探索一下相邻赛道。</p>
+                  <div class="funnel">抓取 <b>87</b> → 语义门槛 → 达标 <b>0</b></div>
+                  <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">
+                    <button class="btn btn-solid" data-go-explore>去探索相邻赛道</button>
+                    <button class="btn btn-ghost" data-go-pos>修改定位关键词</button>
+                  </div>
+                </div>
+
+                <div class="sect stag" style="--i:5">编辑部还在探索<span class="more">按关键词探索 · 门槛放开</span></div>
+                <div class="stag" style="--i:6">
+                  <div class="rel-search card" id="exploreEntry">
+                    <h4>换个关键词看看</h4>
+                    <p>无需修改定位 · 默认拉取近 30 天爆款 · 消耗计入按需抓取</p>
+                    <div class="chips" style="margin:0">
+                      <button class="ltag" data-explore>铁道旅行</button>
+                      <button class="ltag" data-explore>胶片冲扫</button>
+                      <button class="ltag" data-explore>小城咖啡</button>
+                    </div>
+                  </div>
+                  <div id="exploreResults" style="display:none">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+                      <span class="ds-note" style="display:inline-flex">探索模式 · 门槛放开 · 互动数为入库快照</span>
+                      <span class="mini-act gray" id="btnExploreClose">收起</span>
+                    </div>
+                    <div class="xcard card lift">
+                      <div class="xc-top">
+                        <span class="xc-cover"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20night%20train%20window%20reflection%2C%20city%20bokeh%20lights%2C%20moody%20blue%20hour%2C%20travel%20editorial&image_size=square" alt="铁道旅行爆款封面" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')"></span>
+                        <div class="xc-main">
+                          <div class="xc-title">硬座过夜车才是穷游的浪漫：3 条神级夜巴路线</div>
+                          <div class="xc-meta"><span><b>@铁道漫游指南</b> · 粉丝 12.4万</span><span>发布 10-09</span><span>赞 <b>2.3万</b> · 藏 <b>1.1万</b> · 评 <b>892</b></span></div>
+                          <div class="xc-row"><span class="seal-score s9" style="width:36px;height:36px;font-size:13px">9.1</span><span class="ltag">铁道旅行</span></div>
+                        </div>
+                      </div>
+                      <div class="xc-acts">
+                        <button class="btn btn-solid cta-write-x" style="padding:7px 15px;font-size:11.5px">照这个写</button>
+                        <button class="btn btn-line" data-xjde>拆解看看</button>
+                        <span class="mini-act gray" style="margin-left:auto"><svg class="ic"><use href="#i-ext"/></svg>查看原文</span>
+                      </div>
+                    </div>
+                    <div class="xcard card lift">
+                      <div class="xc-top">
+                        <span class="xc-cover"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20cozy%20small%20town%20coffee%20shop%20facade%2C%20afternoon%20light%2C%20plants%20and%20wooden%20sign%2C%20editorial&image_size=square" alt="小城咖啡爆款封面" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')"></span>
+                        <div class="xc-main">
+                          <div class="xc-title">在小城开咖啡店的第 100 天，我把房租赚回来了</div>
+                          <div class="xc-meta"><span><b>@巷子咖啡日记</b> · 粉丝 4.8万</span><span>发布 10-12</span><span>赞 <b>1.6万</b> · 藏 <b>9,321</b> · 评 <b>1,204</b></span></div>
+                          <div class="xc-row"><span class="seal-score s8" style="width:36px;height:36px;font-size:13px">8.7</span><span class="ltag">小城咖啡</span></div>
+                        </div>
+                      </div>
+                      <div class="xc-acts">
+                        <button class="btn btn-solid cta-write-x" style="padding:7px 15px;font-size:11.5px">照这个写</button>
+                        <button class="btn btn-line" data-xjde>拆解看看</button>
+                        <span class="mini-act gray" style="margin-left:auto"><svg class="ic"><use href="#i-ext"/></svg>查看原文</span>
+                      </div>
+                    </div>
+                    <div class="rel-search card">
+                      <h4>相关搜索</h4>
+                      <p>来自同一批用户的真实搜索词 · 点击换近义词再看看</p>
+                      <div class="chips" style="margin:0">
+                        <button class="ltag" data-relkw>绿皮火车旅行</button>
+                        <button class="ltag" data-relkw>overnight 火车</button>
+                        <button class="ltag" data-relkw>县城咖啡探店</button>
+                        <button class="ltag" data-relkw>咖啡店创业</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -758,6 +989,18 @@ b,strong{font-weight:700}
                   <div class="page-aside" style="--i:1"><span class="quota-chip">今日生产 <b id="quotaProduce">2/3</b></span></div>
                 </div>
 
+                <div class="notice-bar stag" style="--i:1" id="regNotice">
+                  <svg class="ic"><use href="#i-alert"/></svg>
+                  <p><b>T-1021 已交付 2 天，还没登记发布链接</b>——登记后开启赞藏评数据追踪（48h 未登记已发 1 次提醒）</p>
+                  <button class="btn btn-line" id="btnRegNow">去登记</button>
+                </div>
+                <div class="follow-bar stag" style="--i:2" id="followBar">
+                  <svg class="ic"><use href="#i-wx"/></svg>
+                  <p>关注<b>服务号</b>，任务完成第一时间通知你——关注一次长期有效（今日仅提示这一次）</p>
+                  <button class="btn btn-ghost" id="btnFollow" style="padding:6px 12px;font-size:11px">关注</button>
+                  <button class="x" id="followX" aria-label="关闭">✕</button>
+                </div>
+
                 <div class="produce-cols">
                   <div>
                     <div class="sect stag" style="--i:2">进行中<span class="more" id="runEmptyHint">从选题页发起 →</span></div>
@@ -771,7 +1014,7 @@ b,strong{font-weight:700}
                           <span class="rstep run"><i></i>风格注入</span>
                           <span class="rstep"><i></i>图卡渲染</span>
                         </div>
-                        <div class="run-sub">按模板生成 · 城市漫游 · 反内卷流 · 任务号 T-1023</div>
+                        <div class="run-sub">按模板生成 · 城市漫游 · 反内卷流 · 任务号 T-1023 <span class="mini-act" data-act="换角度">换角度</span></div>
                       </div>
                     </div>
 
@@ -781,11 +1024,31 @@ b,strong{font-weight:700}
                         <span class="ltag">最新交付 · T-1021</span>
                         <time>昨天 21:47 · 模板 + 参考单篇</time>
                       </div>
+                      <div class="qc-row">
+                        <span class="qc-badge"><svg class="ic"><use href="#i-check"/></svg>质检通过</span>
+                        <span class="qc-item">标题党检测 ✓</span>
+                        <span class="qc-item">字数 486 ✓</span>
+                        <span class="qc-item">图片规格 3:4 ✓</span>
+                        <span class="del-sum">4 张图卡 · 通道 A · 10-16 21:47</span>
+                      </div>
                       <div class="del-grid">
-                        <figure class="del-cover">
-                          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20quiet%20Kyoto%20street%20at%20dawn%2C%20traditional%20machiya%20wooden%20houses%2C%20warm%20morning%20light%2C%20kodak%20portra%20grain%2C%20cinematic%20travel%20editorial&image_size=portrait_4_3" alt="京都晨街封面图卡" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')">
-                          <figcaption class="poster"><b>在京都的第七天</b><b>我把时间还给了眼睛</b><span>@胶片阿岛 · 拆解仿写出品</span></figcaption>
-                        </figure>
+                        <div>
+                          <div class="carousel" id="delCarousel">
+                            <figure class="del-cover">
+                              <img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20quiet%20Kyoto%20street%20at%20dawn%2C%20traditional%20machiya%20wooden%20houses%2C%20warm%20morning%20light%2C%20kodak%20portra%20grain%2C%20cinematic%20travel%20editorial&image_size=portrait_4_3" alt="京都晨街封面图卡" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')">
+                              <figcaption class="poster"><b>在京都的第七天</b><b>我把时间还给了眼睛</b><span>@胶片阿岛 · 拆解仿写出品</span></figcaption>
+                            </figure>
+                            <figure class="del-cover">
+                              <img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20Kyoto%20riverside%20coffee%20shop%20window%20seat%2C%20morning%20light%2C%20ceramic%20cup%20on%20wooden%20table%2C%20warm%20tones%2C%20editorial&image_size=portrait_4_3" alt="巷口咖啡图卡" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')">
+                              <figcaption class="poster"><b>巷口的咖啡店</b><b>老板娘记得我不加糖</b><span>@胶片阿岛 · 拆解仿写出品</span></figcaption>
+                            </figure>
+                            <figure class="del-cover">
+                              <img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20Kamo%20river%20at%20dusk%2C%20soft%20pink%20sky%2C%20bridge%20silhouette%2C%20warm%20film%20tones%2C%20travel%20editorial&image_size=portrait_4_3" alt="鸭川黄昏图卡" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')">
+                              <figcaption class="poster"><b>六点的鸭川</b><b>只有爷爷和三只鸽子</b><span>@胶片阿岛 · 拆解仿写出品</span></figcaption>
+                            </figure>
+                          </div>
+                          <div class="car-dots" id="carDots"><i class="on"></i><i></i><i></i></div>
+                        </div>
                         <div class="del-body">
                           <div class="del-title">在京都的第七天，我把时间还给了眼睛<button class="cp" data-copy="标题" aria-label="复制标题"><svg class="ic"><use href="#i-copy"/></svg></button></div>
                           <div class="draft-tabs" id="draftTabs">
@@ -815,6 +1078,25 @@ b,strong{font-weight:700}
                             <button class="btn btn-ghost" data-copy="全文">复制全文</button>
                             <button class="btn btn-ghost" id="btnDl">下载图卡</button>
                             <button class="btn btn-ghost" id="btnShare">分享</button>
+                            <button class="btn btn-line" id="btnVideo">生成视频版</button>
+                          </div>
+                          <details class="breakdown">
+                            <summary><svg class="ic"><use href="#i-chev"/></svg>拆解笔记 · 这篇为什么这样仿写</summary>
+                            <div class="bd-grid">
+                              <div class="bd-cell"><b>钩子类型</b><p><em>反常识承诺</em>——「浪费时光」对抗效率焦虑，正是目标人群的自我认同点</p></div>
+                              <div class="bd-cell"><b>结构骨架</b><p>4 段递进：场景 → 细节清单 → 转折感悟 → 互动收尾（段均 43 字）</p></div>
+                              <div class="bd-cell"><b>情绪曲线</b><p>平缓开场 → 第 3 段升温 → 结尾「把时间还给自己」落点</p></div>
+                              <div class="bd-cell"><b>看图拆解</b><p>封面大字报式（赛道占比 65%）：主标 2 行 + 实景压暗做底</p></div>
+                            </div>
+                          </details>
+                          <div class="checklist">
+                            <h5>发布跟办清单<span>登记率是数据追踪的前提</span></h5>
+                            <ul class="todo" id="pubTodo">
+                              <li><span class="box"><svg class="ic"><use href="#i-check"/></svg></span><span class="tno">①</span><span>复制文案（含话题标签）</span></li>
+                              <li><span class="box"><svg class="ic"><use href="#i-check"/></svg></span><span class="tno">②</span><span>保存 4 张图卡</span></li>
+                              <li><span class="box"><svg class="ic"><use href="#i-check"/></svg></span><span class="tno">③</span><span>打开小红书发布</span></li>
+                              <li><span class="box"><svg class="ic"><use href="#i-check"/></svg></span><span class="tno">④</span><span>回来登记链接，开启数据追踪</span></li>
+                            </ul>
                           </div>
                         </div>
                       </div>
@@ -824,7 +1106,7 @@ b,strong{font-weight:700}
                   <div>
                     <div class="sect stag" style="--i:6">任务历史</div>
                     <div class="hist stag" style="--i:7">
-                      <div class="hrow card" style="flex-wrap:wrap;row-gap:4px"><span class="hno">T-1022</span><span class="ht">景德镇拉坯翻车实录（视频脚本）</span><span class="pill fail">失败</span><span class="hnote" style="width:100%;padding-left:46px">额度已自动返还 · 重试不重复扣额</span></div>
+                      <div class="hrow card" style="flex-wrap:wrap;row-gap:6px"><span class="hno">T-1022</span><span class="ht">景德镇拉坯翻车实录（视频脚本）</span><span class="pill fail">失败</span><span style="width:100%;padding-left:46px;display:flex;align-items:center;gap:7px;flex-wrap:wrap"><span class="hnote">生图通道失败 · 额度已自动返还</span><span class="mini-act" data-retry>重试</span><span class="mini-act gray" data-swapimg>换生图通道</span></span></div>
                       <div class="hrow card"><span class="hno">T-1020</span><span class="ht">第一次坐夜班火车，邻座阿姨教我的3个人生道理</span><span class="pill ok">完成</span><span class="hlink" data-goto="data">已发布 · 冲榜中 ↗</span></div>
                       <div class="hrow card"><span class="hno">T-1019</span><span class="ht">老相机淘货指南 · 图文</span><span class="pill ok">完成</span></div>
                     </div>
@@ -844,19 +1126,26 @@ b,strong{font-weight:700}
                 </div>
 
                 <div class="stats stag" style="--i:2">
-                  <div class="stat card"><b>+127</b><span>昨日点赞</span></div>
-                  <div class="stat card"><b>+89</b><span>昨日收藏</span></div>
-                  <div class="stat card"><b>+23</b><span>昨日评论</span></div>
-                  <div class="stat card"><b>+18</b><span>昨日涨粉</span></div>
+                  <div class="stat card"><b>+127</b><span>昨日点赞 · 累计 1.2万</span></div>
+                  <div class="stat card"><b>+89</b><span>昨日收藏 · 累计 8,432</span></div>
+                  <div class="stat card"><b>+23</b><span>昨日评论 · 累计 1,865</span></div>
+                </div>
+                <div class="trend-card card stag" style="--i:2">
+                  <h5>近 30 天互动趋势<span style="display:flex;gap:6px"><span class="mini-act gray" id="btnRegData">＋ 登记已发布</span><span class="mini-act" id="btnPoster">生成周报海报</span></span></h5>
+                  <svg viewBox="0 0 300 72" fill="none">
+                    <polyline points="4,60 24,58 44,59 64,53 84,51 104,52 124,47 144,45 164,46 184,40 204,38 224,39 244,31 264,27 284,23 296,21" stroke="#1F3D2B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="204" cy="38" r="3.2" fill="#D9A441"/><circle cx="296" cy="21" r="3.2" fill="#E8553F"/>
+                  </svg>
+                  <p style="font-size:9.5px;color:var(--ink3);margin-top:7px;display:flex;gap:14px;flex-wrap:wrap"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-right:4px"></i>10-04 翻红见效笔记回流</span><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--coral);margin-right:4px"></i>今日 · 冲榜中</span></p>
                 </div>
 
                 <div class="data-grid">
                   <div>
                     <div class="sect stag" style="--i:3">笔记表现</div>
-                    <div class="notes-list stag" style="--i:4">
+                    <div class="notes-list stag" style="--i:4" id="notesList">
                       <div class="nrow card lift">
                         <span class="thumb"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20night%20train%20window%20reflection%2C%20city%20bokeh%20lights%2C%20moody%20blue%20hour%2C%20travel%20editorial&image_size=square" alt="夜班火车笔记封面" onerror="this.style.display='none';this.parentElement.classList.add('imgfail')"></span>
-                        <div class="nmain"><div class="nt">第一次坐夜班火车，邻座阿姨教我的3个人生道理</div><div class="nm"><span>发布 3 天</span><span>互动 4,213</span><span class="nchip rush">冲榜中 ↗</span></div></div>
+                        <div class="nmain"><div class="nt">第一次坐夜班火车，邻座阿姨教我的3个人生道理</div><div class="nm"><span>发布 3 天</span><span>互动 4,213</span><span class="nchip rush">冲榜中 ↗</span><span class="mini-act gray" data-refresh style="margin-left:2px"><svg class="ic"><use href="#i-refresh"/></svg>刷新</span></div></div>
                         <svg class="spark" viewBox="0 0 56 28" fill="none"><polyline points="2,24 10,22 18,23 26,17 34,13 42,14 50,7 54,4" stroke="#E8553F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         <span class="delta up">+127</span>
                       </div>
@@ -916,7 +1205,13 @@ b,strong{font-weight:700}
                     <div class="qbar"><span>选题查看</span><div class="qtrack"><span class="qfill" style="width:80%"></span></div><b>8/10</b></div>
                     <div class="qbar"><span>生产</span><div class="qtrack"><span class="qfill" style="width:66%"></span></div><b id="quotaMe">2/3</b></div>
                     <div style="margin-top:13px"><button class="btn btn-goldline" id="btnUpgrade">升级额度 · 按次包 / 包月</button></div>
-                    <p style="font-size:9.5px;color:var(--ink3);margin-top:9px">微信内不收款 · 升级页在系统浏览器打开</p>
+                    <div class="tiers">
+                      <div class="tier"><b>¥0.99</b><div><div class="t-name">当日体验卡</div><div class="t-desc">5 次生产 · 当日有效 · 新客试驾</div></div></div>
+                      <div class="tier cur"><b>¥49</b><div><div class="t-name">基础包月</div><div class="t-desc">20 任务 + 图卡 · 腰部博主主力档</div></div><span class="t-tag">热门</span></div>
+                      <div class="tier"><b>¥99</b><div><div class="t-name">专业包月</div><div class="t-desc">+ 视频多规格 + 优先队列 · 日更创作者</div></div></div>
+                      <div class="tier"><b>¥199</b><div><div class="t-name">主理人</div><div class="t-desc">代运营多账号 · 效果数据展示</div></div></div>
+                    </div>
+                    <p style="font-size:9.5px;color:var(--ink3);margin-top:9px">微信内不收款 · 升级页在系统浏览器打开 · 年卡 7 折且明示不自动续费</p>
                   </div>
                   <div class="me-card card">
                     <h4>定位与人设<span class="r">修改次日生效 · 当日可手动重抓</span></h4>
@@ -933,9 +1228,14 @@ b,strong{font-weight:700}
                   </div>
                 </div>
                 <div style="display:grid;gap:9px;margin-top:14px" class="stag">
+                  <div class="mrow" id="btnGuide"><svg class="ic"><use href="#i-spark"/></svg>新手指南<small>定位 / 额度 / 搬运 / 登记 / 失败怎么办</small><svg class="ic arr"><use href="#i-chev"/></svg></div>
+                  <div class="mrow" data-toast="绑定后双通道互通：微信 wxo_8f3e ···· + 手机 138······ 同一账号"><svg class="ic"><use href="#i-lock"/></svg>账号与绑定<small>微信已绑 · 手机号未绑</small><svg class="ic arr"><use href="#i-chev"/></svg></div>
                   <div class="mrow" data-toast="交付自动检测免费 · 手动检测与改写计入成本账本"><svg class="ic"><use href="#i-spark"/></svg>AI 味检测<small>交付自动附带 · 手动检测计轻量额度</small><svg class="ic arr"><use href="#i-chev"/></svg></div>
                   <div class="mrow" data-toast="已绑定服务号 · 选题/任务/日报/翻红结论将推送到微信"><svg class="ic"><use href="#i-wx"/></svg>通知设置<small>模板消息 · 关注一次长期有效</small><svg class="ic arr"><use href="#i-chev"/></svg></div>
-                  <div class="mrow" data-toast="注销需二次确认 · 额度与任务数据将清除，详见账号设置"><svg class="ic"><use href="#i-alert"/></svg>账号注销<small>二次确认 · 数据范围说明</small><svg class="ic arr"><use href="#i-chev"/></svg></div>
+                  <div class="mrow" id="btnReOnboard"><svg class="ic"><use href="#i-compass"/></svg>重看新手引导<small>三步定位向导</small><svg class="ic arr"><use href="#i-chev"/></svg></div>
+                  <div class="mrow" data-toast="用户协议全文 · 首次启动已展示 · 此处常驻入口"><svg class="ic"><use href="#i-ext"/></svg>用户协议<svg class="ic arr"><use href="#i-chev"/></svg></div>
+                  <div class="mrow" data-toast="隐私协议全文 · 数据范围与注销说明 · 此处常驻入口"><svg class="ic"><use href="#i-ext"/></svg>隐私协议<svg class="ic arr"><use href="#i-chev"/></svg></div>
+                  <div class="mrow danger" data-toast="注销需二次确认 · 额度与任务数据将清除，详见账号设置"><svg class="ic"><use href="#i-alert"/></svg>账号注销<small>二次确认 · 数据范围说明</small><svg class="ic arr"><use href="#i-chev"/></svg></div>
                 </div>
               </div>
             </section>
@@ -1041,6 +1341,7 @@ b,strong{font-weight:700}
                     </div>
                     <div class="rv-cta">
                       <button class="btn btn-solid" id="btnReviveGo">发起翻新 · 消耗 1 次生产额度</button>
+                      <button class="btn btn-ghost" id="btnGiveup">放弃翻新</button>
                       <span class="fine">观察期回采免费（复用每日回采）· 观察期内不可再次发起 · 每月发起有上限</span>
                     </div>
                   </div>
@@ -1104,12 +1405,81 @@ b,strong{font-weight:700}
               </div>
             </section>
 
+            <section class="view" data-view="login">
+              <div class="page" style="max-width:430px">
+                <div class="login-hero">
+                  <span class="big-mark">拆</span>
+                  <h2>爆款拆解 · 仿写助手</h2>
+                  <p>有一位专业编辑，每天为你的账号挑题、写稿、盯数据</p>
+                </div>
+                <div class="login-card card stag">
+                  <button class="btn btn-solid" id="btnWxLogin" style="width:100%;padding:13px">微信一键登录 · 静默授权</button>
+                  <p style="font-size:10px;color:var(--ink3);text-align:center;margin-top:8px">微信内打开时无感知完成（snsapi_base），体验与原生一致</p>
+                  <div class="login-div">或在浏览器中用手机号</div>
+                  <div class="field"><input id="loginPhone" placeholder="手机号" inputmode="numeric" maxlength="11"></div>
+                  <div class="field"><div class="with-btn"><input placeholder="验证码" inputmode="numeric" maxlength="6"><button class="code-btn" id="btnCode">获取验证码</button></div></div>
+                  <button class="btn btn-line" id="btnPhoneLogin" style="width:100%;padding:11px">登录 / 注册</button>
+                  <div class="wx-qr">
+                    <span class="qr-fake"></span>
+                    <div><b>微信扫一扫，关注服务号</b><p>任务完成、数据日报、翻红结论即时推送<br>关注一次长期有效——对话框里发链接就能拆解</p></div>
+                  </div>
+                  <p class="agree">登录即同意 <a data-agree>《用户协议》</a> 与 <a data-agree>《隐私协议》</a> · 老 Bot 用户自动继承定位与数据</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="view" data-view="onboard">
+              <div class="ob-head">
+                <h1 class="page-title" style="font-size:20px">设置我的定位</h1>
+                <p class="page-sub">三步 · 每步一个焦点 · 保存后生成首份专属选题清单</p>
+              </div>
+              <div class="ob-track">
+                <span class="ob-node cur" id="obN1"><i>1</i>选赛道</span><span class="ob-line" id="obL1"></span>
+                <span class="ob-node" id="obN2"><i>2</i>写人设</span><span class="ob-line" id="obL2"></span>
+                <span class="ob-node" id="obN3"><i>3</i>填关键词</span>
+              </div>
+              <div class="ob-body">
+                <div class="ob-step" id="obS1">
+                  <h3>① 你的账号写什么？</h3>
+                  <p class="ob-sub">选一个方向，或自定义输入——决定雷达抓什么赛道</p>
+                  <div class="ob-chips" id="obTracks">
+                    <label><input type="radio" name="track" checked><span class="ltag sel">城市漫游</span></label>
+                    <label><input type="radio" name="track"><span class="ltag">美食探店</span></label>
+                    <label><input type="radio" name="track"><span class="ltag">穿搭</span></label>
+                    <label><input type="radio" name="track"><span class="ltag">数码好物</span></label>
+                    <label><input type="radio" name="track"><span class="ltag">职场干货</span></label>
+                    <label><input type="radio" name="track"><span class="ltag">母婴育儿</span></label>
+                    <label><input type="radio" name="track"><span class="ltag">健身</span></label>
+                  </div>
+                  <p class="ob-tip">全赛道开放——关键词订阅按你的自定义赛道运作，不设类目限制。</p>
+                </div>
+                <div class="ob-step" id="obS2" style="display:none">
+                  <h3>② 用一句话介绍你自己</h3>
+                  <p class="ob-sub">人设决定仿写的口吻与视角——写不出来的话，先用示例改两个字</p>
+                  <textarea class="ob-area" id="obPersona" placeholder="例如：我是胶片摄影师阿岛，用一卷只拍 12 张的过期胶卷，记录城市的慢时刻。"></textarea>
+                  <div style="margin-top:10px"><button class="btn btn-ghost" id="btnObExample">✎ 一键用示例开始</button></div>
+                  <p class="ob-tip">至少填写「人设」或下一步的「关键词」一项即可提交；空着也没关系，之后随时能改。</p>
+                </div>
+                <div class="ob-step" id="obS3" style="display:none">
+                  <h3>③ 你想盯住哪些关键词？</h3>
+                  <p class="ob-sub">1–5 个 · 逗号或空格分隔 · 雷达按这些词每日抓取爆款</p>
+                  <div class="field"><div class="with-btn"><input id="obKwInput" placeholder="输入后回车添加，如：citywalk、胶片、巷子咖啡"><button class="btn btn-line" id="btnKwAdd" style="padding:0 16px;font-size:11.5px">添加</button></div></div>
+                  <div class="kw-chips" id="obKwChips"></div>
+                  <p class="ob-tip">示例：citywalk · 胶片冲扫 · 老巷子 · 咖啡地图——关键词 + 人设共同驱动你的专属评分。</p>
+                </div>
+              </div>
+              <div class="ob-foot">
+                <button class="btn btn-ghost" id="obPrev" style="visibility:hidden">上一步</button>
+                <button class="btn btn-solid" id="obNext">下一步</button>
+              </div>
+            </section>
+
           </div>
 
           <nav class="tabbar" id="tabbar">
             <button class="tab on" data-tab="radar"><svg class="ic"><use href="#i-compass"/></svg>选题</button>
             <button class="tab" data-tab="produce"><svg class="ic"><use href="#i-pen"/></svg>生产</button>
-            <button class="tab" data-tab="data"><svg class="ic"><use href="#i-chart"/></svg>数据</button>
+            <button class="tab reddot" data-tab="data" id="dataTabBtn"><svg class="ic"><use href="#i-chart"/></svg>数据</button>
             <button class="tab" data-tab="me"><svg class="ic"><use href="#i-user"/></svg>我的</button>
           </nav>
 
@@ -1137,6 +1507,49 @@ b,strong{font-weight:700}
               <p class="warn-note">同关键词 24 小时内重复提炼会弹出确认拦截 · 一次提炼计 1 次生产额度，对齐拆解与统计成本记入成本账本</p>
             </div>
             <div class="sheet-foot"><button class="btn btn-solid" id="btnRefine">开始提炼 · 消耗 1 次生产额度</button></div>
+          </div>
+
+          <div class="sheet" id="sheetFree">
+            <div class="sheet-head"><b>自由仿写</b><span class="s-topic">多平台拆解输入 · 产物进入同一生产线</span><button class="x" data-close>✕</button></div>
+            <div class="plat-row" id="platRow">
+              <span class="plat hot">小红书</span><span class="plat">B站</span><span class="plat">YouTube</span><span class="plat">抖音</span><span class="plat">上传视频</span>
+            </div>
+            <div class="field"><input id="freeLink" placeholder="粘贴笔记 / 视频链接，系统自动识别平台"></div>
+            <p style="font-size:10px;color:var(--ink3);margin-bottom:12px">链接 → 抓详情（视频自动提取口播文案）→ 按你的定位仿写；解析失败自动引导走上传通道</p>
+            <div class="upload-zone" id="uploadZone"><b>＋ 上传视频文件</b>全平台兜底 · 合规首选 · 时长 ≤10 分钟<br>服务端抽音轨转写（ASR）+ 关键帧抽取，进入同一拆解管线</div>
+            <p class="ob-tip" style="margin-top:13px">或直接输入文本：<b style="color:var(--ink)">首行标题 + 正文</b>，不经抓取直接生产——表单化防误触发。</p>
+            <div class="sheet-foot">
+              <button class="btn btn-solid" id="btnFreeGo">开始拆解 · 计 1 次生产额度</button>
+              <span class="fine">仅拆解「结构与文案」用于原创仿写 · <b>不搬运原视频画面/音频成片</b></span>
+            </div>
+          </div>
+
+          <div class="sheet" id="sheetVideo">
+            <div class="sheet-head"><b>生成视频版</b><span class="s-topic">T-1021 · 在京都的第七天</span><button class="x" data-close>✕</button></div>
+            <div class="spec-grid" id="specGrid">
+              <div class="spec v on" data-spec="9:16"><div class="sp-frame">9:16</div><b>9:16 竖版</b><p>抖音 / 快手 / Shorts / 视频号</p></div>
+              <div class="spec" data-spec="16:9"><div class="sp-frame">16:9</div><b>16:9 横版</b><p>B站等横版场景</p></div>
+            </div>
+            <p class="ob-tip">复用本篇图文素材与口播文案 · TTS + 图卡合成 · 参数化规格档不新增生产线 · <b style="color:var(--ink)">独立子任务计号计费</b> · 完成走模板消息通知</p>
+            <div class="sheet-foot"><button class="btn btn-solid" id="btnVideoGo">生成 · 消耗 1 次生产额度</button></div>
+          </div>
+
+          <div class="sheet" id="sheetReg">
+            <div class="sheet-head"><b>登记已发布笔记</b><span class="s-topic">开启数据追踪</span><button class="x" data-close>✕</button></div>
+            <div class="field"><input id="regLink" placeholder="粘贴小红书笔记链接（xiaohongshu.com / xhslink.com）"></div>
+            <p class="ob-tip">将关联你最近一条未登记的已交付任务：<b style="color:var(--ink)">T-1021《在京都的第七天，我把时间还给了眼睛》</b><br>登记后纳入每日 09:00 回采（近 30 天窗口）· 解绑需二次确认，解绑后停止回采</p>
+            <div class="sheet-foot"><button class="btn btn-solid" id="btnRegGo">登记并开始追踪</button></div>
+          </div>
+
+          <div class="sheet" id="sheetGuide">
+            <div class="sheet-head"><b>新手指南</b><span class="s-topic">5 个最常被问的问题</span><button class="x" data-close>✕</button></div>
+            <div style="display:grid;gap:9px;margin-top:12px">
+              <div class="bd-cell"><b>定位为什么重要</b><p>雷达按你的关键词+人设独立评分——定位越准，清单越像「为你挑的」，而不是大众热榜。</p></div>
+              <div class="bd-cell"><b>额度怎么算</b><p>每日 0 点重置；生产失败自动返还；重试不重复扣。额度是「还能用多少」，成本账本是「已经花了多少」。</p></div>
+              <div class="bd-cell"><b>成品怎么搬到小红书</b><p>按交付页跟办清单：复制文案 → 保存图卡 → 去小红书发布——发布动作 100% 归你，这是「人工过稿」纪律。</p></div>
+              <div class="bd-cell"><b>登记链接有什么用</b><p>登记后每日回采赞藏评、推送增量日报，还解锁翻红计划——不登记，数据闭环就不转。</p></div>
+              <div class="bd-cell"><b>常见失败怎么办</b><p>生图通道失败可「换通道重试」（不重复扣额）；抓取失败回落昨日清单；推送失败降级站内待读，信息不丢。</p></div>
+            </div>
           </div>
 
           <div class="toast" id="toast"></div>
@@ -1224,6 +1637,7 @@ function switchTab(name){
   $('#urlText').textContent='https://chaijie.app/'+URLMAP[name];
   const v=$('.view[data-view="'+name+'"]');
   playStag(v);stage.scrollTop=0;
+  if(name==='data'){const t=$('#dataTabBtn');if(t.classList.contains('reddot')){t.classList.remove('reddot');toast('站内待读已清空 · 未关注服务号时通知降级到这里')}}
   if(name==='produce')setTimeout(()=>{$('#flPin').style.left=flavorCur==='a'?'38%':'17%'},150);
   if(name==='revive'||name==='templates')playBars(v);
 }
@@ -1302,7 +1716,165 @@ $$('[data-copy]').forEach(b=>b.onclick=()=>toast('已复制'+b.dataset.copy+' ·
 $('#btnDl').onclick=()=>toast('图卡已开始下载 · 长按可保存');
 $('#btnShare').onclick=()=>toast('分享卡已生成 · 保存后可直接发笔记');
 $$('[data-goto]').forEach(b=>b.onclick=()=>switchTab(b.dataset.goto));
-$$('[data-explore]').forEach(b=>b.onclick=()=>toast('已加入明日雷达 · 明早 8:00 服务号通知你'));
+const app=$('#app');
+function goFresh(view){
+  $$('.view').forEach(v=>v.classList.remove('on'));
+  const target=$('.view[data-view="'+view+'"]');
+  target.classList.add('on');
+  app.setAttribute('data-fresh','1');
+  $('#btnFresh').classList.add('on');
+  stage.scrollTop=0;playStag(target);
+  if(view==='onboard')obGo(1);
+}
+function endFresh(){app.removeAttribute('data-fresh');$('#btnFresh').classList.remove('on')}
+$('#btnFresh').onclick=()=>goFresh('login');
+
+$('#btnWxLogin').onclick=async()=>{
+  const b=$('#btnWxLogin');b.disabled=true;b.textContent='授权中…';
+  await sleep(700);
+  b.disabled=false;b.textContent='微信一键登录 · 静默授权';
+  toast('微信授权成功 · openid 已映射到你的账号');
+  goFresh('onboard');
+};
+let codeTimer=null;
+$('#btnCode').onclick=()=>{
+  if(codeTimer)return;
+  let s=60;const b=$('#btnCode');b.disabled=true;b.textContent=s+'s 后重发';
+  codeTimer=setInterval(()=>{s--;if(s<=0){clearInterval(codeTimer);codeTimer=null;b.disabled=false;b.textContent='获取验证码'}else b.textContent=s+'s 后重发'},1000);
+  toast('验证码已发送 · 短信额度独立计费（模板消息为主通道）');
+};
+$('#btnPhoneLogin').onclick=()=>{
+  const p=$('#loginPhone').value.trim();
+  if(!/^1\d{10}$/.test(p)){toast('请输入 11 位手机号');return}
+  toast('登录成功 · 手机号通道与微信通道可在「账号与绑定」合并');
+  goFresh('onboard');
+};
+$$('[data-agree]').forEach(a=>a.onclick=()=>toast('协议全文 · 首次启动展示，「我的」页常驻入口'));
+
+let obStepIdx=1;const obKws=[];
+function obGo(n){
+  obStepIdx=n;
+  ['obS1','obS2','obS3'].forEach((id,i)=>$('#'+id).style.display=(i+1===n?'':'none'));
+  ['obN1','obN2','obN3'].forEach((id,i)=>{const el=$('#'+id);el.classList.toggle('cur',i+1===n);el.classList.toggle('done',i+1<n)});
+  $('#obL1').classList.toggle('done',n>1);
+  $('#obL2').classList.toggle('done',n>2);
+  $('#obPrev').style.visibility=n===1?'hidden':'visible';
+  $('#obNext').textContent=n===3?'保存定位并生成清单':'下一步';
+}
+$$('#obTracks label').forEach(l=>l.onclick=()=>{
+  $$('#obTracks .ltag').forEach(t=>t.classList.remove('sel'));
+  l.querySelector('.ltag').classList.add('sel');
+});
+$('#btnObExample').onclick=()=>{$('#obPersona').value='我是胶片摄影师阿岛，用一卷只拍 12 张的过期胶卷，记录城市的慢时刻。';toast('示例已填入 · 改两个字就是你的')};
+function obAddKw(){
+  const inp=$('#obKwInput');const v=inp.value.trim();if(!v)return;
+  v.split(/[，,、\s]+/).filter(Boolean).slice(0,5-obKws.length).forEach(w=>{
+    if(obKws.length>=5||obKws.includes(w))return;
+    obKws.push(w);
+    const s=document.createElement('span');s.innerHTML=w+'<b>✕</b>';
+    s.querySelector('b').onclick=()=>{obKws.splice(obKws.indexOf(w),1);s.remove()};
+    $('#obKwChips').appendChild(s);
+  });
+  inp.value='';
+  if(obKws.length>=5)toast('最多 5 个关键词 · 删掉一个再加');
+}
+$('#btnKwAdd').onclick=obAddKw;
+$('#obKwInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();obAddKw()}});
+$('#obPrev').onclick=()=>obGo(obStepIdx-1);
+$('#obNext').onclick=async()=>{
+  if(obStepIdx<3){obGo(obStepIdx+1);return}
+  if(!$('#obPersona').value.trim()&&!obKws.length){toast('至少填写「人设」或「关键词」一项');return}
+  const b=$('#obNext');b.disabled=true;b.textContent='保存中…';
+  await sleep(600);
+  endFresh();switchTab('radar');
+  $('#genBanner').style.display='flex';
+  b.disabled=false;
+  setTimeout(()=>{$('#genBanner').style.display='none';toast('首份专属清单已就绪 · 共 12 条，默认展示前 5 条');playStag($('.view[data-view="radar"]'))},2300);
+};
+
+$$('#dateSwitch .ds').forEach(b=>b.onclick=()=>{
+  $$('#dateSwitch .ds').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  const d=b.dataset.day,note=$('#dsNote');
+  $('#topicCards').style.display=(d==='empty')?'none':'grid';
+  $('#radarEmpty').style.display=(d==='empty')?'block':'none';
+  if(d==='degrade'){note.style.display='inline-flex';note.textContent='数据为昨日 · 抓取暂时不可用（降级不白屏）'}
+  else if(d==='yday'){note.style.display='inline-flex';note.textContent='历史清单 · 近 7 天可切换（P1）'}
+  else if(d==='empty'){note.style.display='inline-flex';note.textContent='门槛筛后为空'}
+  else note.style.display='none';
+  const v=$('.view[data-view="radar"]');if(v.classList.contains('on'))playStag(v);
+});
+$('#btnRefetch').onclick=()=>toast('已重新抓取 · 相同日期内覆盖个人清单 · 成本记入账本');
+
+function showExplore(on){$('#exploreResults').style.display=on?'block':'none';$('#exploreEntry').style.display=on?'none':'block'}
+$$('[data-explore]').forEach(b=>b.onclick=()=>{showExplore(true);toast('已按「'+b.textContent.trim()+'」探索近 30 天 · 门槛放开')});
+$('#btnExploreClose').onclick=()=>showExplore(false);
+$$('[data-go-explore]').forEach(b=>b.onclick=()=>{$$('#dateSwitch .ds')[0].click();showExplore(true);toast('已切换到探索模式')});
+$$('[data-go-pos]').forEach(b=>b.onclick=()=>toast('修改定位次日生效 · 今日清单可手动重抓'));
+$$('.cta-write-x').forEach(b=>b.onclick=()=>{
+  composeTopic=b.closest('.xcard').querySelector('.xc-title').textContent;
+  $('#cTopic').textContent='《'+composeTopic+'》';
+  openSheet('#sheetCompose');
+});
+$$('[data-xjde]').forEach(b=>b.onclick=()=>toast('拆解报告已生成 · 计轻量额度（不占生产额度，随定价评审定稿）'));
+$$('[data-relkw]').forEach(b=>b.onclick=()=>toast('已按「'+b.textContent.trim()+'」重新探索 · 相关搜索来自用户真实搜索词'));
+
+$('#btnFree').onclick=()=>openSheet('#sheetFree');
+$$('#platRow .plat').forEach(p=>p.onclick=()=>{$$('#platRow .plat').forEach(x=>x.classList.remove('hot'));p.classList.add('hot')});
+$('#uploadZone').onclick=()=>toast('选择视频文件 · ≤10 分钟 / 200MB · ASR 转写成本记入账本');
+$('#btnFreeGo').onclick=()=>{
+  const v=$('#freeLink').value.trim();
+  if(!v){toast('请粘贴链接，或点上方「上传视频」');return}
+  closeSheets();$('#freeLink').value='';
+  toast('平台识别：小红书 · 已开始抓详情，预计 1–3 分钟');
+  addTask('自由仿写 · 链接拆解','直发链接 · 平台自动识别');
+  switchTab('produce');
+};
+
+$('#btnRegNow').onclick=()=>openSheet('#sheetReg');
+$('#btnRegData').onclick=()=>openSheet('#sheetReg');
+$('#btnRegGo').onclick=()=>{
+  const v=$('#regLink').value.trim();
+  if(!v){toast('请粘贴小红书笔记链接');return}
+  closeSheets();$('#regLink').value='';
+  $('#regNotice').style.display='none';
+  toast('已登记并关联 T-1021 · 明早 9:00 起纳入每日回采');
+  const row=document.createElement('div');
+  row.className='nrow card lift';
+  row.innerHTML='<span class="thumb"><img src="https://trae-api-cn.mchost.guru/api/ide/v1/tool_text_to_image?prompt=film%20photo%2C%20quiet%20Kyoto%20street%20at%20dawn%2C%20traditional%20machiya%20wooden%20houses%2C%20warm%20morning%20light%2C%20kodak%20portra%20grain%2C%20cinematic%20travel%20editorial&image_size=square" alt="京都仿写笔记封面"></span><div class="nmain"><div class="nt">在京都的第七天，我把时间还给了眼睛</div><div class="nm"><span>发布 1 天</span><span>互动 26</span><span class="nchip rush">冲榜中 ↗</span></div></div><svg class="spark" viewBox="0 0 56 28" fill="none"><polyline points="2,25 14,24 26,22 38,18 50,12 54,8" stroke="#E8553F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="delta up">+26</span>';
+  $('#notesList').prepend(row);
+  switchTab('data');
+};
+$('#btnPoster').onclick=()=>toast('周报海报已生成：本周 +612 赞 · 最佳《夜班火车》· 编辑点评已附上，可直接发甲方');
+$$('[data-refresh]').forEach(b=>b.onclick=()=>toast('已刷新 · 计一次详情抓取，成本记入你的账本'));
+$('#btnFollow').onclick=()=>{$('#followBar').style.display='none';toast('已引导跳转关注页 · 关注后模板消息长期触达')};
+$('#followX').onclick=()=>{$('#followBar').style.display='none';toast('已关闭 · 单日单用户仅引导 1 次，绝不弹窗轰炸')};
+
+const car=$('#delCarousel');
+if(car){
+  car.addEventListener('scroll',()=>{
+    const i=Math.round(car.scrollLeft/(car.scrollWidth/car.children.length));
+    $$('#carDots i').forEach((d,j)=>d.classList.toggle('on',j===Math.min(2,i)));
+  },{passive:true});
+}
+$$('[data-retry]').forEach(b=>b.onclick=()=>toast('已重试 · 新任务入队（不重复扣额，原任务保留可追溯）'));
+$$('[data-swapimg]').forEach(b=>b.onclick=()=>toast('已切换生图通道 B · 现在可重试失败任务'));
+$$('[data-act="换角度"]').forEach(b=>b.onclick=e=>{e.stopPropagation();toast('已进入改写角度：输入新角度描述后重新生产（同 Bot /换角度 N）')});
+$$('#pubTodo li').forEach((li,i)=>li.onclick=()=>{
+  li.classList.toggle('done');
+  if(i===0&&li.classList.contains('done'))toast('文案已复制 · 保留小红书排版换行');
+  if(i===3&&li.classList.contains('done'))openSheet('#sheetReg');
+});
+$('#btnVideo').onclick=()=>openSheet('#sheetVideo');
+$$('#specGrid .spec').forEach(s=>s.onclick=()=>{$$('#specGrid .spec').forEach(x=>x.classList.remove('on'));s.classList.add('on')});
+$('#btnVideoGo').onclick=()=>{
+  const spec=$('#specGrid .spec.on').dataset.spec;
+  closeSheets();
+  toast('视频子任务已入队 · '+spec+' 规格 · 完成走模板消息通知');
+  addTask('视频版 · '+spec+(spec==='9:16'?' 竖版':' 横版'),'视频子任务 · 独立计号计费');
+};
+$('#btnGuide').onclick=()=>openSheet('#sheetGuide');
+$('#btnReOnboard').onclick=()=>goFresh('onboard');
+$('#btnGiveup').onclick=()=>toast('已放弃翻新并归档 · 原因记录：不想改 / 笔记已删 / 其他');
 $('#btnPos').onclick=()=>toast('定位修改次日生效 · 今日清单可手动重抓');
 $('#btnUpgrade').onclick=()=>toast('微信内不收款 · 已在系统浏览器打开官网升级页');
 $$('.mrow[data-toast]').forEach(r=>r.onclick=()=>toast(r.dataset.toast));
@@ -1502,7 +2074,17 @@ async function pickTopic(i){
   await agentSay('已入队 · 任务号 T-'+taskNo+' ✓\n《'+TOPICS[i].t+'》\n今日剩 '+(quotaMax-quotaUsed-1)+' 次 · 完成后通知你\n（48h 内可回「换个开头」继续打磨）');
   addTask(TOPICS[i].t,'直接仿写 · 对话式发起');
   quotaUsed++;taskNo++;updateQuota();
-  setChips(MAIN_CHIPS);
+  setChips([{label:'换个开头',fn:()=>l2Say('换个开头')},{label:'更口语化一点',fn:()=>l2Say('更口语化一点')},{label:'第二段展开',fn:()=>l2Say('第二段展开')},{label:'帮助',fn:()=>runCmd('帮助')}]);
+}
+async function l2Say(cmd){
+  userSay(cmd);
+  const rewrites={
+    '换个开头':'都说要慢下来——我是被一卷过期胶卷逼慢的。',
+    '更口语化一点':'这篇不端着了，就说人话：京都七天，我把闹钟扔了。',
+    '第二段展开':'巷口的咖啡店，老板娘已经记得我不加糖。这家店只有六张桌子，下午的光会准时落在第三张上，像约好的。'
+  };
+  await agentSay('已按「'+cmd+'」局部重写（骨架层与风格层保留，只动指定部位）：\n\n「'+rewrites[cmd]+'」\n\n其余段落不变 · 连续追问共享同一任务上下文，48h 窗口内有效',900);
+  setChips([{label:'换个开头',fn:()=>l2Say('换个开头')},{label:'更口语化一点',fn:()=>l2Say('更口语化一点')},{label:'第二段展开',fn:()=>l2Say('第二段展开')},{label:'帮助',fn:()=>runCmd('帮助')}]);
 }
 function sendInput(){
   const v=wxInput.value.trim();if(!v)return;
