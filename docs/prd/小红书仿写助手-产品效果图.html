@@ -1413,9 +1413,15 @@ b,strong{font-weight:700}
                   <p>有一位专业编辑，每天为你的账号挑题、写稿、盯数据</p>
                 </div>
                 <div class="login-card card stag">
-                  <button class="btn btn-solid" id="btnWxLogin" style="width:100%;padding:13px">微信一键登录 · 静默授权</button>
-                  <p style="font-size:10px;color:var(--ink3);text-align:center;margin-top:8px">微信内打开时无感知完成（snsapi_base），体验与原生一致</p>
-                  <div class="login-div">或在浏览器中用手机号</div>
+                  <div class="datesw" style="justify-content:center;margin-bottom:14px" id="loginEnv">
+                    <button class="ds on" data-env="wx">语境：微信内打开</button>
+                    <button class="ds" data-env="web">语境：浏览器打开</button>
+                  </div>
+                  <div id="wxLoginBlock">
+                    <button class="btn btn-solid" id="btnWxLogin" style="width:100%;padding:13px">微信一键登录 · 静默授权</button>
+                    <p style="font-size:10px;color:var(--ink3);text-align:center;margin-top:8px">微信内置浏览器 · snsapi_base 静默拿 openid——<b style="color:var(--coral-deep)">无扫码、无确认弹窗</b><br>正常情况下进入 H5 时已静默完成，本页仅在授权异常时出现</p>
+                    <div class="login-div">或用手机号</div>
+                  </div>
                   <div class="field"><input id="loginPhone" placeholder="手机号" inputmode="numeric" maxlength="11"></div>
                   <div class="field"><div class="with-btn"><input placeholder="验证码" inputmode="numeric" maxlength="6"><button class="code-btn" id="btnCode">获取验证码</button></div></div>
                   <button class="btn btn-line" id="btnPhoneLogin" style="width:100%;padding:11px">登录 / 注册</button>
@@ -1423,6 +1429,7 @@ b,strong{font-weight:700}
                     <span class="qr-fake"></span>
                     <div><b>微信扫一扫，关注服务号</b><p>任务完成、数据日报、翻红结论即时推送<br>关注一次长期有效——对话框里发链接就能拆解</p></div>
                   </div>
+                  <p class="ob-tip" id="webLoginNote" style="display:none">浏览器端如需微信登录：接<b style="color:var(--ink)">微信开放平台「网站应用」扫码登录</b>（open.weixin.qq.com，需另注册开放平台 + 企业认证 + 网站应用审核，列 P2）——MVP 以手机号为主：桌面用户低频登录，验证码足够；微信侧免登录体验由「扫服务号码 → 菜单进 H5」承接。</p>
                   <p class="agree">登录即同意 <a data-agree>《用户协议》</a> 与 <a data-agree>《隐私协议》</a> · 老 Bot 用户自动继承定位与数据</p>
                 </div>
               </div>
@@ -1750,6 +1757,17 @@ $('#btnPhoneLogin').onclick=()=>{
   goFresh('onboard');
 };
 $$('[data-agree]').forEach(a=>a.onclick=()=>toast('协议全文 · 首次启动展示，「我的」页常驻入口'));
+
+$$('#loginEnv .ds').forEach(b=>b.onclick=()=>{
+  $$('#loginEnv .ds').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  const wx=b.dataset.env==='wx';
+  $('#wxLoginBlock').style.display=wx?'':'none';
+  $('#webLoginNote').style.display=wx?'none':'block';
+  const pl=$('#btnPhoneLogin');
+  pl.className=wx?'btn btn-line':'btn btn-solid';
+  pl.style.width='100%';
+  toast(wx?'微信内语境：进入 H5 时已静默授权（snsapi_base），无扫码无弹窗':'浏览器语境：手机号为主通道 · 扫码登录需开放平台（P2）');
+});
 
 let obStepIdx=1;const obKws=[];
 function obGo(n){
