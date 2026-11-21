@@ -434,6 +434,56 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 .m-upload{border:1.5px dashed #CFC6B6;border-radius:11px;padding:18px;text-align:center;color:var(--muted);font-size:11.5px;background:#FBFAF6;cursor:pointer}
 .m-note{font-size:10.5px;color:var(--muted);line-height:1.6;background:var(--soft2);border-radius:9px;padding:9px 11px;margin-top:10px}
 .m-back{display:inline-flex;align-items:center;gap:5px;border:none;background:none;color:var(--muted);font-size:12px;padding:0;cursor:pointer;margin-bottom:10px}
+/* ---------- 可用性优化：阅读感、热区、反馈、空态 ---------- */
+body{font-size:14.5px}
+.muted{color:#5F5B53}
+.small{font-size:12.5px}
+.tbl{font-size:13px}
+.tbl th{font-size:11.5px}
+.tbl td{padding:11px 10px}
+.pack-meta,.tags span{font-size:11px}
+.pack-flag{font-size:10.5px;padding:2px 7px}
+.hot-meta,.bench-tags .small{font-size:11.5px}
+.hot-item{cursor:pointer;border-radius:10px;padding:10px 8px;margin:0 -8px;transition:background .15s}
+.hot-item:hover,.hot-item:focus-visible{background:#FBF8F1}
+.stat-row span{font-size:10px}
+.dim{font-size:10.5px}
+.sub-note{font-size:11.5px}
+.link{display:inline-flex;align-items:center;min-height:32px;padding:4px 2px;font-size:12.5px}
+.btn{min-height:36px}
+.btn.sm{min-height:32px;padding:6px 11px}
+.dir-chip{min-height:38px}
+.nav-item{min-height:40px}
+.hb-tags button{min-height:28px;padding:4px 11px;font-size:11.5px}
+.meta-chip{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:11.5px;color:var(--muted);white-space:nowrap}
+.meta-chip i{width:6px;height:6px;border-radius:50%;background:#3FA173;display:inline-block}
+:focus-visible{outline:2px solid var(--pine);outline-offset:2px;border-radius:8px}
+.m-tabs button{font-size:10.5px;min-height:50px;gap:3px}
+.m-tabs button.active{position:relative}
+.m-tabs button.active::after{content:"";position:absolute;top:0;width:18px;height:2px;border-radius:2px;background:var(--pine)}
+.m-sub{font-size:12px}
+.m-task span{font-size:11.5px}
+/* 新手三步 */
+.flow-strip{display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 12px;margin-bottom:16px;box-shadow:0 1px 2px rgba(27,26,23,.03)}
+.fs-label{font-size:10.5px;letter-spacing:.1em;color:var(--brass);font-weight:700}
+.fs-step{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#FBFAF6;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;min-height:32px}
+.fs-step:hover{border-color:var(--pine);color:var(--pine)}
+.fs-step i{width:17px;height:17px;border-radius:50%;background:var(--pine);color:#fff;font-style:normal;font-size:10px;display:grid;place-items:center;font-weight:700}
+.fs-arrow{color:#C3BAA8;font-size:13px}
+.fs-note{margin-left:auto;font-size:11px;color:var(--muted)}
+/* 加载骨架 */
+.skel-card{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
+.skel{background:linear-gradient(90deg,#F0ECE3 25%,#F7F4ED 37%,#F0ECE3 63%);background-size:400% 100%;animation:shimmer 1.1s infinite;border-radius:6px}
+.skel-line{height:11px;margin-bottom:9px}
+.skel-line.w60{width:60%}.skel-line.w90{width:90%}
+.skel-block{height:56px;margin-top:12px}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:0 0}}
+/* 空态 */
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:6px;padding:30px 18px;border:1px dashed #D8D0C0;border-radius:12px;background:#FBFAF6;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.7}
+.empty-state b{color:var(--ink);font-size:13.5px}
+@media (max-width:760px){.fs-note{display:none}.flow-strip{gap:6px}.fs-step{padding:5px 9px;font-size:11.5px}}
+@media (max-width:900px){.app-top{gap:10px;padding:0 14px}.top-right .health{display:none}.top-search{width:150px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 /* ---------- 响应式 ---------- */
 @media(max-width:1180px){.kpis{grid-template-columns:repeat(2,1fr)}.cols-2,.cols-2b{grid-template-columns:1fr}.version-grid{grid-template-columns:1fr}.packs{grid-template-columns:repeat(2,1fr)}.create-grid{grid-template-columns:1fr}}
 @media(max-width:720px){.packs{grid-template-columns:1fr}}
@@ -1280,7 +1330,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
       <!-- 素材库 -->
       <section class="m-page" data-mpage="mmaterials">
         <div class="m-head"><div><h2 class="m-title">素材库</h2><div class="m-sub">按人设推荐 · 26 个素材包</div></div></div>
-        <div class="search" style="margin-bottom:10px;background:#fff"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input placeholder="搜索目的地、场景"></div>
+        <div class="search" style="margin-bottom:10px;background:#fff"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input id="mMatSearch" aria-label="搜索素材" placeholder="搜索目的地、场景（回车）"></div>
         <button class="btn block" data-drawer="submit" style="margin-bottom:12px"><svg class="ic" style="width:14px;height:14px"><use href="#i-upload"/></svg>上传素材 / 推荐对标</button>
 
         <div class="m-pack" data-mgo="mpack">
@@ -1324,7 +1374,11 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 
         <div class="m-card">
           <b style="font-size:12.5px">改写方向（选 1 个）</b>
-          <div class="tags" style="margin-top:8px"><span style="padding:5px 9px;font-size:11px">酒店细节向</span><span style="padding:5px 9px;font-size:11px">路线攻略向</span><span style="padding:5px 9px;font-size:11px">预算感受向</span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <button class="dir-chip active" data-rewrite>酒店细节向</button>
+            <button class="dir-chip" data-rewrite>路线攻略向</button>
+            <button class="dir-chip" data-rewrite>预算感受向</button>
+          </div>
           <div class="m-note">平台不代发。复制文案与素材后，请在你的小红书账号内自行编辑发布，再回到「发布」页回填链接。</div>
         </div>
 
@@ -1342,10 +1396,10 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
         <div class="m-card">
           <div class="m-field"><label>关联素材包</label><select style="width:100%"><option>北海道滑雪｜亲子向</option><option>京都赏枫 5 天 4 晚｜闺蜜向</option><option>北欧极光｜情侣向</option></select></div>
           <div class="m-field"><label>发布平台</label><select style="width:100%"><option>小红书</option><option>抖音</option><option>视频号</option></select></div>
-          <div class="m-field"><label>发布链接 <span style="color:var(--danger)">*</span></label><input type="url" placeholder="粘贴笔记链接"></div>
+          <div class="m-field"><label>发布链接 <span style="color:var(--danger)">*</span></label><input type="url" id="mPublishLink" placeholder="粘贴笔记链接"></div>
           <div class="m-field"><label>发布截图</label><div class="m-upload"><svg class="ic" style="width:20px;height:20px"><use href="#i-upload"/></svg><div style="margin-top:4px">点击上传发布截图</div></div></div>
           <div class="m-field" style="margin-bottom:4px"><label>备注（选填）</label><textarea rows="3" placeholder="例如：这周主推亲子雪场"></textarea></div>
-          <button class="btn primary block" data-toast="回填已提交，等待审核">提交回填</button>
+          <button class="btn primary block" id="mPublishSubmit">提交回填</button>
           <div class="m-note">仅记录发布结果用于效果回看，不涉及任何交易或结算。</div>
         </div>
       </section>
@@ -1388,16 +1442,16 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
       <div class="mk">旅</div>
       <div><b>创作者工作台</b><span>CREATOR STUDIO</span></div>
     </div>
-    <div class="nav-group">总览</div>
+    <div class="nav-group">开始</div>
     <button class="nav-item active" data-page="p-home" data-crumb="我的工作台"><svg class="ic"><use href="#i-grid"/></svg><span class="label">我的工作台</span></button>
-    <div class="nav-group">洞察</div>
+    <div class="nav-group">找灵感</div>
     <button class="nav-item" data-page="p-trends" data-crumb="趋势洞察"><svg class="ic"><use href="#i-radar"/></svg><span class="label">趋势洞察</span></button>
     <button class="nav-item" data-page="p-benchmark" data-crumb="对标笔记"><svg class="ic"><use href="#i-copy"/></svg><span class="label">对标笔记</span></button>
+    <div class="nav-group">写内容</div>
     <button class="nav-item" data-page="p-create" data-crumb="创作台"><svg class="ic"><use href="#i-pen"/></svg><span class="label">创作台</span></button>
-    <div class="nav-group">创作</div>
     <button class="nav-item" data-page="p-packs" data-crumb="素材库"><svg class="ic"><use href="#i-folder"/></svg><span class="label">素材库</span></button>
+    <div class="nav-group">看结果</div>
     <button class="nav-item" data-page="p-content" data-crumb="我的内容"><svg class="ic"><use href="#i-chart"/></svg><span class="label">我的内容</span></button>
-    <div class="nav-group">账号</div>
     <button class="nav-item" data-page="p-profile" data-crumb="我的账号"><svg class="ic"><use href="#i-users"/></svg><span class="label">我的账号</span></button>
     <div class="side-foot">
       <div class="avatar">Y</div>
@@ -1408,10 +1462,11 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
   <main class="app-main">
     <header class="app-top">
       <div class="crumb">创作者 / <b id="pCrumb">我的工作台</b></div>
-      <div class="top-search"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input placeholder="搜索素材包、对标笔记"></div>
+      <div class="top-search"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input id="globalSearch" aria-label="搜索素材包或对标笔记" placeholder="搜索素材包、对标笔记（回车）"></div>
       <div class="top-right">
+        <button class="btn primary sm" data-goto="p-create" style="min-height:32px"><svg class="ic" style="width:13px;height:13px"><use href="#i-pen"/></svg>开始创作</button>
         <div class="health"><i></i>数据更新 09:00</div>
-        <button class="icon-btn" data-toast="暂无新的系统通知"><svg class="ic" style="width:16px;height:16px"><use href="#i-bell"/></svg></button>
+        <button class="icon-btn" data-toast="暂无新的系统通知" aria-label="系统通知"><svg class="ic" style="width:16px;height:16px"><use href="#i-bell"/></svg></button>
         <div class="avatar" style="width:28px;height:28px;font-size:11px">Y</div>
       </div>
     </header>
@@ -1428,30 +1483,38 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
           </div>
           <div class="hb-search">
             <svg class="ic" style="width:17px;height:17px"><use href="#i-search"/></svg>
-            <input id="homeSearch" placeholder="搜目的地、玩法、爆款笔记，例如：京都亲子">
-            <button class="btn primary sm" data-goto="p-benchmark">搜爆款</button>
+            <input id="homeSearch" aria-label="搜索目的地、玩法、爆款笔记" placeholder="搜目的地、玩法、爆款笔记，例如：京都亲子">
+            <button class="btn primary sm" id="homeSearchBtn" data-goto="p-benchmark">搜爆款</button>
           </div>
           <div class="hb-tags">
             <span>热门搜索：</span>
-            <button data-toast="已搜索：京都亲子">京都亲子</button>
-            <button data-toast="已搜索：海岛酒店">海岛酒店</button>
-            <button data-toast="已搜索：北海道滑雪">北海道滑雪</button>
-            <button data-toast="已搜索：冲绳亲子">冲绳亲子</button>
+            <button data-q="京都亲子">京都亲子</button>
+            <button data-q="海岛酒店">海岛酒店</button>
+            <button data-q="北海道滑雪">北海道滑雪</button>
+            <button data-q="冲绳亲子">冲绳亲子</button>
           </div>
         </div>
 
+        <div class="flow-strip">
+          <span class="fs-label">新手 3 步</span>
+          <button class="fs-step" data-goto="p-benchmark"><i>1</i>搜爆款</button>
+          <span class="fs-arrow">→</span>
+          <button class="fs-step" data-drawer="breakdown"><i>2</i>拆结构</button>
+          <span class="fs-arrow">→</span>
+          <button class="fs-step" data-goto="p-create"><i>3</i>写我的版本</button>
+          <span class="fs-note">不知道写什么时，从下方「最近在火」挑一个开始</span>
+        </div>
+
         <div class="dir-band">
-          <div class="dir-head">
-            <div>
-              <h3>我的关注方向 <span class="badge pine" id="dirCount">已选 1 个</span></h3>
-              <p>决定首页推荐、趋势与对标笔记的范围；可以多选，也可以先不选。</p>
+            <div class="dir-head">
+              <div>
+                <h3>我的关注方向 <span class="badge pine" id="dirCount">已选 1 个</span></h3>
+                <p>决定首页推荐、趋势与对标笔记的范围；点击标签切换，可多选。</p>
+              </div>
             </div>
-            <button class="link" data-toast="已打开关注方向设置">管理关注方向</button>
-          </div>
-          <div class="dir-chips">
-            <div id="dirChips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-            <button class="dir-chip add" data-toast="已打开关注方向设置">＋ 添加方向</button>
-          </div>
+            <div class="dir-chips">
+              <div id="dirChips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+            </div>
         </div>
 
         <div class="supply-band">
@@ -1470,6 +1533,46 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
           </div>
         </div>
 
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head" style="margin-bottom:0">
+            <div>
+              <h3 style="margin:0">本周新素材</h3>
+              <span class="small muted">实景拍摄 · 可直接在创作台改写成自己账号的版本</span>
+            </div>
+            <button class="link" data-goto="p-packs">查看全部素材包</button>
+          </div>
+          <div class="pack-grid" id="homePacks">
+            <div class="pack" data-drawer="pack" title="点击查看素材包详情">
+              <div class="pack-cover g-kyoto"><span class="pack-label">京都 · 秋</span><span class="pack-count">24 张实景</span></div>
+              <div class="pack-body">
+                <h4>京都赏枫 5 天 4 晚｜亲子向</h4>
+                <div class="flags"><span class="pack-flag auth">授权至 12-31</span><span class="pack-flag">匹配 92</span><span class="pack-flag">可差异化 3 版</span></div>
+                <div class="pack-meta"><span>含文案骨架</span><span>5 天 4 晚</span></div>
+                <button class="btn primary sm" style="width:100%;margin-top:10px" data-goto="p-create">用这个素材创作</button>
+              </div>
+            </div>
+            <div class="pack" data-drawer="pack" title="点击查看素材包详情">
+              <div class="pack-cover g-ski"><span class="pack-label">北海道 · 冬</span><span class="pack-count">20 张实景</span></div>
+              <div class="pack-body">
+                <h4>日本滑雪｜亲子向</h4>
+                <div class="flags"><span class="pack-flag auth">授权至 03-31</span><span class="pack-flag">匹配 86</span><span class="pack-flag">可差异化 3 版</span></div>
+                <div class="pack-meta"><span>含文案骨架</span><span>4 天 3 晚</span></div>
+                <button class="btn primary sm" style="width:100%;margin-top:10px" data-goto="p-create">用这个素材创作</button>
+              </div>
+            </div>
+            <div class="pack" data-drawer="pack" title="点击查看素材包详情">
+              <div class="pack-cover g-island"><span class="pack-label">巴厘 · 四季</span><span class="pack-count">30 张实景</span></div>
+              <div class="pack-body">
+                <h4>海岛私享｜家庭向</h4>
+                <div class="flags"><span class="pack-flag auth">授权至 12-31</span><span class="pack-flag">匹配 88</span><span class="pack-flag">可差异化 3 版</span></div>
+                <div class="pack-meta"><span>含文案骨架</span><span>6 天 5 晚</span></div>
+                <button class="btn primary sm" style="width:100%;margin-top:10px" data-goto="p-create">用这个素材创作</button>
+              </div>
+            </div>
+          </div>
+          <div class="small muted" style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);line-height:1.7">给你的小建议：先写「京都亲子赏枫」，热度 +38%、供给偏少。点卡片看详情，点按钮直接带入创作台。</div>
+        </div>
+
         <div class="cols cols-2b">
           <div class="card">
             <div class="card-head"><h3>我的账号</h3><button class="link" data-goto="p-profile">人设设置</button></div>
@@ -1486,55 +1589,15 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
             <div class="small muted" style="margin-top:10px;line-height:1.7">你的亲子内容收藏率高于同人设均值，建议继续写「行程节奏 + 酒店细节」。</div>
           </div>
           <div class="card">
-            <div class="card-head"><h3>最近在火</h3><span class="small muted">按与你人设的匹配度</span></div>
+            <div class="card-head"><h3>最近在火</h3><span class="small muted">点一条直接看拆解</span></div>
             <div id="homeHot"></div>
             <button class="btn sm" style="margin-top:12px" data-goto="p-benchmark">搜索更多爆款</button>
           </div>
         </div>
 
         <div class="card" style="margin-bottom:16px">
-          <div class="card-head" style="margin-bottom:0">
-            <div>
-              <h3 style="margin:0">本周新素材</h3>
-              <span class="small muted">实景拍摄 · 可直接在创作台改写成自己账号的版本</span>
-            </div>
-            <button class="link" data-goto="p-packs">查看全部素材包</button>
-          </div>
-          <div class="pack-grid">
-            <div class="pack">
-              <div class="pack-cover g-kyoto"><span class="pack-label">京都 · 秋</span><span class="pack-count">24 张实景</span></div>
-              <div class="pack-body">
-                <h4>京都赏枫 5 天 4 晚｜亲子向</h4>
-                <div class="flags"><span class="pack-flag auth">授权至 12-31</span><span class="pack-flag">匹配 92</span><span class="pack-flag">可差异化 3 版</span></div>
-                <div class="pack-meta"><span>含文案骨架</span><span>5 天 4 晚</span></div>
-                <button class="btn primary sm" style="width:100%;margin-top:10px" data-goto="p-create">用这个素材创作</button>
-              </div>
-            </div>
-            <div class="pack">
-              <div class="pack-cover g-ski"><span class="pack-label">北海道 · 冬</span><span class="pack-count">20 张实景</span></div>
-              <div class="pack-body">
-                <h4>日本滑雪｜亲子向</h4>
-                <div class="flags"><span class="pack-flag auth">授权至 03-31</span><span class="pack-flag">匹配 86</span><span class="pack-flag">可差异化 3 版</span></div>
-                <div class="pack-meta"><span>含文案骨架</span><span>4 天 3 晚</span></div>
-                <button class="btn primary sm" style="width:100%;margin-top:10px" data-goto="p-create">用这个素材创作</button>
-              </div>
-            </div>
-            <div class="pack">
-              <div class="pack-cover g-island"><span class="pack-label">巴厘 · 四季</span><span class="pack-count">30 张实景</span></div>
-              <div class="pack-body">
-                <h4>海岛私享｜家庭向</h4>
-                <div class="flags"><span class="pack-flag auth">授权至 12-31</span><span class="pack-flag">匹配 88</span><span class="pack-flag">可差异化 3 版</span></div>
-                <div class="pack-meta"><span>含文案骨架</span><span>6 天 5 晚</span></div>
-                <button class="btn primary sm" style="width:100%;margin-top:10px" data-goto="p-create">用这个素材创作</button>
-              </div>
-            </div>
-          </div>
-          <div class="small muted" style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);line-height:1.7">运营建议（可忽略）：优先写「京都亲子赏枫」，热度 +38%、供给偏少。</div>
-        </div>
-
-        <div class="card" style="margin-bottom:16px">
           <div class="card-head"><h3>待办</h3><span class="badge">2 项</span></div>
-          <div class="rule-row"><div><b>1 条发布待回填</b><span>「北海道滑雪，孩子第一次上雪场」已超过 24 小时</span></div><button class="btn sm" data-goto="p-content">去回填</button></div>
+          <div class="rule-row"><div><b>1 条发布待回填</b><span>「北海道滑雪，孩子第一次上雪场」已超过 24 小时</span></div><button class="btn sm" data-drawer="backfill">去回填</button></div>
           <div class="rule-row"><div><b>2 个新素材可写</b><span>本周上新，可直接在创作台使用</span></div><button class="btn sm" data-goto="p-packs">去看素材</button></div>
         </div>
 
@@ -1546,7 +1609,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
               <tbody>
                 <tr><td class="t-title">带娃去京都，5 天不赶不累的路线</td><td>小红书</td><td class="num">3.2w</td><td class="num">1,860</td><td><span class="badge ok">已回填</span></td><td><span class="badge pine">可复制</span></td></tr>
                 <tr><td class="t-title">冲绳亲子酒店怎么选，看这 3 点</td><td>小红书</td><td class="num">2.1w</td><td class="num">1,120</td><td><span class="badge ok">已回填</span></td><td><span class="badge pine">可复制</span></td></tr>
-                <tr><td class="t-title">北海道滑雪，孩子第一次上雪场</td><td>小红书</td><td class="num">1.4w</td><td class="num">760</td><td><span class="badge">待回填</span></td><td><span class="badge brass">补回填</span></td></tr>
+                <tr><td class="t-title">北海道滑雪，孩子第一次上雪场</td><td>小红书</td><td class="num">1.4w</td><td class="num">760</td><td><span class="badge">待回填</span></td><td><button class="badge brass" data-drawer="backfill" style="border:none;cursor:pointer">补回填</button></td></tr>
                 <tr><td class="t-title">海岛亲子游，行李清单</td><td>抖音</td><td class="num">0.9w</td><td class="num">540</td><td><span class="badge ok">已回填</span></td><td><span class="badge">观察</span></td></tr>
               </tbody>
             </table>
@@ -1563,7 +1626,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
             <p>只看你关注的方向，不做全平台数据开放。</p>
           </div>
           <div class="actions">
-            <span class="quota">本周查询 3 / 10</span>
+            <span class="meta-chip"><i></i>数据每日 09:00 更新</span>
             <button class="btn" data-toast="趋势数据已更新">刷新</button>
           </div>
         </div>
@@ -1636,19 +1699,19 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
             <h1>对标笔记</h1>
             <p>输入主题，筛出同人群的对标与爆款，看结构而不是抄原文。</p>
           </div>
-          <div class="actions"><span class="quota">本周查询 3 / 10</span></div>
+          <div class="actions"><span class="meta-chip"><i></i>数据每日 09:00 更新</span></div>
         </div>
 
         <div class="toolbar">
-          <div class="search" style="flex:2"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input placeholder="输入主题，例如：京都亲子赏枫"></div>
+          <div class="search" style="flex:2"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input id="benchSearch" aria-label="输入主题搜索对标笔记" placeholder="输入主题，例如：京都亲子赏枫"></div>
           <select><option>小红书</option><option>抖音</option><option>视频号</option></select>
           <select><option>人群：亲子</option><option>人群：情侣</option><option>人群：朋友</option></select>
           <select><option>互动 &gt; 1,000</option><option>互动 &gt; 5,000</option><option>近 30 天</option></select>
-          <button class="btn primary" data-toast="已筛选出 36 篇，展示匹配度最高的 3 篇">筛选</button>
+          <button class="btn primary" id="benchFilter">筛选</button>
         </div>
 
         <div class="card">
-          <div class="card-head"><h3>筛选结果 · 每篇笔记的爆款数据</h3><span class="small muted">按人设匹配度排序 · 指标为公开数据估算</span></div>
+          <div class="card-head"><h3>筛选结果 · 每篇笔记的爆款数据</h3><span class="small muted" id="benchFilterNote">按人设匹配度排序 · 指标为公开数据估算</span></div>
           <div class="bench-grid" id="benchmarkGrid"></div>
         </div>
 
@@ -1704,7 +1767,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
             <div class="card-head"><h3>使用边界</h3><span class="badge brass">重要</span></div>
             <p class="small" style="line-height:1.8;margin:0">对标结果用于理解结构与选题，不提供原文转载。需要生成时进入创作台，用「结构迁移 + 本人素材」重写；引用数据需注明来源，AI 辅助内容需按平台要求标注。</p>
             <button class="btn sm primary" data-goto="p-create" style="margin-top:10px">去创作台生成初稿</button>
-            <div class="scope-band" style="margin:10px 0 0;background:var(--soft2);border-color:#E6D8BF;color:#6B5327"><svg class="ic" style="color:#8A682F"><use href="#i-clock"/></svg><div>查询额度每日重置，避免高频抓取；超出额度请联系运营开通。</div></div>
+            <div class="scope-band" style="margin:10px 0 0;background:var(--soft2);border-color:#E6D8BF;color:#6B5327"><svg class="ic" style="color:#8A682F"><use href="#i-clock"/></svg><div>数据每日 09:00 更新一次；避免连续刷新触发频控，结果仅供参考。</div></div>
           </div>
         </div>
       </section>
@@ -1717,7 +1780,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
             <h1>创作台</h1>
             <p>输入自己的主题，找到对标笔记，拆结构、套模板、生成可编辑的初稿。</p>
           </div>
-          <div class="actions"><span class="quota">本周生成 2 / 8</span></div>
+          <div class="actions"><span class="meta-chip"><i></i>初稿不限次 · 发布由你决定</span></div>
         </div>
 
         <div class="scope-band"><svg class="ic"><use href="#i-pen"/></svg><div>初稿只做<b>结构迁移与素材组织</b>，不复制对标原文。系统会计算相似度并提示重写；发布前请按平台要求标识 AI 辅助内容。</div></div>
@@ -1987,6 +2050,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
           </div>
           <div class="actions">
             <select><option>近 7 天</option><option>近 30 天</option></select>
+            <button class="btn primary" data-drawer="backfill"><svg class="ic" style="width:14px;height:14px"><use href="#i-link"/></svg>回填发布链接</button>
             <button class="btn" data-drawer="import"><svg class="ic" style="width:14px;height:14px"><use href="#i-upload"/></svg>导入数据</button>
             <button class="btn" data-toast="已导出我的数据">导出</button>
           </div>
@@ -2031,7 +2095,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
               <tbody>
                 <tr><td class="t-title">带娃去京都，5 天不赶不累的路线</td><td class="num muted">11-19</td><td class="num">3.2w</td><td class="num">1,860</td><td><span class="badge ok">已回填</span></td><td>可复制结构</td></tr>
                 <tr><td class="t-title">冲绳亲子酒店怎么选，看这 3 点</td><td class="num muted">11-18</td><td class="num">2.1w</td><td class="num">1,120</td><td><span class="badge ok">已回填</span></td><td>可复制结构</td></tr>
-                <tr><td class="t-title">北海道滑雪，孩子第一次上雪场</td><td class="num muted">11-17</td><td class="num">1.4w</td><td class="num">760</td><td><span class="badge">待回填</span></td><td>先补链接</td></tr>
+                <tr><td class="t-title">北海道滑雪，孩子第一次上雪场</td><td class="num muted">11-17</td><td class="num">1.4w</td><td class="num">760</td><td><button class="badge brass" data-drawer="backfill" style="border:none;cursor:pointer">待回填 · 去补</button></td><td>先补链接</td></tr>
                 <tr><td class="t-title">海岛亲子游，行李清单</td><td class="num muted">11-16</td><td class="num">0.9w</td><td class="num">540</td><td><span class="badge ok">已回填</span></td><td>换开头</td></tr>
                 <tr><td class="t-title">带爸妈去日本，行程怎么留白</td><td class="num muted">11-15</td><td class="num">1.0w</td><td class="num">610</td><td><span class="badge ok">已回填</span></td><td>观察</td></tr>
               </tbody>
@@ -2060,12 +2124,12 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
         <div class="scope-band" style="background:#FFFDF7;border-color:#E8DCC6;color:#6B5327"><svg class="ic" style="color:#8A682F"><use href="#i-plus"/></svg><div><b>你也可能有好素材。</b>上传自己拍摄的实景，或推荐你看到的好对标笔记；审核通过后进入公共素材池，被采纳可获得积分与优先使用权。</div></div>
 
         <div class="toolbar">
-          <div class="seg"><button class="active">全部</button><button>日本</button><button>海岛</button><button>北欧</button></div>
+          <div class="seg" id="packSeg"><button class="active">全部</button><button>日本</button><button>海岛</button><button>北欧</button></div>
           <select><option>全部场景</option><option>酒店</option><option>路线</option><option>体验</option></select>
-          <div class="search"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input placeholder="搜索目的地、素材包"></div>
+          <div class="search"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input id="packSearch" aria-label="搜索素材包" placeholder="搜索目的地、素材包（回车）"></div>
         </div>
 
-        <div class="packs">
+        <div class="packs" id="packGrid">
           <article class="pack" data-drawer="pack"><div class="pack-cover g-kyoto"><span class="pack-label">京都 · 秋</span><span class="pack-count">24 张实景</span></div><div class="pack-body"><h4>京都赏枫 5 天 4 晚｜闺蜜向</h4><div class="tags"><span>日本</span><span>酒店</span><span>秋</span></div><div class="pack-meta"><span>42 人用过</span><span>27 篇发布</span><span>授权至 12-31</span></div></div></article>
           <article class="pack" data-drawer="pack"><div class="pack-cover g-island"><span class="pack-label">巴厘 · 四季</span><span class="pack-count">30 张实景</span></div><div class="pack-body"><h4>海岛私享｜家庭向</h4><div class="tags"><span>海岛</span><span>亲子</span><span>酒店</span></div><div class="pack-meta"><span>18 人用过</span><span>6 篇发布</span><span>授权至 12-31</span></div></div></article>
           <article class="pack" data-drawer="pack"><div class="pack-cover g-ski"><span class="pack-label">北海道 · 冬</span><span class="pack-count">20 张实景</span></div><div class="pack-body"><h4>日本滑雪｜亲子向</h4><div class="tags"><span>日本</span><span>滑雪</span><span>亲子</span></div><div class="pack-meta"><span>8 人用过</span><span>3 篇发布</span><span>授权至 03-31</span></div></div></article>
@@ -2160,8 +2224,8 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
     <div class="drawer-panel active" data-dpanel="breakdown">
       <div class="d-sec">
         <h4>样本</h4>
-        <p><b>「在京都住了 5 天，才明白赏枫要这样安排」</b></p>
-        <p class="small muted">小红书 · 收藏 1.8w · 点赞 2.4w · 评论 642 · 发布于 11-14</p>
+        <p><b>「带 4 岁娃去京都，5 天只走了 3 个景点」</b></p>
+        <p class="small muted">小红书 · 收藏 6,420 · 点赞 1.8w · 评论 860 · 发布于 11-18</p>
       </div>
       <div class="d-sec">
         <h4>为什么有效</h4>
@@ -2194,24 +2258,43 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
       </div>
     </div>
 
+    <!-- 回填发布链接 -->
+    <div class="drawer-panel" data-dpanel="backfill">
+      <div class="d-sec">
+        <h4>回填发布链接</h4>
+        <p class="small muted">粘贴你已发布笔记的链接，系统读取公开数据用于复盘。平台不代发，也不登录你的账号。</p>
+      </div>
+      <div class="d-sec">
+        <div class="form-row"><label>选择内容</label><select id="bfContent" style="width:100%"><option>北海道滑雪，孩子第一次上雪场（待回填）</option><option>冲绳亲子酒店怎么选，看这 3 点</option><option>海岛亲子游，行李清单</option></select></div>
+        <div class="form-row"><label>发布平台</label><select id="bfPlatform" style="width:100%"><option>小红书</option><option>抖音</option><option>视频号</option></select></div>
+        <div class="form-row"><label>发布链接 <span style="color:var(--danger)">*</span></label><input type="url" id="bfLink" placeholder="https://www.xiaohongshu.com/..."></div>
+        <div class="form-row"><label>发布截图（选填）</label><div style="background:#FBFAF6;border:1px dashed #D8D0C0;border-radius:10px;padding:14px;text-align:center;color:var(--muted);font-size:12px">点击上传，或把截图拖到这里</div></div>
+        <div class="form-row"><label>备注（选填）</label><input type="text" id="bfNote" placeholder="例如：这周主推亲子雪场"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn primary" id="bfSubmit">提交回填</button>
+        <button class="btn" data-close-drawer>稍后再说</button>
+      </div>
+    </div>
+
     <!-- 素材包详情 -->
     <div class="drawer-panel" data-dpanel="pack">
-      <div class="pack-cover g-kyoto" style="height:132px;border-radius:12px;margin-bottom:14px"><span class="pack-label">京都 · 秋</span><span class="pack-count">24 张实景</span></div>
+      <div class="pack-cover g-kyoto" id="packDrawerCover" style="height:132px;border-radius:12px;margin-bottom:14px"><span class="pack-label" id="packDrawerLabel">京都 · 秋</span><span class="pack-count" id="packDrawerCount">24 张实景</span></div>
       <div class="d-sec">
         <h4>素材包</h4>
-        <p><b>京都赏枫 5 天 4 晚｜闺蜜向</b></p>
-        <p class="small muted">日本 · 酒店 · 秋 · 授权至 2026-12-31 · 42 人用过 · 27 篇发布</p>
+        <p><b id="packDrawerTitle">京都赏枫 5 天 4 晚｜闺蜜向</b></p>
+        <p class="small muted" id="packDrawerMeta">日本 · 酒店 · 秋 · 授权至 2026-12-31 · 42 人用过 · 27 篇发布</p>
       </div>
       <div class="d-sec">
         <h4>包含内容</h4>
         <ul>
           <li>成稿 3 版（酒店细节向 / 路线攻略向 / 预算感受向）</li>
-          <li>实景图 24 张（含 6 张酒店房型、4 张夜景）</li>
+          <li>实景图 <span id="packDrawerImgCount">24</span> 张（含酒店房型、夜景与路线图）</li>
           <li>发布建议：标题 5 选 1、话题 3 组、发布时间建议</li>
         </ul>
       </div>
       <div class="d-sec">
-        <h4>发布文案示例</h4>
+        <h4>发布文案示例（以京都包为例）</h4>
         <div class="copy-box">十一月的京都，红叶刚刚好。这次住进东山附近的町屋，清晨步行 8 分钟到清水寺，避开了 9 点后的人流。5 天 4 晚，把岚山、伏见稻荷和一处小众庭院都放进去了……<br><span class="muted small">#京都旅行 #赏枫 #闺蜜出游</span><button class="btn sm" data-copy="文案已复制">复制</button></div>
       </div>
       <div class="d-sec">
@@ -2224,7 +2307,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn primary" data-copy="文案与素材清单已复制">复制文案与清单</button>
-        <button class="btn" data-toast="已带入创作台">带入创作台</button>
+        <button class="btn" id="packToCreate">带入创作台</button>
       </div>
     </div>
 
@@ -2322,7 +2405,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
             <div><b>中段槽</b>3 个理由，每个带 {本人素材}</div>
             <div><b>结尾槽</b>适合 / 不适合 + {提问}</div>
           </div>
-          <div class="tpl-rule">差异化规则：至少 2 处本人经历；禁用对标原句；配图至少 1 张实景；与对标相似度 &gt; 35% 强制重写。</div>
+          <div class="tpl-rule">差异化规则：至少 2 处本人经历；禁用对标原句；配图至少 1 张实景；与对标相似度 &gt; 30% 强制重写。</div>
         </div>
 
         <div class="tpl-item">
@@ -2369,7 +2452,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
   </div>
 </aside>
 
-<div class="toast" id="toast">操作成功</div>
+<div class="toast" id="toast" role="status" aria-live="polite">操作成功</div>
 
 <script>
 (function(){
@@ -2536,6 +2619,33 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
     }
     return out;
   }
+  var homePacksEl = $('#homePacks');
+  var homePacksHTML = homePacksEl ? homePacksEl.innerHTML : '';
+  function renderBenchGrid(){
+    var grid = $('#benchmarkGrid');
+    if(!grid) return;
+    grid.innerHTML = collectNotes(6).map(function(note){return noteCardHTML(note, true)}).join('');
+  }
+  function fakeLoad(el, done){
+    if(!el){ if(done) done(); return; }
+    var tpl = '';
+    for(var i = 0; i < 3; i++){
+      tpl += '<div class="skel-card"><div class="skel skel-line w60"></div><div class="skel skel-line w90"></div><div class="skel skel-block"></div></div>';
+    }
+    el.innerHTML = tpl;
+    setTimeout(function(){ if(done) done(); }, 600);
+  }
+  function searchToBenchmark(q){
+    q = (q || '').trim();
+    var nav = document.querySelector('#partnerApp .nav-item[data-page="p-benchmark"]');
+    if(nav) nav.click();
+    var benchInput = $('#benchSearch');
+    if(benchInput && q) benchInput.value = q;
+    var note = $('#benchFilterNote');
+    if(note) note.textContent = q ? '正在按「' + q + '」匹配 · 已筛出 36 篇 · 展示前 6 篇' : '已展示匹配度最高的 6 篇';
+    fakeLoad($('#benchmarkGrid'), renderBenchGrid);
+    showToast(q ? '已按「' + q + '」筛选出 36 篇' : '已展示匹配度最高的 6 篇');
+  }
   function renderDirections(){
     var keys = activeKeys();
     var d = trackData[keys[0]] || trackData.travel;
@@ -2564,13 +2674,23 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
     }).join('');
     var trendNotes = $('#trendNotes');
     if(trendNotes) trendNotes.innerHTML = collectNotes(6).map(function(note){return noteCardHTML(note, false)}).join('');
-    var benchmarkGrid = $('#benchmarkGrid');
-    if(benchmarkGrid) benchmarkGrid.innerHTML = collectNotes(6).map(function(note){return noteCardHTML(note, true)}).join('');
+    renderBenchGrid();
     var homeHot = $('#homeHot');
     if(homeHot){
       homeHot.innerHTML = collectNotes(4).map(function(note, i){
-        return '<div class="hot-item"><span class="hot-rank">' + (i + 1) + '</span><div class="hot-main"><b>' + note.title + '</b><div class="hot-meta"><span>' + note.form + '</span><span>' + note.tag + '</span><span>' + note.days + '</span><span>点赞 ' + note.stats[0] + '</span></div></div><span class="hot-score">' + note.score + '</span></div>';
+        return '<div class="hot-item" data-drawer="breakdown" role="button" tabindex="0" title="查看这篇爆款的拆解"><span class="hot-rank">' + (i + 1) + '</span><div class="hot-main"><b>' + note.title + '</b><div class="hot-meta"><span>' + note.form + '</span><span>' + note.tag + '</span><span>' + note.days + '</span><span>点赞 ' + note.stats[0] + '</span></div></div><span class="hot-score">' + note.score + '</span></div>';
       }).join('');
+    }
+    if(homePacksEl){
+      var keepTravel = !directions.length || directions.indexOf('travel') > -1;
+      if(keepTravel){
+        if(homePacksEl.dataset.empty === '1'){ homePacksEl.innerHTML = homePacksHTML; homePacksEl.dataset.empty = '0'; }
+        homePacksEl.style.gridTemplateColumns = '';
+      } else {
+        homePacksEl.innerHTML = '<div class="empty-state"><b>「' + d.name + '」的实景素材正在补充</b><span>可以先看趋势与对标找选题，或切回「高端旅游」使用现有素材。</span><button class="btn sm" data-dir="travel">切回高端旅游</button></div>';
+        homePacksEl.dataset.empty = '1';
+        homePacksEl.style.gridTemplateColumns = '1fr';
+      }
     }
     var topicInput = $('#createTopic'); if(topicInput) topicInput.value = d.sample;
   }
@@ -2584,11 +2704,99 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
     showToast(directions.length ? '关注方向：' + directions.map(function(k){return trackData[k].name}).join('、') : '已清空关注方向，展示全部');
   });
   var homeSearch = $('#homeSearch');
+  var homeSearchBtn = $('#homeSearchBtn');
+  function doHomeSearch(){
+    searchToBenchmark(homeSearch ? homeSearch.value : '');
+  }
   if(homeSearch){
     homeSearch.addEventListener('keydown', function(e){
       if(e.key !== 'Enter') return;
-      var nav = document.querySelector('#partnerApp .nav-item[data-page="p-benchmark"]');
-      if(nav) nav.click();
+      e.preventDefault();
+      doHomeSearch();
+    });
+  }
+  if(homeSearchBtn){
+    homeSearchBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      doHomeSearch();
+    });
+  }
+  $$('[data-q]').forEach(function(b){
+    b.addEventListener('click', function(e){
+      e.preventDefault();
+      searchToBenchmark(b.dataset.q);
+    });
+  });
+  var globalSearch = $('#globalSearch');
+  if(globalSearch){
+    globalSearch.addEventListener('keydown', function(e){
+      if(e.key !== 'Enter') return;
+      e.preventDefault();
+      searchToBenchmark(globalSearch.value);
+    });
+  }
+  var benchFilter = $('#benchFilter');
+  if(benchFilter){
+    benchFilter.addEventListener('click', function(){
+      var q = ($('#benchSearch') || {}).value || '';
+      var note = $('#benchFilterNote');
+      if(note) note.textContent = (q ? '「' + q + '」· ' : '') + '已筛出 36 篇 · 展示匹配度最高的 6 篇';
+      fakeLoad($('#benchmarkGrid'), renderBenchGrid);
+      showToast(q ? '已按「' + q + '」筛选出 36 篇' : '已筛选出 36 篇');
+    });
+  }
+  var benchSearch = $('#benchSearch');
+  if(benchSearch){
+    benchSearch.addEventListener('keydown', function(e){
+      if(e.key !== 'Enter') return;
+      e.preventDefault();
+      if(benchFilter) benchFilter.click();
+    });
+  }
+  var packGrid = $('#packGrid');
+  var packSearch = $('#packSearch');
+  var packSeg = $('#packSeg');
+  var packRegion = '';
+  function applyPackFilter(){
+    if(!packGrid) return 0;
+    var q = packSearch ? packSearch.value.trim() : '';
+    var hit = 0;
+    $$('.pack', packGrid).forEach(function(item){
+      var ok = (!packRegion || item.textContent.indexOf(packRegion) > -1) && (!q || item.textContent.indexOf(q) > -1);
+      item.style.display = ok ? '' : 'none';
+      if(ok) hit++;
+    });
+    var tip = $('#packEmpty');
+    if(!hit){
+      if(!tip){
+        tip = document.createElement('div');
+        tip.id = 'packEmpty';
+        tip.className = 'empty-state';
+        tip.style.gridColumn = '1/-1';
+        packGrid.appendChild(tip);
+      }
+      tip.style.display = '';
+      tip.innerHTML = '<b>没有匹配的素材包</b><span>换个目的地试试，或关注「趋势洞察」等待新素材上架。</span>';
+    } else if(tip){ tip.style.display = 'none'; }
+    return hit;
+  }
+  if(packSearch){
+    packSearch.addEventListener('keydown', function(e){
+      if(e.key !== 'Enter') return;
+      e.preventDefault();
+      var hit = applyPackFilter();
+      showToast(packSearch.value.trim() ? ('找到 ' + hit + ' 个素材包') : '已显示全部素材');
+    });
+  }
+  if(packSeg){
+    $$('button', packSeg).forEach(function(b){
+      b.addEventListener('click', function(){
+        $$('button', packSeg).forEach(function(x){x.classList.remove('active')});
+        b.classList.add('active');
+        packRegion = b.textContent.trim() === '全部' ? '' : b.textContent.trim();
+        applyPackFilter();
+      });
     });
   }
   renderDirections();
@@ -2630,10 +2838,27 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 
   /* ---------- 抽屉 ---------- */
   var drawer = $('#drawer'), backdrop = $('#backdrop'), drawerTitle = $('#drawerTitle');
-  var titles = {breakdown:'爆款拆解', pack:'素材包详情', submit:'投稿素材 / 对标笔记', import:'导入笔记数据', templates:'模板库'};
-  function openDrawer(name){
+  var titles = {breakdown:'爆款拆解', pack:'素材包详情', submit:'投稿素材 / 对标笔记', import:'导入笔记数据', templates:'模板库', backfill:'回填发布链接'};
+  function openDrawer(name, trigger){
     $$('.drawer-panel').forEach(function(p){p.classList.toggle('active', p.dataset.dpanel === name)});
     drawerTitle.textContent = titles[name] || '详情';
+    if(name === 'pack' && trigger){
+      var card = trigger.closest('.pack') || trigger;
+      var cover = card.querySelector('.pack-cover');
+      var label = card.querySelector('.pack-label');
+      var count = card.querySelector('.pack-count');
+      var title = card.querySelector('h4');
+      var auth = card.querySelector('.pack-flag.auth');
+      var meta = card.querySelector('.pack-meta');
+      var coverEl = $('#packDrawerCover');
+      if(cover && coverEl){ coverEl.className = cover.className; }
+      if(label) $('#packDrawerLabel').textContent = label.textContent;
+      if(count) $('#packDrawerCount').textContent = count.textContent;
+      if(title) $('#packDrawerTitle').textContent = title.textContent;
+      $('#packDrawerMeta').textContent = [auth ? auth.textContent : '', meta ? meta.textContent.replace(/\s+/g, ' · ') : '', '可用于图文 / 视频'].filter(Boolean).join(' · ');
+      var num = (count ? count.textContent : '').match(/\d+/);
+      if(num) $('#packDrawerImgCount').textContent = num[0];
+    }
     drawer.classList.add('open');
     backdrop.classList.add('show');
     drawer.setAttribute('aria-hidden','false');
@@ -2645,11 +2870,40 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
   }
   document.addEventListener('click', function(e){
     var trigger = e.target.closest('[data-drawer]');
-    if(trigger){ e.stopPropagation(); openDrawer(trigger.dataset.drawer); }
+    if(!trigger) return;
+    if(e.target.closest('[data-goto]')) return; /* 卡内按钮优先执行跳转 */
+    e.stopPropagation(); openDrawer(trigger.dataset.drawer, trigger);
   });
   $$('[data-close-drawer]').forEach(function(b){b.addEventListener('click', closeDrawer)});
   backdrop.addEventListener('click', closeDrawer);
+  var packToCreate = $('#packToCreate');
+  if(packToCreate){
+    packToCreate.addEventListener('click', function(){
+      closeDrawer();
+      var nav = document.querySelector('#partnerApp .nav-item[data-page="p-create"]');
+      if(nav) nav.click();
+      showToast('已带入创作台，可继续改写标题与开头');
+    });
+  }
+  var bfSubmit = $('#bfSubmit'), bfLink = $('#bfLink');
+  if(bfSubmit){
+    bfSubmit.addEventListener('click', function(){
+      var v = bfLink ? bfLink.value.trim() : '';
+      if(!v){ showToast('请先粘贴发布链接'); if(bfLink) bfLink.focus(); return; }
+      if(!/^https?:\/\//i.test(v)){ showToast('链接需以 http:// 或 https:// 开头'); if(bfLink) bfLink.focus(); return; }
+      bfLink.value = '';
+      closeDrawer();
+      showToast('回填已提交，校验通过后计入本周产出');
+    });
+  }
   document.addEventListener('keydown', function(e){if(e.key === 'Escape') closeDrawer()});
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Enter') return;
+    var hot = e.target.closest('.hot-item[data-drawer]');
+    if(!hot) return;
+    e.preventDefault();
+    openDrawer(hot.dataset.drawer);
+  });
 
   /* ---------- 创作台 ---------- */
   var currentForm = 'image';
@@ -2696,18 +2950,34 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
   var breakdownBtn = $('#breakdownBtn');
   if(breakdownBtn){
     breakdownBtn.addEventListener('click', function(){
+      var picked = $$('.bench-card.on').length;
+      if(!picked){ showToast('先勾选 1–3 篇对标笔记，再拆解'); return; }
       var card = $('#breakdownCard');
+      var badge = card ? card.querySelector('.step-head .badge') : null;
+      if(badge) badge.textContent = '基于 ' + picked + ' 篇样本';
       if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
-      showToast('已拆解 2 篇样本，可继续选模板');
+      showToast('已拆解 ' + picked + ' 篇样本，可继续选模板');
     });
   }
   var genDraft = $('#genDraft');
   if(genDraft){
     genDraft.addEventListener('click', function(){
-      var card = $('#draftCard');
-      renderForm();
-      if(card){ card.style.display = 'block'; card.scrollIntoView({behavior:'smooth', block:'center'}); }
-      showToast(currentForm === 'image' ? '图文初稿已生成：配文 + 4 张配图方案' : '视频脚本已生成：5 个分镜 + 口播稿');
+      var picked = $$('.bench-card.on').length;
+      if(!picked){ showToast('还没有选对标笔记：先在上方勾选 1–3 篇'); return; }
+      if(genDraft.dataset.busy === '1') return;
+      genDraft.dataset.busy = '1';
+      var oldHTML = genDraft.innerHTML;
+      genDraft.disabled = true;
+      genDraft.innerHTML = '生成中…';
+      setTimeout(function(){
+        genDraft.disabled = false;
+        genDraft.dataset.busy = '0';
+        genDraft.innerHTML = oldHTML;
+        var card = $('#draftCard');
+        renderForm();
+        if(card){ card.style.display = 'block'; card.scrollIntoView({behavior:'smooth', block:'center'}); }
+        showToast(currentForm === 'image' ? '图文初稿已生成：配文 + 4 张配图方案' : '视频脚本已生成：5 个分镜 + 口播稿');
+      }, 700);
     });
   }
   $$('[data-apply-template]').forEach(function(el){
@@ -2762,6 +3032,54 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
   $$('[data-mtab]').forEach(function(el){
     el.addEventListener('click', function(){showMobilePage(el.dataset.mtab)});
   });
+  $$('[data-rewrite]').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      $$('[data-rewrite]').forEach(function(x){x.classList.remove('active')});
+      chip.classList.add('active');
+    });
+  });
+  var mPublishSubmit = $('#mPublishSubmit');
+  var mPublishLink = $('#mPublishLink');
+  if(mPublishSubmit){
+    mPublishSubmit.addEventListener('click', function(){
+      var v = mPublishLink ? mPublishLink.value.trim() : '';
+      if(!v){ showToast('请先粘贴发布链接'); if(mPublishLink) mPublishLink.focus(); return; }
+      if(!/^https?:\/\//i.test(v)){ showToast('链接需以 http:// 或 https:// 开头'); if(mPublishLink) mPublishLink.focus(); return; }
+      mPublishLink.value = '';
+      showToast('回填已提交，校验通过后计入本周产出');
+      setTimeout(function(){ showMobilePage('mtasks'); }, 900);
+    });
+  }
+  var mMatSearch = $('#mMatSearch');
+  if(mMatSearch){
+    mMatSearch.addEventListener('keydown', function(e){
+      if(e.key !== 'Enter') return;
+      e.preventDefault();
+      var q = mMatSearch.value.trim();
+      var page = mMatSearch.closest('.m-page');
+      var hit = 0;
+      $$('.m-pack', page).forEach(function(item){
+        var ok = !q || item.textContent.indexOf(q) > -1;
+        item.style.display = ok ? '' : 'none';
+        if(ok) hit++;
+      });
+      var tip = $('#mSearchTip');
+      if(!tip){
+        tip = document.createElement('div');
+        tip.id = 'mSearchTip';
+        tip.className = 'empty-state';
+        tip.style.marginTop = '8px';
+        page.appendChild(tip);
+      }
+      if(q && !hit){
+        tip.style.display = '';
+        tip.innerHTML = '<b>没有匹配「' + q + '」的素材</b><span>换个目的地或场景试试，也可以回桌面端用趋势找选题。</span>';
+      } else {
+        tip.style.display = 'none';
+      }
+      showToast(q ? '找到 ' + hit + ' 个素材包' : '已显示全部素材');
+    });
+  }
 })();
 </script>
 </body>
