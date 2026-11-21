@@ -457,15 +457,15 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
   <div class="proto-brand"><span class="mk">旅</span><div>内容供给中台 <em>PROTOTYPE</em></div></div>
   <div class="proto-controls">
     <div class="device-toggle" id="roleToggle">
-      <button class="active" data-role="operator">运营端</button>
-      <button data-role="partner">合伙人端</button>
+      <button class="active" data-role="partner">工作台</button>
+      <button data-role="operator">管理工作台</button>
     </div>
     <div class="device-toggle" id="deviceToggle">
       <button class="active" data-device="desktop">桌面</button>
       <button data-device="mobile">手机 H5</button>
     </div>
   </div>
-  <div class="proto-hint">切换角色与设备查看不同工作台 · 示例数据</div>
+  <div class="proto-hint">默认进入创作者工作台 · 管理工作台按权限可见 · 示例数据</div>
 </div>
 
 <div class="stage">
@@ -2345,7 +2345,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
   /* ---------- 角色与设备切换 ---------- */
   var operatorApp = $('#desktopApp'), partnerApp = $('#partnerApp'), mobile = $('#mobileApp');
   var roleToggle = $('#roleToggle'), deviceToggle = $('#deviceToggle');
-  var currentRole = 'operator', currentDevice = 'desktop';
+  var currentRole = 'partner', currentDevice = 'desktop';
   function renderView(){
     operatorApp.style.display = (currentDevice === 'desktop' && currentRole === 'operator') ? '' : 'none';
     partnerApp.style.display = (currentDevice === 'desktop' && currentRole === 'partner') ? '' : 'none';
@@ -2367,6 +2367,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
       renderView();
     });
   });
+  renderView();
 
   /* ---------- 内容域与关注方向数据 ---------- */
   var trackData = {
