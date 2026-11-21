@@ -454,18 +454,14 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 </svg>
 
 <div class="proto-bar">
-  <div class="proto-brand"><span class="mk">旅</span><div>内容供给中台 <em>PROTOTYPE</em></div></div>
+  <div class="proto-brand"><span class="mk">旅</span><div>爆款内容工作台 <em>PROTOTYPE</em></div></div>
   <div class="proto-controls">
-    <div class="device-toggle" id="roleToggle">
-      <button class="active" data-role="partner">工作台</button>
-      <button data-role="operator">管理工作台</button>
-    </div>
     <div class="device-toggle" id="deviceToggle">
       <button class="active" data-device="desktop">桌面</button>
       <button data-device="mobile">手机 H5</button>
     </div>
   </div>
-  <div class="proto-hint">默认进入创作者工作台 · 管理工作台按权限可见 · 示例数据</div>
+  <div class="proto-hint">面向创作者 · 示例数据</div>
 </div>
 
 <div class="stage">
@@ -1212,7 +1208,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 <!-- ================= 移动端 ================= -->
 <div class="mobile" id="mobileApp">
   <div class="phone">
-    <div class="phone-status"><span>9:41</span><span>内容供给 · 合伙人</span><span>●●● 100%</span></div>
+    <div class="phone-status"><span>9:41</span><span>内容供给 · 创作者</span><span>●●● 100%</span></div>
     <div class="phone-body" id="phoneBody">
 
       <!-- 今日任务 -->
@@ -1343,7 +1339,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 
       <!-- 我的 -->
       <section class="m-page" data-mpage="mprofile">
-        <div class="m-head"><div><h2 class="m-title">我的</h2><div class="m-sub">合伙人 · 已加入 86 天</div></div></div>
+        <div class="m-head"><div><h2 class="m-title">我的</h2><div class="m-sub">创作者 · 已加入 86 天</div></div></div>
         <div class="m-card" style="display:flex;gap:12px;align-items:center">
           <div class="avatar" style="width:48px;height:48px;font-size:16px">Y</div>
           <div><b style="font-size:14px">Yuki 在路上</b><div class="m-sub">亲子度假体验官 · 小红书 8.6k 粉</div></div>
@@ -1377,7 +1373,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
   <aside class="app-side">
     <div class="side-brand">
       <div class="mk">旅</div>
-      <div><b>合伙人工作台</b><span>PARTNER STUDIO</span></div>
+      <div><b>创作者工作台</b><span>CREATOR STUDIO</span></div>
     </div>
     <div class="nav-group">总览</div>
     <button class="nav-item active" data-page="p-home" data-crumb="我的工作台"><svg class="ic"><use href="#i-grid"/></svg><span class="label">我的工作台</span></button>
@@ -1398,7 +1394,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 
   <main class="app-main">
     <header class="app-top">
-      <div class="crumb">合伙人 / <b id="pCrumb">我的工作台</b></div>
+      <div class="crumb">创作者 / <b id="pCrumb">我的工作台</b></div>
       <div class="top-search"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input placeholder="搜索素材包、对标笔记"></div>
       <div class="top-right">
         <div class="health"><i></i>数据更新 09:00</div>
@@ -1948,7 +1944,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
           <div>
             <div class="eyebrow">分析 / 本人账号</div>
             <h1>我的内容</h1>
-            <p>仅汇总你本人账号的发布与回填数据，用于复盘，不涉及其他合伙人。</p>
+            <p>仅汇总你本人账号的发布与回填数据，用于复盘，不涉及其他创作者。</p>
           </div>
           <div class="actions">
             <select><option>近 7 天</option><option>近 30 天</option></select>
@@ -2344,26 +2340,18 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 
   /* ---------- 角色与设备切换 ---------- */
   var operatorApp = $('#desktopApp'), partnerApp = $('#partnerApp'), mobile = $('#mobileApp');
-  var roleToggle = $('#roleToggle'), deviceToggle = $('#deviceToggle');
-  var currentRole = 'partner', currentDevice = 'desktop';
+  var deviceToggle = $('#deviceToggle');
+  var currentDevice = 'desktop';
   function renderView(){
-    operatorApp.style.display = (currentDevice === 'desktop' && currentRole === 'operator') ? '' : 'none';
-    partnerApp.style.display = (currentDevice === 'desktop' && currentRole === 'partner') ? '' : 'none';
+    /* 本版只开放创作者工作台；管理工作台先不上线，页面保留但不可达 */
+    operatorApp.style.display = 'none';
+    partnerApp.style.display = currentDevice === 'desktop' ? '' : 'none';
     mobile.classList.toggle('active', currentDevice === 'mobile');
     $$('button', deviceToggle).forEach(function(b){b.classList.toggle('active', b.dataset.device === currentDevice)});
-    $$('button', roleToggle).forEach(function(b){b.classList.toggle('active', b.dataset.role === currentRole)});
   }
   $$('button', deviceToggle).forEach(function(btn){
     btn.addEventListener('click', function(){
       currentDevice = btn.dataset.device;
-      if(currentDevice === 'mobile') currentRole = 'partner';
-      renderView();
-    });
-  });
-  $$('button', roleToggle).forEach(function(btn){
-    btn.addEventListener('click', function(){
-      if(currentDevice === 'mobile') currentDevice = 'desktop';
-      currentRole = btn.dataset.role;
       renderView();
     });
   });
