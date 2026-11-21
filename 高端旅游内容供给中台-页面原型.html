@@ -258,6 +258,8 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 .dim.hot em{background:linear-gradient(90deg,#2F6B5E,#1F5C4D)}
 .dim b{font-size:9.5px;color:#3E3B35;text-align:right;font-variant-numeric:tabular-nums}
 .angle{font-size:10.5px;line-height:1.6;color:#4A463E;margin-top:7px;padding-top:7px;border-top:1px dashed var(--line)}
+.bench-cta{display:flex;align-items:center;gap:9px;margin-top:10px}
+.bench-cta span{font-size:10.5px;color:var(--muted)}
 .angle b{color:var(--brass);margin-right:5px}
 .viral-band{display:flex;align-items:center;gap:12px;background:linear-gradient(100deg,#FBF6EA,#F6EFDF);border:1px solid #E6D8BF;border-radius:13px;padding:13px 16px;margin-bottom:16px}
 .viral-band .glyph{width:32px;height:32px;border-radius:9px;background:#fff;border:1px solid #E6D8BF;color:var(--brass);display:grid;place-items:center;font-size:15px;flex:none}
@@ -313,6 +315,28 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 .hb-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap;width:100%;font-size:10.5px;color:#A9C0B6}
 .hb-tags button{border:none;background:rgba(255,255,255,.1);color:#DCE6E0;border-radius:999px;padding:3px 10px;font-size:10.5px;cursor:pointer}
 .hb-tags button:hover{background:rgba(255,255,255,.2)}
+/* ---------- 今日推荐 ---------- */
+.today-band{position:relative;overflow:hidden;background:linear-gradient(155deg,#FFFDF8 0%,#F7F1E4 100%);border:1px solid #E7DCC6;border-radius:16px;padding:18px 18px 14px;margin-bottom:16px;box-shadow:0 2px 10px rgba(27,26,23,.04)}
+.today-band::after{content:"";position:absolute;right:-60px;top:-80px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(176,138,79,.16),transparent 68%);pointer-events:none}
+.today-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:14px;position:relative;z-index:1}
+.today-head h2{font-family:var(--serif);font-size:19px;margin:2px 0 5px;letter-spacing:-.01em}
+.today-head p{margin:0;font-size:12px;color:var(--muted);line-height:1.7;max-width:620px}
+.today-progress{flex:none;text-align:center;background:#fff;border:1px solid #E7DFCF;border-radius:12px;padding:8px 12px;min-width:92px}
+.today-progress b{display:block;font-family:var(--serif);font-size:19px;color:var(--pine);line-height:1.2}
+.today-progress span{font-size:9.5px;color:var(--muted);letter-spacing:.04em}
+.today-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;position:relative;z-index:1}
+.today-card{display:flex;flex-direction:column;gap:7px;background:#fff;border:1px solid #E9E1D2;border-radius:13px;padding:13px;transition:.16s}
+.today-card:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(27,26,23,.07)}
+.tc-top{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.tc-live{font-size:10px;color:var(--muted);white-space:nowrap}
+.tc-source{font-size:10.5px;line-height:1.5;color:#8A682F;background:#FBF5E9;border-radius:6px;padding:4px 7px}
+.tc-title{font-size:13.5px;line-height:1.55;margin:0;font-weight:700}
+.tc-excerpt{font-size:11.5px;color:var(--muted);line-height:1.65;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tc-tags{display:flex;gap:5px;flex-wrap:wrap}
+.tc-actions{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:5px;flex-wrap:wrap}
+.today-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;padding-top:10px;border-top:1px dashed #E2D7C2;font-size:11.5px;color:var(--muted)}
+@media(max-width:1180px){.today-grid{grid-template-columns:1fr 1fr}.tc-live{display:none}}
+@media(max-width:760px){.today-grid{grid-template-columns:1fr}.today-head h2{font-size:17px}.today-head{gap:10px}.today-progress{min-width:78px;padding:6px 9px}.today-foot{flex-direction:column;align-items:flex-start;gap:6px}}
 .dir-band{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px 18px;margin-bottom:16px}
 .dir-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
 .dir-head h3{margin:0;font-size:14px;font-family:var(--serif);display:flex;align-items:center;gap:8px}
@@ -1281,6 +1305,17 @@ body{font-size:14.5px}
           <div class="avatar" style="width:32px;height:32px;font-size:11px">Y</div>
         </div>
 
+        <div class="m-card" style="border-color:#E7DCC6;background:linear-gradient(155deg,#FFFDF8,#F8F2E6)">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="badge brass">今日推荐</span><span style="font-size:9.5px;color:var(--muted)">已按你的定位改好</span></div>
+          <b style="font-size:13px;line-height:1.55;display:block;margin:7px 0 4px">带 4 岁娃去京都，5 天只走 3 个景点，反而更轻松</b>
+          <div class="m-sub">源自 1.8w 赞爆款 · 亲子向 · 已避开 12 篇同质内容</div>
+          <div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap">
+            <button class="btn primary sm" id="mTodayCopy">复制文案</button>
+            <button class="btn sm" data-mgo="mpack">看素材与配图</button>
+          </div>
+          <div class="m-note" style="margin:9px 0 0">复制后去小红书粘贴发布，回来在「发布」页回填链接。</div>
+        </div>
+
         <div class="m-card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b style="font-size:12.5px">本周进度</b><span class="small" style="color:var(--pine);font-weight:700">4 / 5 篇</span></div>
           <div class="m-progress"><i style="width:80%"></i></div>
@@ -1428,7 +1463,7 @@ body{font-size:14.5px}
     </div>
 
     <nav class="m-tabs">
-      <button class="active" data-mtab="mtasks"><svg class="ic"><use href="#i-home"/></svg>任务</button>
+      <button class="active" data-mtab="mtasks"><svg class="ic"><use href="#i-home"/></svg>今日</button>
       <button data-mtab="mmaterials"><svg class="ic"><use href="#i-folder"/></svg>素材</button>
       <button data-mtab="mpublish"><svg class="ic"><use href="#i-send"/></svg>发布</button>
       <button data-mtab="mprofile"><svg class="ic"><use href="#i-users"/></svg>我的</button>
@@ -1443,13 +1478,13 @@ body{font-size:14.5px}
       <div><b>创作者工作台</b><span>CREATOR STUDIO</span></div>
     </div>
     <div class="nav-group">开始</div>
-    <button class="nav-item active" data-page="p-home" data-crumb="我的工作台"><svg class="ic"><use href="#i-grid"/></svg><span class="label">我的工作台</span></button>
+    <button class="nav-item active" data-page="p-home" data-crumb="今日推荐"><svg class="ic"><use href="#i-grid"/></svg><span class="label">今日推荐</span></button>
     <div class="nav-group">找灵感</div>
-    <button class="nav-item" data-page="p-trends" data-crumb="趋势洞察"><svg class="ic"><use href="#i-radar"/></svg><span class="label">趋势洞察</span></button>
-    <button class="nav-item" data-page="p-benchmark" data-crumb="对标笔记"><svg class="ic"><use href="#i-copy"/></svg><span class="label">对标笔记</span></button>
+    <button class="nav-item" data-page="p-trends" data-crumb="找灵感"><svg class="ic"><use href="#i-radar"/></svg><span class="label">找灵感</span></button>
+    <button class="nav-item" data-page="p-benchmark" data-crumb="拆爆款"><svg class="ic"><use href="#i-copy"/></svg><span class="label">拆爆款</span></button>
     <div class="nav-group">写内容</div>
     <button class="nav-item" data-page="p-create" data-crumb="创作台"><svg class="ic"><use href="#i-pen"/></svg><span class="label">创作台</span></button>
-    <button class="nav-item" data-page="p-packs" data-crumb="素材库"><svg class="ic"><use href="#i-folder"/></svg><span class="label">素材库</span></button>
+    <button class="nav-item" data-page="p-packs" data-crumb="选素材"><svg class="ic"><use href="#i-folder"/></svg><span class="label">选素材</span></button>
     <div class="nav-group">看结果</div>
     <button class="nav-item" data-page="p-content" data-crumb="我的内容"><svg class="ic"><use href="#i-chart"/></svg><span class="label">我的内容</span></button>
     <button class="nav-item" data-page="p-profile" data-crumb="我的账号"><svg class="ic"><use href="#i-users"/></svg><span class="label">我的账号</span></button>
@@ -1461,7 +1496,7 @@ body{font-size:14.5px}
 
   <main class="app-main">
     <header class="app-top">
-      <div class="crumb">创作者 / <b id="pCrumb">我的工作台</b></div>
+      <div class="crumb">创作者 / <b id="pCrumb">今日推荐</b></div>
       <div class="top-search"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input id="globalSearch" aria-label="搜索素材包或对标笔记" placeholder="搜索素材包、对标笔记（回车）"></div>
       <div class="top-right">
         <button class="btn primary sm" data-goto="p-create" style="min-height:32px"><svg class="ic" style="width:13px;height:13px"><use href="#i-pen"/></svg>开始创作</button>
@@ -1479,7 +1514,7 @@ body{font-size:14.5px}
           <div class="hb-greet">
             <span class="eyebrow">2026年11月21日 · 周五</span>
             <b>早上好，Yuki</b>
-            <span>今天想写点什么？</span>
+            <span>今天不用想写什么，下面 3 篇已经备好</span>
           </div>
           <div class="hb-search">
             <svg class="ic" style="width:17px;height:17px"><use href="#i-search"/></svg>
@@ -1495,14 +1530,60 @@ body{font-size:14.5px}
           </div>
         </div>
 
-        <div class="flow-strip">
-          <span class="fs-label">新手 3 步</span>
-          <button class="fs-step" data-goto="p-benchmark"><i>1</i>搜爆款</button>
-          <span class="fs-arrow">→</span>
-          <button class="fs-step" data-drawer="breakdown"><i>2</i>拆结构</button>
-          <span class="fs-arrow">→</span>
-          <button class="fs-step" data-goto="p-create"><i>3</i>写我的版本</button>
-          <span class="fs-note">不知道写什么时，从下方「最近在火」挑一个开始</span>
+        <div class="today-band">
+          <div class="today-head">
+            <div>
+              <div class="eyebrow" style="color:#A8823F">今日雷达 · 11-21 更新</div>
+              <h2>今天发这 3 篇，已经按你的人设改好</h2>
+              <p>定位：亲子度假 · 4 岁娃 · 不赶行程 · 酒店细节。选一条复制，到小红书粘贴发布，发完回来回填。</p>
+            </div>
+            <div class="today-progress">
+              <b id="todayProgress">0/1</b>
+              <span>今日备稿</span>
+            </div>
+          </div>
+          <div class="today-grid">
+            <article class="today-card" data-today-card="0">
+              <div class="tc-top"><span class="badge brass">热度 92</span><span class="tc-live">1.8w 赞 · 6,420 藏</span></div>
+              <div class="tc-source">源自爆款：带 4 岁娃去京都，5 天只走了 3 个景点</div>
+              <h4 class="tc-title">带 4 岁娃去京都，5 天只走 3 个景点，反而更轻松</h4>
+              <p class="tc-excerpt">我家娃 4 岁，这次京都 5 天 4 晚，只安排了 3 个景点：清水寺、岚山小火车、伏见稻荷前段……</p>
+              <div class="tc-tags"><span class="pack-flag auth">亲子向</span><span class="pack-flag">避开 12 篇同质内容</span></div>
+              <div class="tc-actions">
+                <button class="btn primary sm" data-today-copy="0">复制文案</button>
+                <button class="btn sm" data-today-alt="0">换一版</button>
+                
+              </div>
+            </article>
+            <article class="today-card" data-today-card="1">
+              <div class="tc-top"><span class="badge brass">热度 88</span><span class="tc-live">1.2w 赞 · 4,180 藏</span></div>
+              <div class="tc-source">源自爆款：冲绳亲子酒店，我最后悔的是订早了</div>
+              <h4 class="tc-title">冲绳亲子酒店订早了，反而多花了 800</h4>
+              <p class="tc-excerpt">带娃去冲绳，酒店真的不用抢早。我们提前 3 个月订，结果临行前两周同房型降了 800……</p>
+              <div class="tc-tags"><span class="pack-flag auth">亲子向</span><span class="pack-flag">酒店细节</span></div>
+              <div class="tc-actions">
+                <button class="btn primary sm" data-today-copy="1">复制文案</button>
+                <button class="btn sm" data-today-alt="1">换一版</button>
+                
+              </div>
+            </article>
+            <article class="today-card" data-today-card="2">
+              <div class="tc-top"><span class="badge brass">热度 84</span><span class="tc-live">9,600 赞 · 2,940 藏</span></div>
+              <div class="tc-source">源自爆款：北海道第一次滑雪，孩子哭了两次</div>
+              <h4 class="tc-title">第一次带娃滑雪，这 3 件事没做孩子会哭</h4>
+              <p class="tc-excerpt">4 岁第一次上雪场，我们没报课，先在戏雪区玩了两小时。三件事一定要提前做……</p>
+              <div class="tc-tags"><span class="pack-flag auth">亲子向</span><span class="pack-flag">避坑清单</span></div>
+              <div class="tc-actions">
+                <button class="btn primary sm" data-today-copy="2">复制文案</button>
+                <button class="btn sm" data-today-alt="2">换一版</button>
+                
+              </div>
+            </article>
+          </div>
+          <div class="today-foot">
+            <span>不知道怎么改？点「换一版」切换标题；想自己写，去「创作台」。</span>
+            <button class="link" data-goto="p-benchmark">看更多可仿写爆款 →</button>
+          </div>
         </div>
 
         <div class="dir-band">
@@ -1806,7 +1887,7 @@ body{font-size:14.5px}
           <div class="card">
             <div class="step-head"><span class="step-no">2</span><h3>选择 2–3 篇对标</h3><span class="badge pine">已选 2 篇</span></div>
 
-            <div class="bench-card on" data-pick>
+            <div class="bench-card on" data-pick data-post="0">
               <div class="bench-top">
                 <span class="chk"></span>
                 <div class="bench-title">
@@ -1828,9 +1909,10 @@ body{font-size:14.5px}
               <div class="dim hot"><span>传播</span><i><em style="width:90%"></em></i><b>9.0</b></div>
               <div class="angle"><b>仿写角度</b>数字承诺开头 + 路线清单体，把「本地人视角」做成信息差钩子。</div>
               <div class="angle"><b>人设钩子</b>用「住了五年」的口吻压住攻略感，避免像营销号。</div>
+              <div class="bench-cta"><button class="btn primary sm" data-write="0">仿写这篇</button><span>按你的亲子人设改好</span></div>
             </div>
 
-            <div class="bench-card on" data-pick>
+            <div class="bench-card on" data-pick data-post="1">
               <div class="bench-top">
                 <span class="chk"></span>
                 <div class="bench-title">
@@ -1852,9 +1934,10 @@ body{font-size:14.5px}
               <div class="dim"><span>传播</span><i><em style="width:79%"></em></i><b>7.9</b></div>
               <div class="angle"><b>仿写角度</b>后悔式开头 + 房型对比，把「订错」的成本讲清楚，收藏率高于点赞。</div>
               <div class="angle"><b>人设钩子</b>以「住过 5 家的妈妈」身份给结论，弱化广告感。</div>
+              <div class="bench-cta"><button class="btn primary sm" data-write="1">仿写这篇</button><span>按你的亲子人设改好</span></div>
             </div>
 
-            <div class="bench-card" data-pick>
+            <div class="bench-card" data-pick data-post="2">
               <div class="bench-top">
                 <span class="chk"></span>
                 <div class="bench-title">
@@ -1876,6 +1959,7 @@ body{font-size:14.5px}
               <div class="dim"><span>传播</span><i><em style="width:74%"></em></i><b>7.4</b></div>
               <div class="angle"><b>仿写角度</b>真实经历 + 装备清单，冲突点放在「孩子哭」而不是风景。</div>
               <div class="angle"><b>人设钩子</b>「第一次当爸」的笨拙感，比专家口吻更容易被评论。</div>
+              <div class="bench-cta"><button class="btn primary sm" data-write="2">仿写这篇</button><span>按你的亲子人设改好</span></div>
             </div>
             <div class="sub-note">点赞／收藏／评论／涨粉为公开可见指标的区间估算，存在抓取延迟；评分口径见「爆款评分说明」。</div>
             <div style="display:flex;gap:8px;margin-top:11px">
@@ -1923,6 +2007,7 @@ body{font-size:14.5px}
 
         <div class="card" id="draftCard" style="display:none;margin-bottom:16px">
           <div class="step-head"><span class="step-no">4</span><h3>初稿与自检</h3><span class="badge ok" id="draftFormTag">图文笔记</span></div>
+          <div class="scope-band" id="draftSourceNote" style="margin-bottom:12px">已按「Yuki 在路上 · 亲子度假体验官」改写：保留结构，换成你的事实与素材；发布前请核对价格与营业时间。</div>
 
           <!-- 图文笔记 -->
           <div id="draftImage">
@@ -1973,12 +2058,13 @@ body{font-size:14.5px}
 组图策略：1 张实景封面 + 3 张 AI 图卡（路线图 / 窗景 / 清单），图卡只做信息排版。</pre>
             </details>
             <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-              <button class="btn primary sm" data-copy="图文初稿已复制">复制文案</button>
+              <button class="btn primary sm" data-copy="全文已复制，去小红书粘贴发布">复制全文</button>
+              <button class="btn sm" data-drawer="backfill">发布后回填</button>
               <button class="btn sm" data-toast="已导出 4 张配图说明与尺寸">导出配图清单</button>
               <button class="btn sm" data-toast="已存为你的模板「反常识 + 少而精」">存为我的模板</button>
               <button class="btn sm" data-goto="p-packs">去素材库配图</button>
             </div>
-            <div class="sub-note">发布仍由你手动完成。复制文案与配图后，到小红书 App 编辑发布，再回填链接。</div>
+            <div class="sub-note">发布仍由你手动完成。复制文案与配图后，到小红书 App 编辑发布，再回来点「发布后回填」。</div>
           </div>
 
           <!-- 视频笔记 -->
@@ -2253,8 +2339,8 @@ body{font-size:14.5px}
         <p class="small">样本为公开数据，仅用于选题分析，不提供原文转载；引用需获得授权。AI 辅助改写的内容发布时需标注。</p>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="btn primary" data-toast="已加入选题池">加入选题池</button>
-        <button class="btn" data-toast="已生成改写任务">生成改写任务</button>
+        <button class="btn primary" id="breakdownWrite">直接仿写这篇</button>
+        <button class="btn" data-toast="已加入选题池">加入选题池</button>
       </div>
     </div>
 
@@ -2877,6 +2963,13 @@ body{font-size:14.5px}
   $$('[data-close-drawer]').forEach(function(b){b.addEventListener('click', closeDrawer)});
   backdrop.addEventListener('click', closeDrawer);
   var packToCreate = $('#packToCreate');
+  var breakdownWrite = $('#breakdownWrite');
+  if(breakdownWrite){
+    breakdownWrite.addEventListener('click', function(){
+      closeDrawer();
+      setTimeout(function(){ showDraftFromPost(0); }, 180);
+    });
+  }
   if(packToCreate){
     packToCreate.addEventListener('click', function(){
       closeDrawer();
@@ -2884,6 +2977,30 @@ body{font-size:14.5px}
       if(nav) nav.click();
       showToast('已带入创作台，可继续改写标题与开头');
     });
+  }
+  function markBackfilled(){
+    $$('button.badge[data-drawer="backfill"]').forEach(function(b){
+      var s = document.createElement('span');
+      s.className = 'badge ok';
+      s.textContent = '审核中';
+      b.replaceWith(s);
+    });
+    $$('#p-home tbody span.badge, #p-content tbody span.badge').forEach(function(s){
+      if(s.textContent.trim() === '待回填'){ s.className = 'badge ok'; s.textContent = '审核中'; }
+    });
+    var row = document.querySelector('#p-home .rule-row');
+    if(row && row.querySelector('b') && row.querySelector('b').textContent.indexOf('待回填') > -1){
+      row.querySelector('b').textContent = '1 条回填审核中';
+      var sub = row.querySelector('span');
+      if(sub) sub.textContent = '「北海道滑雪」已提交，校验通过后计入本周产出';
+      var btn = row.querySelector('button');
+      if(btn){
+        var s = document.createElement('span');
+        s.className = 'badge ok';
+        s.textContent = '审核中';
+        btn.replaceWith(s);
+      }
+    }
   }
   var bfSubmit = $('#bfSubmit'), bfLink = $('#bfLink');
   if(bfSubmit){
@@ -2893,6 +3010,7 @@ body{font-size:14.5px}
       if(!/^https?:\/\//i.test(v)){ showToast('链接需以 http:// 或 https:// 开头'); if(bfLink) bfLink.focus(); return; }
       bfLink.value = '';
       closeDrawer();
+      markBackfilled();
       showToast('回填已提交，校验通过后计入本周产出');
     });
   }
@@ -2975,6 +3093,8 @@ body{font-size:14.5px}
         genDraft.innerHTML = oldHTML;
         var card = $('#draftCard');
         renderForm();
+        var chosen = document.querySelector('.bench-card.on[data-post]');
+        if(currentForm === 'image' && chosen) fillDraftFromPost(parseInt(chosen.dataset.post, 10));
         if(card){ card.style.display = 'block'; card.scrollIntoView({behavior:'smooth', block:'center'}); }
         showToast(currentForm === 'image' ? '图文初稿已生成：配文 + 4 张配图方案' : '视频脚本已生成：5 个分镜 + 口播稿');
       }, 700);
@@ -3007,14 +3127,163 @@ body{font-size:14.5px}
   $$('[data-toast]').forEach(function(el){
     el.addEventListener('click', function(e){e.stopPropagation(); showToast(el.dataset.toast)});
   });
+  function copyText(text){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).catch(function(){fallbackCopy(text)});
+    } else {
+      fallbackCopy(text);
+    }
+  }
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try{document.execCommand('copy')}catch(e){}
+    document.body.removeChild(ta);
+  }
   $$('[data-copy]').forEach(function(el){
     el.addEventListener('click', function(e){
       e.stopPropagation();
-      showToast(el.dataset.copy || '已复制');
+      var box = el.closest('.copy-box') || el.closest('.m-copy');
+      var text = '';
+      if(box){
+        var clone = box.cloneNode(true);
+        $$('button', clone).forEach(function(b){b.remove()});
+        text = (clone.innerText || clone.textContent || '').trim();
+      }
+      if(!text){
+        var root = el.closest('#draftImage') || el.closest('#draftVideo');
+        var draft = root ? root.querySelector('.draft-box') : null;
+        if(draft) text = draft.innerText.trim();
+      }
+      if(text) copyText(text);
+      showToast(text ? (el.dataset.copy || '已复制') : '没有可复制的内容');
     });
   });
 
-  /* ---------- 开关 ---------- */
+  /* ---------- 今日推荐 / 一键仿写 ---------- */
+  var TODAY_POSTS = [
+    {
+      title: '带 4 岁娃去京都，5 天只走 3 个景点，反而更轻松',
+      alts: ['京都亲子 5 天，我们只去了 3 个地方', '带 4 岁娃去京都，少去两个景点反而更好玩'],
+      body: [
+        '我家娃 4 岁，这次京都 5 天 4 晚，只安排了 3 个景点：清水寺、岚山小火车、伏见稻荷前段。',
+        '住东山附近的町屋，早上 8 点走到清水寺，9 点前就回酒店吃早饭，完全避开人流。',
+        '每天只做一件事，孩子记得住，大人也不累。行程和住宿清单放评论区，按年龄抄就行。'
+      ],
+      tags: '#京都亲子游 #带娃旅行 #关西攻略'
+    },
+    {
+      title: '冲绳亲子酒店订早了，反而多花了 800',
+      alts: ['冲绳亲子酒店，别提前 3 个月订', '带娃住冲绳，选酒店只看这 3 点'],
+      body: [
+        '带娃去冲绳，酒店真的不用抢早。我们提前 3 个月订，结果临行前两周同房型降了 800。',
+        '选酒店只看 3 点：有没有儿童泳池、早餐到几点、房间能不能加床。位置反而没那么重要，打车 10 分钟都能到。',
+        '把这次住的两家对比放图里了，带 4 岁娃可以直接抄。'
+      ],
+      tags: '#冲绳亲子 #亲子酒店 #带娃旅行'
+    },
+    {
+      title: '第一次带娃滑雪，这 3 件事没做孩子会哭',
+      alts: ['带 4 岁娃滑雪，我只做对了这 3 件事', '北海道亲子滑雪，别急着给孩子报课'],
+      body: [
+        '4 岁第一次上雪场，我们没报课，先在戏雪区玩了两小时。',
+        '三件事一定要提前做：护目镜别省、手套带两副、下午 3 点前撤。',
+        '孩子哭不是因为摔，是因为冷和累。第二天我们只玩半天，反而全程开心。'
+      ],
+      tags: '#北海道亲子 #带娃滑雪 #亲子旅行'
+    }
+  ];
+  var todayAltIndex = [0, 0, 0];
+  var todayCopied = {};
+  function todayPostText(i){
+    var p = TODAY_POSTS[i];
+    if(!p) return '';
+    var card = document.querySelector('[data-today-card="' + i + '"]');
+    var titleEl = card ? card.querySelector('.tc-title') : null;
+    var title = titleEl ? titleEl.textContent.trim() : p.title;
+    return title + '\n\n' + p.body.join('\n\n') + '\n\n' + p.tags;
+  }
+  function fillDraftFromPost(i){
+    var p = TODAY_POSTS[i];
+    if(!p) return;
+    var box = $('#draftImage .draft-box');
+    if(box){
+      var html = '<h5>' + todayPostText(i).split('\n')[0] + '</h5>';
+      p.body.forEach(function(par){ html += '<p>' + par + '</p>'; });
+      html += '<p class="muted">' + p.tags + '</p>';
+      box.innerHTML = html;
+    }
+    var tag = $('#draftFormTag');
+    if(tag) tag.textContent = '图文 · 已按人设改写';
+    var note = $('#draftSourceNote');
+    if(note) note.textContent = '已按「Yuki 在路上 · 亲子度假体验官」改写：保留结构，换成你的事实与素材；发布前请核对价格与营业时间。';
+  }
+  function showDraftFromPost(i){
+    currentForm = 'image';
+    renderForm();
+    fillDraftFromPost(i);
+    var nav = document.querySelector('#partnerApp .nav-item[data-page="p-create"]');
+    if(nav) nav.click();
+    var card = $('#draftCard');
+    if(card){
+      card.style.display = 'block';
+      setTimeout(function(){ card.scrollIntoView({behavior:'smooth', block:'center'}); }, 80);
+    }
+  }
+  $$('[data-today-copy]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if(btn.dataset.copied === '1'){
+        openDrawer('backfill');
+        return;
+      }
+      var i = parseInt(btn.dataset.todayCopy, 10);
+      copyText(todayPostText(i));
+      todayCopied[i] = true;
+      btn.dataset.copied = '1';
+      btn.textContent = '已复制 · 去回填';
+      var progress = $('#todayProgress');
+      if(progress){
+        var n = Object.keys(todayCopied).length;
+        progress.textContent = Math.min(n, 1) + '/1';
+      }
+      showToast('已复制全文，去小红书粘贴发布；发完点按钮回填');
+    });
+  });
+  $$('[data-today-alt]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var i = parseInt(btn.dataset.todayAlt, 10);
+      var p = TODAY_POSTS[i];
+      var card = btn.closest('.today-card');
+      var titleEl = card ? card.querySelector('.tc-title') : null;
+      if(!p || !titleEl) return;
+      todayAltIndex[i] = (todayAltIndex[i] + 1) % (p.alts.length + 1);
+      titleEl.textContent = todayAltIndex[i] === 0 ? p.title : p.alts[todayAltIndex[i] - 1];
+      showToast('已换一版标题，文案同步更新');
+    });
+  });
+  $$('[data-write]').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var i = parseInt(btn.dataset.write, 10);
+      var card = btn.closest('.bench-card');
+      if(card && !card.classList.contains('on')){
+        card.classList.add('on');
+        var box = card.closest('.card');
+        var badge = box ? box.querySelector('.step-head .badge') : null;
+        if(badge) badge.textContent = '已选 ' + box.querySelectorAll('[data-pick].on').length + ' 篇';
+      }
+      showToast('正在按你的人设仿写…');
+      setTimeout(function(){
+        showDraftFromPost(i);
+        showToast('已生成你的版本，可直接复制去发布');
+      }, 600);
+    });
+  });
   $$('[data-switch]').forEach(function(sw){
     sw.addEventListener('click', function(){sw.classList.toggle('on')});
   });
@@ -3038,6 +3307,16 @@ body{font-size:14.5px}
       chip.classList.add('active');
     });
   });
+  var mTodayCopy = $('#mTodayCopy');
+  if(mTodayCopy){
+    mTodayCopy.addEventListener('click', function(){
+      if(mTodayCopy.dataset.copied === '1'){ showMobilePage('mpublish'); return; }
+      copyText(todayPostText(0));
+      mTodayCopy.dataset.copied = '1';
+      mTodayCopy.textContent = '已复制 · 去回填';
+      showToast('已复制全文，去小红书粘贴发布');
+    });
+  }
   var mPublishSubmit = $('#mPublishSubmit');
   var mPublishLink = $('#mPublishLink');
   if(mPublishSubmit){
