@@ -190,6 +190,52 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 .switch::after{content:"";position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:.18s}
 .switch.on{background:var(--pine)}
 .switch.on::after{left:20px}
+/* ---------- 创作台 / 投稿 / 数据导入 ---------- */
+.create-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:16px;margin-bottom:16px}
+.step-head{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.step-no{width:22px;height:22px;border-radius:50%;background:var(--pine);color:#fff;font-size:11px;display:grid;place-items:center;font-weight:700;flex:none}
+.step-head h3{font-size:14px;margin:0}
+.step-head .badge{margin-left:auto}
+.form-row{margin-bottom:11px}
+.form-row label,.field label{display:block;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px}
+.form-row input,.form-row select{width:100%}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.bench-pick{display:flex;gap:10px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;background:#fff;transition:.15s}
+.bench-pick:hover{border-color:#C9C1B2}
+.bench-pick.on{border-color:var(--pine);background:#FAFCFA}
+.bench-pick .chk{width:16px;height:16px;border:1.5px solid #C9C1B2;border-radius:5px;flex:none;margin-top:2px;position:relative}
+.bench-pick.on .chk{background:var(--pine);border-color:var(--pine)}
+.bench-pick.on .chk::after{content:"";position:absolute;left:4px;top:1px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.bench-pick b{display:block;font-size:12px;line-height:1.5;font-weight:600}
+.bench-pick span{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+.timeline{list-style:none;margin:0;padding:0}
+.timeline li{border-left:2px solid #DCE7E1;padding:0 0 13px 14px;position:relative}
+.timeline li:last-child{padding-bottom:0}
+.timeline li::before{content:"";position:absolute;left:-5px;top:2px;width:8px;height:8px;border-radius:50%;background:var(--brass)}
+.timeline b{display:block;font-size:10.5px;color:var(--brass);margin-bottom:2px;letter-spacing:.06em}
+.timeline span{font-size:12px;line-height:1.65;color:#3E3B35}
+.template-grid{display:grid;gap:8px}
+.template-card{border:1px solid var(--line);border-radius:10px;padding:10px 11px;cursor:pointer;font-size:11.5px;line-height:1.55;background:#fff;transition:.15s}
+.template-card:hover{border-color:#C9C1B2}
+.template-card.on{border-color:var(--pine);background:var(--soft)}
+.template-card b{display:block;font-size:12px;margin-bottom:2px}
+.template-card span{color:var(--muted);font-size:10.5px}
+.draft-box{background:#FBFAF6;border:1px solid var(--line);border-radius:11px;padding:14px;font-size:12.5px;line-height:1.85}
+.draft-box h5{font-family:var(--serif);font-size:13px;margin:0 0 8px}
+.draft-box p{margin:0 0 7px}
+.draft-meta{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+.metric-pill{font-size:10.5px;padding:3px 8px;border-radius:999px;background:var(--soft);color:var(--pine);font-weight:700}
+.metric-pill.warn{background:var(--soft2);color:#8A682F}
+.upload-zone{border:1.5px dashed #CFC7B8;border-radius:11px;padding:20px;text-align:center;color:var(--muted);font-size:11.5px;background:#FBFAF6;cursor:pointer;line-height:1.7}
+.upload-zone:hover{border-color:var(--pine);color:var(--pine)}
+.option-card{border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:8px;display:flex;gap:9px;cursor:pointer;background:#fff}
+.option-card.on{border-color:var(--pine);background:var(--soft)}
+.option-card .radio{width:15px;height:15px;border-radius:50%;border:1.5px solid #C9C1B2;flex:none;margin-top:2px;position:relative}
+.option-card.on .radio{border-color:var(--pine)}
+.option-card.on .radio::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--pine)}
+.option-card b{display:block;font-size:12px}
+.option-card span{display:block;font-size:10.5px;color:var(--muted);line-height:1.55;margin-top:2px}
+.sub-note{font-size:10.5px;color:var(--muted);line-height:1.6;margin-top:6px}
 /* ---------- 抽屉 / Toast ---------- */
 .backdrop{position:fixed;inset:0;background:rgba(18,26,23,.38);opacity:0;pointer-events:none;transition:.2s;z-index:110}
 .backdrop.show{opacity:1;pointer-events:auto}
@@ -252,7 +298,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 .m-note{font-size:10.5px;color:var(--muted);line-height:1.6;background:var(--soft2);border-radius:9px;padding:9px 11px;margin-top:10px}
 .m-back{display:inline-flex;align-items:center;gap:5px;border:none;background:none;color:var(--muted);font-size:12px;padding:0;cursor:pointer;margin-bottom:10px}
 /* ---------- 响应式 ---------- */
-@media(max-width:1180px){.kpis{grid-template-columns:repeat(2,1fr)}.cols-2,.cols-2b{grid-template-columns:1fr}.version-grid{grid-template-columns:1fr}.packs{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1180px){.kpis{grid-template-columns:repeat(2,1fr)}.cols-2,.cols-2b{grid-template-columns:1fr}.version-grid{grid-template-columns:1fr}.packs{grid-template-columns:repeat(2,1fr)}.create-grid{grid-template-columns:1fr}}
 @media(max-width:720px){.packs{grid-template-columns:1fr}}
 @media(max-width:980px){.app-side{width:66px;padding:16px 7px}.side-brand{padding:0 0 14px;justify-content:center}.side-brand div:last-child{display:none}.nav-group{display:none}.nav-item{justify-content:center;padding:10px 6px}.nav-item .label{display:none}.side-foot{justify-content:center}.side-foot div:last-child{display:none}.top-search{width:180px}.page-wrap{padding:18px}}
 </style>
@@ -714,6 +760,21 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
             <div class="pack-body"><h4>日本滑雪｜亲子向</h4><div class="tags"><span>日本</span><span>滑雪</span><span>亲子</span></div><div class="pack-meta"><span>已领 8</span><span>已发 3</span></div></div>
           </article>
         </div>
+
+        <div class="card" style="margin-top:16px;padding:8px 14px 14px">
+          <div class="card-head" style="padding:10px 0 0"><h3>合伙人投稿待审</h3><span class="badge brass">3 条待处理</span></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>类型</th><th>内容</th><th>投稿人</th><th>授权</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody>
+                <tr><td><span class="badge pine">实景素材</span></td><td class="t-title">京都东山清晨街景 8 张</td><td>Yuki 在路上</td><td><span class="badge ok">已确认</span></td><td>待审</td><td><button class="btn sm" data-toast="已通过，进入公共素材池">通过</button> <button class="btn sm" data-toast="已退回补充授权">退回</button></td></tr>
+                <tr><td><span class="badge brass">对标笔记</span></td><td class="t-title">冲绳亲子酒店对比（小红书链接）</td><td>陈默的旅行笔记</td><td><span class="badge">待核验</span></td><td>待审</td><td><button class="btn sm" data-toast="已通过，加入对标样本库">通过</button> <button class="btn sm" data-toast="已退回">退回</button></td></tr>
+                <tr><td><span class="badge pine">实景素材</span></td><td class="t-title">北海道雪场亲子合影 3 张</td><td>Lily 的私藏清单</td><td><span class="badge bad">肖像待确认</span></td><td>待审</td><td><button class="btn sm" data-toast="已通过">通过</button> <button class="btn sm" data-toast="已退回补充肖像授权">退回</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted" style="margin:12px 0 0">投稿需确认原创或授权；对标推荐只入样本库，不转载原文。采纳后计入贡献积分，与交易、结算无关。</p>
+        </div>
       </section>
       <section class="page" data-page="distribution">
         <div class="page-head">
@@ -1049,7 +1110,8 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
       <!-- 素材库 -->
       <section class="m-page" data-mpage="mmaterials">
         <div class="m-head"><div><h2 class="m-title">素材库</h2><div class="m-sub">按人设推荐 · 26 个素材包</div></div></div>
-        <div class="search" style="margin-bottom:12px;background:#fff"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input placeholder="搜索目的地、场景"></div>
+        <div class="search" style="margin-bottom:10px;background:#fff"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input placeholder="搜索目的地、场景"></div>
+        <button class="btn block" data-drawer="submit" style="margin-bottom:12px"><svg class="ic" style="width:14px;height:14px"><use href="#i-upload"/></svg>上传素材 / 推荐对标</button>
 
         <div class="m-pack" data-mgo="mpack">
           <div class="cover g-kyoto"></div>
@@ -1105,6 +1167,8 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
         <button class="m-back" data-mgo="mtasks"><svg class="ic" style="width:14px;height:14px"><use href="#i-back"/></svg>任务</button>
         <div class="m-head" style="padding-top:0"><div><h2 class="m-title">发布回填</h2><div class="m-sub">回填后即可计入本周产出</div></div></div>
 
+        <div class="m-note" style="margin:0 0 10px">平台不提供自动发布：请复制文案与图片，在小红书 App 内手动发布，再回来粘贴链接。这样不会触发账号风控。</div>
+
         <div class="m-card">
           <div class="m-field"><label>关联素材包</label><select style="width:100%"><option>北海道滑雪｜亲子向</option><option>京都赏枫 5 天 4 晚｜闺蜜向</option><option>北欧极光｜情侣向</option></select></div>
           <div class="m-field"><label>发布平台</label><select style="width:100%"><option>小红书</option><option>抖音</option><option>视频号</option></select></div>
@@ -1159,6 +1223,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
     <div class="nav-group">洞察</div>
     <button class="nav-item" data-page="p-trends" data-crumb="趋势洞察"><svg class="ic"><use href="#i-radar"/></svg><span class="label">趋势洞察</span></button>
     <button class="nav-item" data-page="p-benchmark" data-crumb="对标笔记"><svg class="ic"><use href="#i-copy"/></svg><span class="label">对标笔记</span></button>
+    <button class="nav-item" data-page="p-create" data-crumb="创作台"><svg class="ic"><use href="#i-pen"/></svg><span class="label">创作台</span></button>
     <div class="nav-group">创作</div>
     <button class="nav-item" data-page="p-packs" data-crumb="素材库"><svg class="ic"><use href="#i-folder"/></svg><span class="label">素材库</span></button>
     <button class="nav-item" data-page="p-content" data-crumb="我的内容"><svg class="ic"><use href="#i-chart"/></svg><span class="label">我的内容</span></button>
@@ -1358,8 +1423,125 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
           </div>
           <div class="card">
             <div class="card-head"><h3>使用边界</h3><span class="badge brass">重要</span></div>
-            <p class="small" style="line-height:1.8;margin:0">对标结果用于理解结构与选题，不提供原文转载或一键改写。发布内容须结合本人经历重写；引用数据需注明来源，AI 辅助内容需按平台要求标注。</p>
+            <p class="small" style="line-height:1.8;margin:0">对标结果用于理解结构与选题，不提供原文转载。需要生成时进入创作台，用「结构迁移 + 本人素材」重写；引用数据需注明来源，AI 辅助内容需按平台要求标注。</p>
+            <button class="btn sm primary" data-goto="p-create" style="margin-top:10px">去创作台生成初稿</button>
             <div class="scope-band" style="margin:10px 0 0;background:var(--soft2);border-color:#E6D8BF;color:#6B5327"><svg class="ic" style="color:#8A682F"><use href="#i-clock"/></svg><div>查询额度每日重置，避免高频抓取；超出额度请联系运营开通。</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 创作台 -->
+      <section class="page" data-page="p-create">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">创作 / 从对标到初稿</div>
+            <h1>创作台</h1>
+            <p>输入自己的主题，找到对标笔记，拆结构、套模板、生成可编辑的初稿。</p>
+          </div>
+          <div class="actions"><span class="quota">本周生成 2 / 8</span></div>
+        </div>
+
+        <div class="scope-band"><svg class="ic"><use href="#i-pen"/></svg><div>初稿只做<b>结构迁移与素材组织</b>，不复制对标原文。系统会计算相似度并提示重写；发布前请按平台要求标识 AI 辅助内容。</div></div>
+
+        <div class="create-grid">
+          <div class="card">
+            <div class="step-head"><span class="step-no">1</span><h3>输入你的主题</h3></div>
+            <div class="form-row"><label>主题</label><input type="text" id="createTopic" value="京都亲子赏枫 5 天 4 晚"></div>
+            <div class="form-grid">
+              <div><label style="font-size:11px;color:var(--muted);font-weight:700;display:block;margin-bottom:5px">目标人群</label><select style="width:100%"><option>亲子家庭</option><option>情侣</option><option>朋友结伴</option></select></div>
+              <div><label style="font-size:11px;color:var(--muted);font-weight:700;display:block;margin-bottom:5px">内容形式</label><select style="width:100%"><option>图文笔记</option><option>短视频口播</option><option>清单合集</option></select></div>
+            </div>
+            <div class="form-row"><label>补充信息（选填）</label><input type="text" placeholder="例如：孩子 4 岁、不赶行程、预算 1.5 万"></div>
+            <button class="btn primary block" id="findBench"><svg class="ic" style="width:14px;height:14px"><use href="#i-search"/></svg>找对标笔记</button>
+            <div class="sub-note" id="benchHint">已按人设与目的地过滤，优先展示近 90 天、互动 &gt; 1,000 的样本。</div>
+          </div>
+
+          <div class="card">
+            <div class="step-head"><span class="step-no">2</span><h3>选择 2–3 篇对标</h3><span class="badge pine">已选 2 篇</span></div>
+            <div class="bench-pick on" data-pick>
+              <span class="chk"></span>
+              <div><b>带 4 岁娃去京都，5 天只走了 3 个景点</b><span>小红书 · 互动 1.8w · 反常识 + 少而精</span></div>
+            </div>
+            <div class="bench-pick on" data-pick>
+              <span class="chk"></span>
+              <div><b>冲绳亲子酒店，我最后悔的是订早了</b><span>小红书 · 互动 1.2w · 后悔式开头 + 对比</span></div>
+            </div>
+            <div class="bench-pick" data-pick>
+              <span class="chk"></span>
+              <div><b>北海道第一次滑雪，孩子哭了两次</b><span>小红书 · 互动 9,600 · 真实经历 + 清单</span></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:11px">
+              <button class="btn primary" id="breakdownBtn" style="flex:1;justify-content:center">拆解所选</button>
+              <button class="btn" data-drawer="breakdown">看完整拆解</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="breakdownCard" style="margin-bottom:16px">
+          <div class="step-head"><span class="step-no">3</span><h3>结构拆解与模板</h3><span class="badge brass">基于 2 篇样本</span></div>
+          <div class="cols cols-2" style="margin-bottom:0">
+            <div>
+              <div class="small muted" style="margin-bottom:10px">把「为什么有效」拆成可复用的结构，而不是句子。</div>
+              <ul class="timeline">
+                <li><b>标题钩子</b><span>反常识结论 + 具体天数／年龄，制造「和我想的不一样」的预期。</span></li>
+                <li><b>开头 3 行</b><span>先给结论：景点少反而更值；再用一个具体场景证明，不铺陈背景。</span></li>
+                <li><b>中段结构</b><span>按天推进，每天「一个地点 + 一个理由 + 一个提醒」，信息密度稳定。</span></li>
+                <li><b>结尾</b><span>写清适合与不适合的人群，降低预期偏差，也减少评论区争执。</span></li>
+                <li><b>互动钩子</b><span>末尾问一句「你家娃几岁」，把评论引导到具体经验交流。</span></li>
+              </ul>
+            </div>
+            <div>
+              <div class="small muted" style="margin-bottom:10px">选择你的笔记架构模板</div>
+              <div class="template-grid" id="templatePicker">
+                <div class="template-card on" data-template><b>反常识 + 3 个理由 + 清单收尾</b><span>适合亲子／避坑／行程规划 · 我的常用</span></div>
+                <div class="template-card" data-template><b>预算分层 + 房型对比 + 适合人群</b><span>适合酒店测评／家庭度假</span></div>
+                <div class="template-card" data-template><b>7 天行程日记 + 每日一个记忆点</b><span>适合长线／摄影／慢旅行</span></div>
+              </div>
+              <button class="btn primary block" id="genDraft" style="margin-top:10px"><svg class="ic" style="width:14px;height:14px"><use href="#i-pen"/></svg>生成初稿</button>
+              <div class="sub-note">生成的是可编辑初稿，不会自动发布；事实与价格需你本人核对。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="draftCard" style="display:none;margin-bottom:16px">
+          <div class="step-head"><span class="step-no">4</span><h3>初稿与自检</h3><span class="badge ok">已生成</span></div>
+          <div class="cols cols-2b" style="margin-bottom:0">
+            <div class="draft-box">
+              <h5>带 4 岁娃去京都，5 天只走了 3 个景点，反而更值</h5>
+              <p>先说结论：亲子游京都，景点越少越好。我们 5 天只安排了东山、岚山和一处小众庭院，孩子没有崩溃，大人也没有赶路。</p>
+              <p><b>为什么敢少排？</b>一是 4 岁孩子的有效游玩时间只有半天；二是京都的点位密集，来回折返比少看一个景点更耗体力；三是把酒店选在东山附近，清晨步行 8 分钟就能到清水寺，避开 9 点后的人流。</p>
+              <p><b>我们怎么排：</b>Day 1 东山适应时差；Day 2 岚山小火车 + 竹林；Day 3 休息 + 町屋体验；Day 4 伏见稻荷只走前段；Day 5 购物返程。</p>
+              <p>适合：第一次带娃去京都、不想赶行程的家庭。不适合：想一次打卡全部景点、能接受高强度步行的旅行者。</p>
+              <p class="muted">#京都亲子游 #赏枫 #带娃旅行</p>
+            </div>
+            <div>
+              <div class="draft-meta">
+                <span class="metric-pill">与对标相似度 18%</span>
+                <span class="metric-pill">结构迁移 3 处</span>
+                <span class="metric-pill warn">2 项待核对</span>
+              </div>
+              <ul class="checks">
+                <li><svg class="ic" style="width:14px;height:14px;color:#2E7D5B"><use href="#i-check"/></svg>已替换为本人经历与素材包事实</li>
+                <li><svg class="ic" style="width:14px;height:14px;color:#2E7D5B"><use href="#i-check"/></svg>未复用对标原文句式</li>
+                <li><svg class="ic" style="width:14px;height:14px;color:#8A682F"><use href="#i-clock"/></svg>价格与营业时间需发布前核对</li>
+                <li><svg class="ic" style="width:14px;height:14px;color:#8A682F"><use href="#i-clock"/></svg>AI 辅助内容需按平台要求标识</li>
+              </ul>
+              <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+                <button class="btn primary sm" data-copy="初稿已复制">复制初稿</button>
+                <button class="btn sm" data-toast="已存为模板「反常识 + 少而精」">存为我的模板</button>
+                <button class="btn sm" data-goto="p-packs">去素材库配图</button>
+              </div>
+              <div class="sub-note">发布仍由你手动完成。复制文案与图片后，到小红书 App 编辑发布，再回填链接。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>我的笔记架构模板</h3><button class="link" data-toast="已从你的爆款笔记生成新模板">从我的爆款生成模板</button></div>
+          <div class="packs" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+            <div class="template-card" style="cursor:default"><b>反常识 + 少而精</b><span>来源：我的爆款「5 天只走 3 个景点」 · 已用 6 次</span></div>
+            <div class="template-card" style="cursor:default"><b>预算分层 + 房型对比</b><span>来源：平台模板 · 已用 12 次</span></div>
+            <div class="template-card" style="cursor:default"><b>行程日记 + 每日记忆点</b><span>来源：我的爆款「北海道 7 天」 · 已用 4 次</span></div>
           </div>
         </div>
       </section>
@@ -1374,9 +1556,12 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
           </div>
           <div class="actions">
             <select><option>近 7 天</option><option>近 30 天</option></select>
+            <button class="btn" data-drawer="import"><svg class="ic" style="width:14px;height:14px"><use href="#i-upload"/></svg>导入数据</button>
             <button class="btn" data-toast="已导出我的数据">导出</button>
           </div>
         </div>
+
+        <div class="scope-band"><svg class="ic"><use href="#i-link"/></svg><div>数据来源分三层：<b>手动回填</b>、<b>粘贴笔记链接读取公开数据</b>、<b>账号授权</b>（小红书暂未开放，抖音评估中）。平台不索取密码、不保存 Cookie，也不做后台抓取。</div></div>
 
         <div class="kpis">
           <div class="kpi"><div class="kpi-top"><span>曝光</span><span class="delta">+12%</span></div><div class="kpi-val">8.6w</div><div class="kpi-sub">较上周</div></div>
@@ -1433,10 +1618,16 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
             <h1>素材库</h1>
             <p>按你的人设定向开放，素材包含成稿、实景图与发布建议。</p>
           </div>
-          <div class="actions"><button class="btn" data-toast="已打开我的领取记录">领取记录</button></div>
+          <div class="actions">
+            <button class="btn" data-drawer="submit"><svg class="ic" style="width:14px;height:14px"><use href="#i-upload"/></svg>上传素材</button>
+            <button class="btn" data-drawer="submit"><svg class="ic" style="width:14px;height:14px"><use href="#i-link"/></svg>推荐对标</button>
+            <button class="btn" data-toast="已打开我的领取记录">领取记录</button>
+          </div>
         </div>
 
-        <div class="scope-band"><svg class="ic"><use href="#i-folder"/></svg><div>同一素材包同人设最多 3 人领取。领取后请至少改写标题与开头 2 句，避免与同批内容重复。</div></div>
+        <div class="scope-band"><svg class="ic"><use href="#i-folder"/></svg><div>同一素材包同人设最多 3 人领取。领取后请至少改写标题与开头 2 句，避免与同批内容重复。平台不代发，复制后请到平台手动发布再回填。</div></div>
+
+        <div class="scope-band" style="background:#FFFDF7;border-color:#E8DCC6;color:#6B5327"><svg class="ic" style="color:#8A682F"><use href="#i-plus"/></svg><div><b>你也可能有好素材。</b>上传自己拍摄的实景，或推荐你看到的好对标笔记；审核通过后进入公共素材池，被采纳可获得积分与优先领取权。</div></div>
 
         <div class="toolbar">
           <div class="seg"><button class="active">全部</button><button>日本</button><button>海岛</button><button>北欧</button></div>
@@ -1451,6 +1642,20 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
           <article class="pack" data-drawer="pack"><div class="pack-cover g-nordic"><span class="pack-label">芬兰 · 冬</span><span class="pack-count">18 张实景</span></div><div class="pack-body"><h4>北欧极光｜情侣向</h4><div class="tags"><span>北欧</span><span>玻璃屋</span><span>冬</span></div><div class="pack-meta"><span>已领 31</span><span>已发 18</span></div></div></article>
           <article class="pack" data-drawer="pack"><div class="pack-cover g-xinjiang"><span class="pack-label">伊犁 · 秋</span><span class="pack-count">22 张实景</span></div><div class="pack-body"><h4>新疆环线｜朋友向</h4><div class="tags"><span>新疆</span><span>摄影</span><span>秋</span></div><div class="pack-meta"><span>已领 26</span><span>已发 14</span></div></div></article>
           <article class="pack" data-drawer="pack"><div class="pack-cover g-swiss"><span class="pack-label">少女峰 · 冬</span><span class="pack-count">16 张实景</span></div><div class="pack-body"><h4>瑞士雪山｜蜜月向</h4><div class="tags"><span>瑞士</span><span>蜜月</span><span>冬</span></div><div class="pack-meta"><span>已领 12</span><span>已发 9</span></div></div></article>
+        </div>
+
+        <div class="card" style="margin-top:16px;padding:8px 14px 14px">
+          <div class="card-head" style="padding:10px 0 0"><h3>我的投稿</h3><span class="small muted">已采纳 1 · 审核中 2</span></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>类型</th><th>内容</th><th>提交时间</th><th>状态</th><th>反馈</th></tr></thead>
+              <tbody>
+                <tr><td><span class="badge pine">实景素材</span></td><td class="t-title">京都东山清晨街景 8 张</td><td class="num muted">11-20</td><td><span class="badge ok">已采纳</span></td><td>已入池 · +20 积分</td></tr>
+                <tr><td><span class="badge brass">对标笔记</span></td><td class="t-title">冲绳亲子酒店对比（小红书）</td><td class="num muted">11-21</td><td><span class="badge">审核中</span></td><td>待核验授权</td></tr>
+                <tr><td><span class="badge pine">实景素材</span></td><td class="t-title">北海道雪场亲子合影 3 张</td><td class="num muted">11-21</td><td><span class="badge">审核中</span></td><td>待确认肖像授权</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -1593,6 +1798,86 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
       </div>
     </div>
 
+    <!-- 投稿 -->
+    <div class="drawer-panel" data-dpanel="submit">
+      <div class="d-sec">
+        <h4>投稿类型</h4>
+        <div class="option-card on" data-opt>
+          <span class="radio"></span>
+          <div><b>上传实景素材</b><span>你拍摄的酒店、路线、体验照片或视频，审核后进入公共素材池。</span></div>
+        </div>
+        <div class="option-card" data-opt>
+          <span class="radio"></span>
+          <div><b>推荐对标笔记</b><span>你看到的好笔记，提交链接与理由，审核后进入对标样本库。</span></div>
+        </div>
+      </div>
+
+      <div class="d-sec">
+        <h4>上传实景素材</h4>
+        <div class="upload-zone">点击选择图片或视频<br><span class="small">JPG / PNG / MP4 · 单个文件不超过 50MB</span></div>
+        <div class="form-grid" style="margin-top:10px">
+          <div><label>目的地</label><input type="text" placeholder="例如：京都"></div>
+          <div><label>场景</label><select><option>酒店</option><option>路线</option><option>体验</option></select></div>
+        </div>
+        <div class="form-row"><label>素材说明</label><input type="text" placeholder="拍摄时间、地点、可授权范围"></div>
+      </div>
+
+      <div class="d-sec">
+        <h4>或推荐对标笔记</h4>
+        <div class="form-row"><label>笔记链接</label><input type="url" placeholder="粘贴小红书 / 抖音笔记链接"></div>
+        <div class="form-row"><label>推荐理由</label><textarea rows="2" placeholder="结构、选题或数据表现哪里值得参考"></textarea></div>
+      </div>
+
+      <div class="d-sec">
+        <h4>授权确认</h4>
+        <ul class="checks">
+          <li><svg class="ic" style="width:14px;height:14px;color:#2E7D5B"><use href="#i-check"/></svg>我确认素材为本人拍摄或已获得授权</li>
+          <li><svg class="ic" style="width:14px;height:14px;color:#2E7D5B"><use href="#i-check"/></svg>涉及人物肖像已取得本人同意</li>
+          <li><svg class="ic" style="width:14px;height:14px;color:#2E7D5B"><use href="#i-check"/></svg>同意平台在素材池内展示与分发</li>
+        </ul>
+      </div>
+
+      <div class="scope-band" style="margin-bottom:12px;background:var(--soft2);border-color:#E6D8BF;color:#6B5327"><svg class="ic" style="color:#8A682F"><use href="#i-clock"/></svg><div>审核通常在 24 小时内完成。采纳后计入贡献积分与优先领取权，不涉及交易或结算。</div></div>
+      <button class="btn primary block" data-toast="已提交，运营将在 24 小时内审核">提交投稿</button>
+    </div>
+
+    <!-- 导入数据 -->
+    <div class="drawer-panel" data-dpanel="import">
+      <div class="d-sec">
+        <h4>选择数据来源</h4>
+        <div class="option-card on" data-opt>
+          <span class="radio"></span>
+          <div><b>粘贴笔记链接（推荐）</b><span>读取公开的赞、藏、评数据；不需要登录你的账号。</span></div>
+        </div>
+        <div class="option-card" data-opt>
+          <span class="radio"></span>
+          <div><b>上传截图 / CSV</b><span>从创作中心导出或截图，平台识别后入库，最稳妥。</span></div>
+        </div>
+        <div class="option-card" data-opt>
+          <span class="radio"></span>
+          <div><b>账号授权（暂未开放）</b><span>小红书未开放第三方账号数据接口；抖音官方授权正在评估。</span></div>
+        </div>
+      </div>
+
+      <div class="d-sec">
+        <h4>粘贴笔记链接</h4>
+        <div class="form-row"><label>公开笔记链接</label><input type="url" placeholder="https://www.xiaohongshu.com/explore/..."></div>
+        <div class="sub-note">仅支持公开笔记；私密、仅粉丝可见或已删除的内容无法读取。</div>
+      </div>
+
+      <div class="d-sec">
+        <h4>或上传数据表</h4>
+        <div class="upload-zone">点击上传截图或 CSV<br><span class="small">支持创作中心数据页截图、手工整理的 Excel</span></div>
+      </div>
+
+      <div class="d-sec">
+        <h4>自动获取的边界</h4>
+        <p class="small" style="line-height:1.8">小红书未开放面向普通第三方的笔记发布与账号数据 API，且登录态抓取会触发风控。平台不索取密码、不保存 Cookie、不读取账号后台；公开数据通过第三方数据源读取，可能有延迟，仅作参考。</p>
+      </div>
+
+      <button class="btn primary block" data-toast="已解析 1 条笔记的公开数据">开始解析</button>
+    </div>
+
   </div>
 </aside>
 
@@ -1666,7 +1951,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 
   /* ---------- 抽屉 ---------- */
   var drawer = $('#drawer'), backdrop = $('#backdrop'), drawerTitle = $('#drawerTitle');
-  var titles = {breakdown:'爆款拆解', pack:'素材包详情'};
+  var titles = {breakdown:'爆款拆解', pack:'素材包详情', submit:'投稿素材 / 对标笔记', import:'导入笔记数据'};
   function openDrawer(name){
     $$('.drawer-panel').forEach(function(p){p.classList.toggle('active', p.dataset.dpanel === name)});
     drawerTitle.textContent = titles[name] || '详情';
@@ -1688,6 +1973,54 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
   $$('[data-close-drawer]').forEach(function(b){b.addEventListener('click', closeDrawer)});
   backdrop.addEventListener('click', closeDrawer);
   document.addEventListener('keydown', function(e){if(e.key === 'Escape') closeDrawer()});
+
+  /* ---------- 创作台 ---------- */
+  $$('[data-pick]').forEach(function(el){
+    el.addEventListener('click', function(){
+      el.classList.toggle('on');
+      var card = el.closest('.card');
+      var badge = card ? card.querySelector('.step-head .badge') : null;
+      if(badge) badge.textContent = '已选 ' + card.querySelectorAll('[data-pick].on').length + ' 篇';
+    });
+  });
+  $$('#templatePicker [data-template]').forEach(function(el){
+    el.addEventListener('click', function(){
+      $$('#templatePicker [data-template]').forEach(function(x){x.classList.remove('on')});
+      el.classList.add('on');
+    });
+  });
+  var findBench = $('#findBench');
+  if(findBench){
+    findBench.addEventListener('click', function(){
+      var topic = ($('#createTopic') || {}).value || '当前主题';
+      var hint = $('#benchHint');
+      if(hint) hint.textContent = '已围绕「' + topic + '」匹配 36 篇，展示匹配度最高的 4 篇。';
+      showToast('已匹配 36 篇，按匹配度展示前 4 篇');
+    });
+  }
+  var breakdownBtn = $('#breakdownBtn');
+  if(breakdownBtn){
+    breakdownBtn.addEventListener('click', function(){
+      var card = $('#breakdownCard');
+      if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
+      showToast('已拆解 2 篇样本，可继续选模板');
+    });
+  }
+  var genDraft = $('#genDraft');
+  if(genDraft){
+    genDraft.addEventListener('click', function(){
+      var card = $('#draftCard');
+      if(card){ card.style.display = 'block'; card.scrollIntoView({behavior:'smooth', block:'center'}); }
+      showToast('初稿已生成，请核对事实并做差异化改写');
+    });
+  }
+  $$('.drawer-panel [data-opt]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var group = el.parentElement;
+      $$('[data-opt]', group).forEach(function(x){x.classList.remove('on')});
+      el.classList.add('on');
+    });
+  });
 
   /* ---------- Toast ---------- */
   var toast = $('#toast'), toastTimer;
