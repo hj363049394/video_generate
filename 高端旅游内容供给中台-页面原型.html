@@ -29,6 +29,8 @@ button,input,select,textarea{font-family:inherit}
 .device-toggle button{border:none;background:none;color:#B9C4BE;padding:6px 14px;border-radius:7px;font-size:12.5px;cursor:pointer}
 .device-toggle button.active{background:#F2EEE4;color:#1E2A26;font-weight:700}
 .proto-hint{font-size:11.5px;color:#9DAAA3}
+.proto-btn{border:1px solid rgba(255,255,255,.24);background:none;color:#DCE6E0;border-radius:7px;padding:5px 9px;font-size:11.5px;cursor:pointer}
+.proto-btn:hover{background:rgba(255,255,255,.08)}
 .proto-controls{display:flex;align-items:center;gap:8px}
 @media(max-width:980px){.proto-controls{gap:6px}.proto-controls .device-toggle button{padding:6px 9px;font-size:12px}}
 @media(max-width:760px){.proto-hint{display:none}}
@@ -512,6 +514,99 @@ body{font-size:14.5px}
 @media(max-width:1180px){.kpis{grid-template-columns:repeat(2,1fr)}.cols-2,.cols-2b{grid-template-columns:1fr}.version-grid{grid-template-columns:1fr}.packs{grid-template-columns:repeat(2,1fr)}.create-grid{grid-template-columns:1fr}}
 @media(max-width:720px){.packs{grid-template-columns:1fr}}
 @media(max-width:980px){.app-side{width:66px;padding:16px 7px}.side-brand{padding:0 0 14px;justify-content:center}.side-brand div:last-child{display:none}.nav-group{display:none}.nav-item{justify-content:center;padding:10px 6px}.nav-item .label{display:none}.side-foot{justify-content:center}.side-foot div:last-child{display:none}.top-search{width:180px}.page-wrap{padding:18px}}
+/* ---------- 首次定位引导 ---------- */
+.setup{position:fixed;inset:0;background:rgba(18,26,23,.56);backdrop-filter:blur(4px);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.setup.show{display:flex}
+.setup-card{width:680px;max-width:100%;max-height:calc(100vh - 40px);overflow-y:auto;background:#FFFDF8;border:1px solid #E7DCC6;border-radius:18px;box-shadow:0 30px 80px rgba(18,30,25,.3)}
+.setup-top{padding:22px 26px 0}
+.setup-top .eyebrow{color:#A8823F}
+.setup-top h2{font-family:var(--serif);font-size:25px;margin:2px 0 6px;letter-spacing:-.01em}
+.setup-top p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.7}
+.setup-progress{display:flex;gap:6px;margin:16px 0 0}
+.setup-progress i{height:4px;flex:1;border-radius:999px;background:#EDE7DA;transition:.2s}
+.setup-progress i.on{background:var(--pine)}
+.setup-body{padding:16px 26px 6px}
+.setup-step{display:none}
+.setup-step.on{display:block;animation:fade .2s ease}
+.setup-q{font-size:13.5px;font-weight:700;margin:0 0 4px}
+.setup-hint{font-size:11.5px;color:var(--muted);margin:0 0 12px;line-height:1.65}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.opt{position:relative;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;text-align:left;cursor:pointer;min-height:64px;transition:.15s}
+.opt:hover{border-color:#C9C1B2}
+.opt b{display:block;font-size:13px}
+.opt span{display:block;font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
+.opt.on{border-color:var(--pine);background:var(--soft);box-shadow:inset 0 0 0 1px var(--pine)}
+.opt.on::after{content:"✓";position:absolute;right:10px;top:9px;color:var(--pine);font-weight:700;font-size:12px}
+.setup-chips{display:flex;gap:8px;flex-wrap:wrap}
+.setup-chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 13px;font-size:12.5px;cursor:pointer;min-height:38px}
+.setup-chip:hover{border-color:#C9C1B2}
+.setup-chip.on{background:var(--pine);border-color:var(--pine);color:#fff;font-weight:700}
+.setup-name{width:100%;margin-top:12px;height:40px}
+.setup-summary{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.8;color:#3E3B35}
+.setup-summary b{color:var(--ink)}
+.setup-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 26px 20px;margin-top:12px;border-top:1px dashed var(--line)}
+.setup-foot .right{display:flex;gap:8px}
+.setup-skip{border:none;background:none;color:var(--muted);font-size:11.5px;cursor:pointer;text-decoration:underline;padding:6px 0}
+@media(max-width:600px){.setup{padding:10px}.setup-card{max-height:calc(100vh - 20px);border-radius:15px}.setup-top{padding:18px 18px 0}.setup-body{padding:14px 18px 4px}.setup-foot{padding:10px 18px 16px}.opt-grid{grid-template-columns:1fr}.setup-top h2{font-size:21px}}
+/* ---------- 通知 ---------- */
+.icon-btn{position:relative}
+.notif-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--danger);border:1.5px solid #fff}
+.notif-item{display:flex;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:9px;background:#fff}
+.notif-ic{width:32px;height:32px;border-radius:9px;background:var(--soft);color:var(--pine);display:grid;place-items:center;flex:none}
+.notif-item b{display:block;font-size:12.5px;line-height:1.5}
+.notif-item span{display:block;font-size:11px;color:var(--muted);margin-top:3px;line-height:1.6}
+.notif-item time{display:block;font-size:10px;color:#9A948A;margin-top:4px}
+/* ---------- 发布链路 ---------- */
+.flow-card{margin-bottom:16px}
+.flow-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.flow-step{border:1px solid var(--line);border-radius:11px;padding:10px 11px;background:#FBFAF6;position:relative}
+.flow-step b{display:block;font-family:var(--serif);font-size:21px;line-height:1.2;margin-top:4px}
+.flow-step span{font-size:10.5px;color:var(--muted)}
+.flow-step em{display:block;font-style:normal;font-size:9.5px;color:#A8823F;margin-top:3px}
+.flow-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#EFEDE7;color:var(--muted);white-space:nowrap}
+.flow-badge i{width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block}
+.flow-badge.draft{background:#EEF1F7;color:#4C5E7A}
+.flow-badge.pub{background:#EDF1EE;color:#4D6B60}
+.flow-badge.review{background:#F3EEE2;color:#8A682F}
+.flow-badge.pass{background:#E7F2EA;color:var(--ok)}
+.flow-badge.data{background:var(--pine);color:#fff}
+/* ---------- 改写工具 ---------- */
+.rewrite-bar{grid-column:1/-1;background:#FBFAF6;border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-top:12px}
+.rw-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+.rw-title b{font-size:11.5px}
+.rw-title span{font-size:10.5px;color:var(--muted)}
+.rw-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px}
+.rw-row:last-child{margin-bottom:0}
+.rw-label{font-size:10px;letter-spacing:.08em;color:var(--brass);font-weight:700;min-width:30px;padding-top:8px}
+.rw-chips{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.rw-chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;font-size:11.5px;cursor:pointer;min-height:30px}
+.rw-chip:hover{border-color:#C9C1B2}
+.rw-chip.on{background:var(--pine);border-color:var(--pine);color:#fff;font-weight:700}
+.rw-note{grid-column:1/-1;font-size:10.5px;color:var(--muted);margin-top:4px}
+#draftImage .img-ph.cv-film{background:linear-gradient(150deg,#2E4A41,#7E9A8A 48%,#DCC9A9)}
+#draftImage .img-ph.cv-warm{background:linear-gradient(150deg,#8A5A3B,#C99B6C 50%,#F0DCC2)}
+#draftImage .img-ph.cv-card{background:linear-gradient(150deg,#1F5C4D,#3E7A69 55%,#E9E2D3)}
+/* ---------- 手机灵感 ---------- */
+.m-notice{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:#FFFDF8;border:1px solid #E7DCC6;border-radius:11px;padding:10px 12px;margin-bottom:10px;font-size:11.5px;line-height:1.5;color:#3F5C52;cursor:pointer}
+.m-notice .ic{width:15px;height:15px;color:var(--brass);flex:none}
+.m-notice b{color:var(--ink)}
+.m-flow{display:flex;align-items:center;gap:4px;margin:8px 0 2px}
+.m-flow div{flex:1;text-align:center;background:#FBFAF6;border:1px solid var(--line);border-radius:8px;padding:6px 2px}
+.m-flow b{display:block;font-family:var(--serif);font-size:15px;line-height:1.2}
+.m-flow span{display:block;font-size:8.5px;color:var(--muted);margin-top:1px}
+.m-flow i{font-style:normal;color:#C9C1B2;font-size:9px}
+.m-hot{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px dashed var(--line);cursor:pointer}
+.m-hot:last-child{border-bottom:none}
+.m-hot .rk{font-family:var(--serif);font-size:16px;color:var(--brass);width:20px;flex:none}
+.m-hot .body{flex:1;min-width:0}
+.m-hot b{display:block;font-size:12px;line-height:1.45}
+.m-hot span{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+.m-hot .sc{font-family:var(--serif);font-size:15px;color:var(--brass);flex:none}
+.m-break-sec{margin-bottom:12px}
+.m-break-sec h4{font-size:10.5px;letter-spacing:.1em;color:var(--brass);margin:0 0 5px}
+.m-break-sec p,.m-break-sec li{font-size:12px;line-height:1.75;color:#3E3B35}
+.m-break-sec ul{margin:0;padding-left:16px}
+.m-tabs button{padding:4px 6px}
 </style>
 </head>
 <body>
@@ -543,6 +638,7 @@ body{font-size:14.5px}
 <div class="proto-bar">
   <div class="proto-brand"><span class="mk">旅</span><div>爆款内容工作台 <em>PROTOTYPE</em></div></div>
   <div class="proto-controls">
+    <button class="proto-btn" id="demoSetup">首次引导</button>
     <div class="device-toggle" id="deviceToggle">
       <button class="active" data-device="desktop">桌面</button>
       <button data-device="mobile">手机 H5</button>
@@ -552,6 +648,67 @@ body{font-size:14.5px}
 </div>
 
 <div class="stage">
+<!-- ================= 首次定位引导 ================= -->
+<div class="setup" id="setup" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+  <div class="setup-card">
+    <div class="setup-top">
+      <div class="eyebrow">开始之前 · 约 30 秒</div>
+      <h2 id="setupTitle">先告诉我 3 件事，今天就有东西可发</h2>
+      <p>定位决定「今日雷达」推什么、素材怎么排。它只影响推荐范围，不会限制你写什么，随时可以改。</p>
+      <div class="setup-progress" id="setupProgress"><i class="on"></i><i></i><i></i></div>
+    </div>
+    <div class="setup-body">
+      <div class="setup-step on" data-step="1">
+        <p class="setup-q">1. 你主要做哪个方向？</p>
+        <p class="setup-hint">先选一个主方向，后面可以多选关注方向。</p>
+        <div class="opt-grid" id="setupDirections">
+          <button class="opt on" data-direction="亲子度假"><b>亲子度假</b><span>带娃出行、行程节奏、酒店细节</span></button>
+          <button class="opt" data-direction="酒店与度假村"><b>酒店与度假村</b><span>房型、服务、餐饮与度假体验</span></button>
+          <button class="opt" data-direction="路线攻略"><b>路线攻略</b><span>目的地串联、天数安排、交通</span></button>
+          <button class="opt" data-direction="海岛与滑雪"><b>海岛与滑雪</b><span>季节性目的地、装备与避坑</span></button>
+        </div>
+      </div>
+      <div class="setup-step" data-step="2">
+        <p class="setup-q">2. 你的账号人设更像谁？</p>
+        <p class="setup-hint">人设决定语气、标题钩子和内容边界，生成时会按它改写。</p>
+        <div class="opt-grid" id="setupPersonas">
+          <button class="opt on" data-persona="亲子度假体验官"><b>亲子度假体验官</b><span>真实带娃体验 · 少而精 · 重细节</span></button>
+          <button class="opt" data-persona="酒店测评控"><b>酒店测评控</b><span>房型对比 · 服务细节 · 值不值</span></button>
+          <button class="opt" data-persona="路线攻略党"><b>路线攻略党</b><span>天数安排 · 交通 · 可执行清单</span></button>
+        </div>
+        <input class="setup-name" id="setupName" type="text" value="Yuki 在路上" aria-label="账号昵称" placeholder="你的账号昵称">
+      </div>
+      <div class="setup-step" data-step="3">
+        <p class="setup-q">3. 哪些内容你不想碰？</p>
+        <p class="setup-hint">可多选。生成与发布前会主动避开这些表达。</p>
+        <div class="setup-chips" id="setupTaboos">
+          <button class="setup-chip on" data-taboo="绝对化用语">绝对化用语</button>
+          <button class="setup-chip on" data-taboo="具体价格与报价">具体价格与报价</button>
+          <button class="setup-chip" data-taboo="医疗与功效宣称">医疗与功效宣称</button>
+          <button class="setup-chip" data-taboo="高风险项目">高风险项目</button>
+          <button class="setup-chip" data-taboo="政治与争议话题">政治与争议话题</button>
+        </div>
+        <p class="setup-q" style="margin-top:16px">每天什么时候提醒你？</p>
+        <p class="setup-hint">今天的内容备好后，通过站内信或微信提醒你，不用自己记着来。</p>
+        <div class="setup-chips" id="setupRemind">
+          <button class="setup-chip on" data-remind="微信服务号 · 09:00">微信 09:00</button>
+          <button class="setup-chip" data-remind="站内信 · 09:00">站内信 09:00</button>
+          <button class="setup-chip" data-remind="站内信 · 20:00">站内信 20:00</button>
+        </div>
+        <div class="setup-summary" id="setupSummary" style="margin-top:14px"></div>
+      </div>
+    </div>
+    <div class="setup-foot">
+      <button class="setup-skip" id="setupSkip">先跳过，随便看看</button>
+      <div class="right">
+        <button class="btn" id="setupPrev" style="display:none">上一步</button>
+        <button class="btn primary" id="setupNext">下一步</button>
+        <button class="btn primary" id="setupDone" style="display:none">完成，生成今日推荐</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ================= 桌面端 ================= -->
 <div class="desktop" id="desktopApp">
   <aside class="app-side">
@@ -1302,8 +1459,9 @@ body{font-size:14.5px}
       <section class="m-page active" data-mpage="mtasks">
         <div class="m-head">
           <div><h2 class="m-title">今日任务</h2><div class="m-sub">3 个新素材可写 · 1 条待回填</div></div>
-          <div class="avatar" style="width:32px;height:32px;font-size:11px">Y</div>
+          <div class="avatar" id="mTasksAvatar" style="width:32px;height:32px;font-size:11px">Y</div>
         </div>
+        <button class="m-notice" id="mNotice"><svg class="ic"><use href="#i-bell"/></svg><span><b>09:00 提醒</b> · 今日 3 篇已按你的定位备好，点这里查看</span></button>
 
         <div class="m-card" style="border-color:#E7DCC6;background:linear-gradient(155deg,#FFFDF8,#F8F2E6)">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="badge brass">今日推荐</span><span style="font-size:9.5px;color:var(--muted)">已按你的定位改好</span></div>
@@ -1314,6 +1472,7 @@ body{font-size:14.5px}
             <button class="btn sm" data-mgo="mpack">看素材与配图</button>
           </div>
           <div class="m-note" style="margin:9px 0 0">复制后去小红书粘贴发布，回来在「发布」页回填链接。</div>
+          <div class="m-note" id="mTodayDemo" style="display:none">当前示例仍为亲子方向，接入数据源后按你的方向生成。</div>
         </div>
 
         <div class="m-card">
@@ -1359,6 +1518,38 @@ body{font-size:14.5px}
         <div class="m-card">
           <b style="font-size:12.5px">素材授权更新</b>
           <div class="m-sub" style="margin-top:4px">「少女峰 · 冬」素材授权将于 11-28 到期，届时将下架。</div>
+        </div>
+      </section>
+
+      <!-- 找灵感 -->
+      <section class="m-page" data-mpage="minspire">
+        <div class="m-head"><div><h2 class="m-title">找灵感</h2><div class="m-sub">只看你的方向 · 每天 09:00 更新</div></div></div>
+        <div class="setup-chips" style="margin-bottom:10px">
+          <button class="setup-chip on" data-toast="已筛选：亲子">亲子</button><button class="setup-chip" data-toast="已筛选：日本">日本</button><button class="setup-chip" data-toast="已筛选：海岛">海岛</button><button class="setup-chip" data-toast="已筛选：滑雪">滑雪</button>
+        </div>
+        <div class="m-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><b style="font-size:12.5px">正在起量的爆款</b><span class="m-sub">点一条看拆解</span></div>
+          <div class="m-hot" data-mbreak="0"><span class="rk">01</span><div class="body"><b>带 4 岁娃去京都，5 天只走 3 个景点</b><span>1.8w 赞 · 6,420 藏 · 亲子向</span></div><span class="sc">9.2</span></div>
+          <div class="m-hot" data-mbreak="1"><span class="rk">02</span><div class="body"><b>冲绳亲子酒店，我最后悔的是订早了</b><span>1.2w 赞 · 4,180 藏 · 酒店细节</span></div><span class="sc">8.8</span></div>
+          <div class="m-hot" data-mbreak="2"><span class="rk">03</span><div class="body"><b>北海道第一次滑雪，孩子哭了两次</b><span>9,600 赞 · 2,940 藏 · 避坑</span></div><span class="sc">8.4</span></div>
+        </div>
+        <div class="m-card">
+          <b style="font-size:12.5px">上升话题</b>
+          <div class="setup-chips" style="margin-top:8px"><button class="setup-chip" data-toast="已加入关注：#京都亲子赏枫">#京都亲子赏枫 +38%</button><button class="setup-chip" data-toast="已加入关注：#冲绳亲子酒店">#冲绳亲子酒店 +26%</button><button class="setup-chip" data-toast="已加入关注：#带娃滑雪">#带娃滑雪 +19%</button></div>
+          <div class="m-note">热度是平台公开数据的归一化指数，用来比较趋势，不等于站内真实搜索量。</div>
+        </div>
+      </section>
+
+      <!-- 手机拆解 -->
+      <section class="m-page" data-mpage="mbreak">
+        <button class="m-back" data-mgo="minspire"><svg class="ic" style="width:14px;height:14px"><use href="#i-back"/></svg>找灵感</button>
+        <div class="m-head" style="padding-top:0"><div><h2 class="m-title" id="mBreakTitle" style="font-size:19px">带 4 岁娃去京都</h2><div class="m-sub" id="mBreakMeta">1.8w 赞 · 6,420 藏 · 亲子向</div></div></div>
+        <div class="m-card">
+          <div class="m-break-sec"><h4>为什么有效</h4><p id="mBreakWhy"></p></div>
+          <div class="m-break-sec"><h4>结构拆解</h4><ul id="mBreakStruct"></ul></div>
+          <div class="m-break-sec"><h4>你的版本（已按人设改写）</h4><div class="m-copy" id="mBreakDraft"></div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary sm" id="mBreakCopy">复制仿写稿</button><button class="btn sm" id="mBreakAlt">换一版</button><button class="btn sm" data-mgo="mpack">看素材</button></div>
+          <div class="m-note">复制后去小红书发布，回来在「发布」页回填链接。</div>
         </div>
       </section>
 
@@ -1429,6 +1620,18 @@ body{font-size:14.5px}
         <div class="m-note" style="margin:0 0 10px">平台不提供自动发布：请复制文案与图片，在小红书 App 内手动发布，再回来粘贴链接。这样不会触发账号风控。</div>
 
         <div class="m-card">
+          <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:12.5px">本周发布链路</b><span class="m-sub">卡在哪一步就补哪一步</span></div>
+          <div class="m-flow">
+            <div><b>7</b><span>已复制</span></div><i>›</i>
+            <div><b>5</b><span>已发布</span></div><i>›</i>
+            <div><b>4</b><span>已回填</span></div><i>›</i>
+            <div><b>1</b><span>审核中</span></div><i>›</i>
+            <div><b>4</b><span>有数据</span></div>
+          </div>
+          <div class="m-note" style="margin-bottom:0">「审核中」通过后自动进入数据回看，不需要再操作。</div>
+        </div>
+
+        <div class="m-card">
           <div class="m-field"><label>关联素材包</label><select style="width:100%"><option>北海道滑雪｜亲子向</option><option>京都赏枫 5 天 4 晚｜闺蜜向</option><option>北欧极光｜情侣向</option></select></div>
           <div class="m-field"><label>发布平台</label><select style="width:100%"><option>小红书</option><option>抖音</option><option>视频号</option></select></div>
           <div class="m-field"><label>发布链接 <span style="color:var(--danger)">*</span></label><input type="url" id="mPublishLink" placeholder="粘贴笔记链接"></div>
@@ -1439,12 +1642,33 @@ body{font-size:14.5px}
         </div>
       </section>
 
+      <!-- 手机通知 -->
+      <section class="m-page" data-mpage="mnotif">
+        <button class="m-back" data-mgo="mtasks"><svg class="ic" style="width:14px;height:14px"><use href="#i-back"/></svg>返回</button>
+        <div class="m-head" style="padding-top:0"><div><h2 class="m-title">通知</h2><div class="m-sub">09:00 · 只在有更新时提醒</div></div></div>
+        <div class="m-card" style="padding:4px 14px">
+          <div class="rule-row"><div><b>今日 3 篇已备好</b><span>亲子度假 · 已避开 12 篇同质内容</span></div><span class="badge brass">新</span></div>
+          <div class="rule-row"><div><b>1 条内容待回填</b><span>「北海道滑雪」已发布 30 小时</span></div><button class="link" data-mgo="mpublish">去回填</button></div>
+          <div class="rule-row"><div><b>1 个素材授权 7 天后到期</b><span>「少女峰 · 冬」到期自动下架</span></div><span class="badge">查看</span></div>
+        </div>
+        <div class="m-card">
+          <b style="font-size:12.5px">提醒设置</b>
+          <div class="rule-row"><div><b>每日 09:00</b><span id="mNotifRemind">微信服务号</span></div><div class="switch on" data-switch></div></div>
+          <div class="m-note" style="margin-bottom:0">站内信与微信可同时开启；只在有更新时提醒。</div>
+        </div>
+        <button class="btn block" data-mgo="mprofile">修改提醒设置</button>
+      </section>
+
       <!-- 我的 -->
       <section class="m-page" data-mpage="mprofile">
         <div class="m-head"><div><h2 class="m-title">我的</h2><div class="m-sub">创作者 · 已加入 86 天</div></div></div>
         <div class="m-card" style="display:flex;gap:12px;align-items:center">
-          <div class="avatar" style="width:48px;height:48px;font-size:16px">Y</div>
-          <div><b style="font-size:14px">Yuki 在路上</b><div class="m-sub">亲子度假体验官 · 小红书 8.6k 粉</div></div>
+          <div class="avatar" id="mProfileAvatar" style="width:48px;height:48px;font-size:16px">Y</div>
+          <div><b style="font-size:14px" id="mProfileName">Yuki 在路上</b><div class="m-sub" id="mProfileRole">亲子度假体验官 · 小红书 8.6k 粉</div></div>
+        </div>
+        <div class="m-card" style="padding:4px 14px">
+          <div class="rule-row" id="mSetupEntry"><div><b>我的定位</b><span id="mProfileDir">亲子度假 · 亲子度假体验官</span></div><svg class="ic" style="width:15px;height:15px;color:var(--muted)"><use href="#i-arrow"/></svg></div>
+          <div class="rule-row" id="mRemindEntry"><div><b>每日提醒</b><span id="mProfileRemind">微信服务号 · 每天 09:00</span></div><div class="switch on" data-switch id="mRemindSwitch"></div></div>
         </div>
         <div class="m-card" style="display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center;gap:6px">
           <div><div style="font-family:var(--serif);font-size:19px">42</div><div class="m-sub">已发布</div></div>
@@ -1464,6 +1688,7 @@ body{font-size:14.5px}
 
     <nav class="m-tabs">
       <button class="active" data-mtab="mtasks"><svg class="ic"><use href="#i-home"/></svg>今日</button>
+      <button data-mtab="minspire"><svg class="ic"><use href="#i-radar"/></svg>灵感</button>
       <button data-mtab="mmaterials"><svg class="ic"><use href="#i-folder"/></svg>素材</button>
       <button data-mtab="mpublish"><svg class="ic"><use href="#i-send"/></svg>发布</button>
       <button data-mtab="mprofile"><svg class="ic"><use href="#i-users"/></svg>我的</button>
@@ -1490,7 +1715,7 @@ body{font-size:14.5px}
     <button class="nav-item" data-page="p-profile" data-crumb="我的账号"><svg class="ic"><use href="#i-users"/></svg><span class="label">我的账号</span></button>
     <div class="side-foot">
       <div class="avatar">Y</div>
-      <div><b>Yuki 在路上</b><span>亲子度假体验官</span></div>
+      <div><b id="sideName">Yuki 在路上</b><span id="sideRole">亲子度假体验官</span></div>
     </div>
   </aside>
 
@@ -1501,7 +1726,7 @@ body{font-size:14.5px}
       <div class="top-right">
         <button class="btn primary sm" data-goto="p-create" style="min-height:32px"><svg class="ic" style="width:13px;height:13px"><use href="#i-pen"/></svg>开始创作</button>
         <div class="health"><i></i>数据更新 09:00</div>
-        <button class="icon-btn" data-toast="暂无新的系统通知" aria-label="系统通知"><svg class="ic" style="width:16px;height:16px"><use href="#i-bell"/></svg></button>
+        <button class="icon-btn" id="notifBtn" aria-label="通知"><svg class="ic" style="width:16px;height:16px"><use href="#i-bell"/></svg><i class="notif-dot" id="notifDot"></i></button>
         <div class="avatar" style="width:28px;height:28px;font-size:11px">Y</div>
       </div>
     </header>
@@ -1513,8 +1738,8 @@ body{font-size:14.5px}
         <div class="home-band">
           <div class="hb-greet">
             <span class="eyebrow">2026年11月21日 · 周五</span>
-            <b>早上好，Yuki</b>
-            <span>今天不用想写什么，下面 3 篇已经备好</span>
+            <b id="homeGreet">早上好，Yuki</b>
+            <span id="homeGreetSub">今天不用想写什么，下面 3 篇已经备好</span>
           </div>
           <div class="hb-search">
             <svg class="ic" style="width:17px;height:17px"><use href="#i-search"/></svg>
@@ -1535,7 +1760,8 @@ body{font-size:14.5px}
             <div>
               <div class="eyebrow" style="color:#A8823F">今日雷达 · 11-21 更新</div>
               <h2>今天发这 3 篇，已经按你的人设改好</h2>
-              <p>定位：亲子度假 · 4 岁娃 · 不赶行程 · 酒店细节。选一条复制，到小红书粘贴发布，发完回来回填。</p>
+              <p id="todayPersona">定位：亲子度假 · 4 岁娃 · 不赶行程 · 酒店细节。选一条复制，到小红书粘贴发布，发完回来回填。</p>
+              <div class="scope-band" id="todayDemoNote" style="display:none;margin:10px 0 0"></div>
             </div>
             <div class="today-progress">
               <b id="todayProgress">0/1</b>
@@ -2046,6 +2272,26 @@ body{font-size:14.5px}
                   <li><svg class="ic" style="width:14px;height:14px;color:#8A682F"><use href="#i-clock"/></svg>AI 辅助内容需按平台要求标识</li>
                 </ul>
               </div>
+              <div class="rewrite-bar" id="rewriteBar">
+                <div class="rw-title"><b>不满意？换个写法</b><span id="rwCount">当前：省力节奏 · 反常识开头 · 胶片实景</span></div>
+                <div class="rw-row"><span class="rw-label">角度</span><div class="rw-chips" id="rwAngles">
+                  <button class="rw-chip on" data-angle="省力节奏">省力节奏</button>
+                  <button class="rw-chip" data-angle="酒店细节">酒店细节</button>
+                  <button class="rw-chip" data-angle="预算感受">预算感受</button>
+                  <button class="rw-chip" data-angle="避坑清单">避坑清单</button>
+                </div></div>
+                <div class="rw-row"><span class="rw-label">开头</span><div class="rw-chips" id="rwOpenings">
+                  <button class="rw-chip on" data-opening="反常识">反常识</button>
+                  <button class="rw-chip" data-opening="时间锚点">时间锚点</button>
+                  <button class="rw-chip" data-opening="先提问">先提问</button>
+                </div></div>
+                <div class="rw-row"><span class="rw-label">配图</span><div class="rw-chips" id="rwCovers">
+                  <button class="rw-chip on" data-cover="film">胶片实景</button>
+                  <button class="rw-chip" data-cover="warm">暖色酒店</button>
+                  <button class="rw-chip" data-cover="card">信息图卡</button>
+                </div></div>
+                <div class="rw-note" id="rwNote">同一素材多人使用，至少换一个角度和开头，能显著降低同质。</div>
+              </div>
             </div>
             <details class="prompt-box">
               <summary>查看本次生成提示词（文案 → 图片）</summary>
@@ -2144,6 +2390,21 @@ body{font-size:14.5px}
 
         <div class="scope-band"><svg class="ic"><use href="#i-link"/></svg><div>数据来源分三层：<b>手动回填</b>、<b>粘贴笔记链接读取公开数据</b>、<b>账号授权</b>（小红书暂未开放，抖音评估中）。平台不索取密码、不保存 Cookie，也不做后台抓取。</div></div>
 
+        <div class="card flow-card">
+          <div class="card-head"><h3>本周发布链路</h3><span class="small muted">复制 → 已发布 → 回填 → 审核 → 数据；卡在哪一步，就去补哪一步</span></div>
+          <div class="flow-steps">
+            <div class="flow-step"><span>① 已复制</span><b id="flowCopy">7</b><em>文案已进剪贴板</em></div>
+            <div class="flow-step"><span>② 已发布</span><b id="flowPub">5</b><em>你手动发布完成</em></div>
+            <div class="flow-step"><span>③ 已回填</span><b id="flowFill">4</b><em>链接或截图已提交</em></div>
+            <div class="flow-step"><span>④ 审核中</span><b id="flowReview">1</b><em>核对账号与素材</em></div>
+            <div class="flow-step"><span>⑤ 有数据</span><b id="flowData">4</b><em>公开互动已回传</em></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px">
+            <span class="small muted">「审核中」通过后自动进入数据回看，不需要再操作。</span>
+            <button class="btn sm" id="simulateFlow">模拟 24 小时后</button>
+          </div>
+        </div>
+
         <div class="kpis">
           <div class="kpi"><div class="kpi-top"><span>曝光</span><span class="delta">+12%</span></div><div class="kpi-val">8.6w</div><div class="kpi-sub">较上周</div></div>
           <div class="kpi"><div class="kpi-top"><span>互动</span><span class="delta">+9%</span></div><div class="kpi-val">4,280</div><div class="kpi-sub">赞藏评合计</div></div>
@@ -2177,13 +2438,14 @@ body{font-size:14.5px}
           <div class="card-head" style="padding:10px 0 0"><h3>我的发布</h3><span class="small muted">共 12 条 · 待回填 1 条</span></div>
           <div class="tbl-wrap">
             <table class="tbl">
-              <thead><tr><th>内容</th><th>发布时间</th><th>曝光</th><th>互动</th><th>回填</th><th>建议</th></tr></thead>
-              <tbody>
-                <tr><td class="t-title">带娃去京都，5 天不赶不累的路线</td><td class="num muted">11-19</td><td class="num">3.2w</td><td class="num">1,860</td><td><span class="badge ok">已回填</span></td><td>可复制结构</td></tr>
-                <tr><td class="t-title">冲绳亲子酒店怎么选，看这 3 点</td><td class="num muted">11-18</td><td class="num">2.1w</td><td class="num">1,120</td><td><span class="badge ok">已回填</span></td><td>可复制结构</td></tr>
-                <tr><td class="t-title">北海道滑雪，孩子第一次上雪场</td><td class="num muted">11-17</td><td class="num">1.4w</td><td class="num">760</td><td><button class="badge brass" data-drawer="backfill" style="border:none;cursor:pointer">待回填 · 去补</button></td><td>先补链接</td></tr>
-                <tr><td class="t-title">海岛亲子游，行李清单</td><td class="num muted">11-16</td><td class="num">0.9w</td><td class="num">540</td><td><span class="badge ok">已回填</span></td><td>换开头</td></tr>
-                <tr><td class="t-title">带爸妈去日本，行程怎么留白</td><td class="num muted">11-15</td><td class="num">1.0w</td><td class="num">610</td><td><span class="badge ok">已回填</span></td><td>观察</td></tr>
+              <thead><tr><th>内容</th><th>发布时间</th><th>曝光</th><th>互动</th><th>进度</th><th>建议</th></tr></thead>
+              <tbody id="contentTbody">
+                <tr id="copiedRow" style="display:none"><td class="t-title" id="copiedTitle">今日备稿</td><td class="num muted">今天</td><td class="num muted">—</td><td class="num muted">—</td><td><span class="flow-badge draft"><i></i>已复制待发布</span></td><td><button class="link" data-toast="文案已在剪贴板，打开小红书粘贴发布">去发布</button></td></tr>
+                <tr><td class="t-title">带娃去京都，5 天不赶不累的路线</td><td class="num muted">11-19</td><td class="num">3.2w</td><td class="num">1,860</td><td><span class="flow-badge data"><i></i>有数据</span></td><td>可复制结构</td></tr>
+                <tr><td class="t-title">冲绳亲子酒店怎么选，看这 3 点</td><td class="num muted">11-18</td><td class="num">2.1w</td><td class="num">1,120</td><td><span class="flow-badge data"><i></i>有数据</span></td><td>可复制结构</td></tr>
+                <tr><td class="t-title">北海道滑雪，孩子第一次上雪场</td><td class="num muted">11-17</td><td class="num">1.4w</td><td class="num">760</td><td><span class="flow-badge pub"><i></i>已发布 · 待回填</span></td><td><button class="badge brass" data-drawer="backfill" style="border:none;cursor:pointer">补回填</button></td></tr>
+                <tr><td class="t-title">海岛亲子游，行李清单</td><td class="num muted">11-16</td><td class="num">0.9w</td><td class="num">540</td><td><span class="flow-badge review"><i></i>审核中</span></td><td>等校验</td></tr>
+                <tr><td class="t-title">带爸妈去日本，行程怎么留白</td><td class="num muted">11-15</td><td class="num">1.0w</td><td class="num">610</td><td><span class="flow-badge data"><i></i>有数据</span></td><td>观察</td></tr>
               </tbody>
             </table>
           </div>
@@ -2253,15 +2515,27 @@ body{font-size:14.5px}
           <div>
             <div class="card" style="margin-bottom:16px">
               <div style="display:flex;gap:14px;align-items:center">
-                <div class="avatar" style="width:52px;height:52px;font-size:18px">Y</div>
+                <div class="avatar" id="profileAvatar" style="width:52px;height:52px;font-size:18px">Y</div>
                 <div style="flex:1">
-                  <b style="font-size:15px">Yuki 在路上</b>
-                  <div class="small muted" style="margin-top:2px">亲子度假体验官 · 已加入 86 天</div>
+                  <b style="font-size:15px" id="profileName">Yuki 在路上</b>
+                  <div class="small muted" style="margin-top:2px" id="profileRole">亲子度假体验官 · 已加入 86 天</div>
                 </div>
                 <button class="btn sm" data-toast="已打开授权管理">管理授权</button>
               </div>
               <div class="rule-row" style="margin-top:8px"><div><b>小红书账号</b><span>已授权 · 数据更新于今日 09:00</span></div><span class="badge ok">已连接</span></div>
               <div class="rule-row"><div><b>抖音账号</b><span>未授权 · 暂不展示该平台数据</span></div><button class="link" data-toast="已发送授权引导">去授权</button></div>
+            </div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-head"><h3>我的定位</h3><button class="link" id="setupEdit">重新设置</button></div>
+              <div class="rule-row"><div><b>内容方向</b><span>决定今日推荐与趋势范围</span></div><b id="profileDir" style="font-size:12.5px">亲子度假</b></div>
+              <div class="rule-row"><div><b>账号人设</b><span>决定语气与标题风格</span></div><b id="profilePersona" style="font-size:12.5px">亲子度假体验官</b></div>
+              <div class="rule-row"><div><b>内容边界</b><span>生成与发布前自动避开</span></div><b id="profileTaboos" style="font-size:12.5px">绝对化用语、具体价格</b></div>
+            </div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-head"><h3>每日提醒</h3><span class="badge ok" id="remindBadge">已开启</span></div>
+              <div class="rule-row"><div><b>今天内容已备好</b><span id="profileRemind">微信服务号 · 每天 09:00</span></div><div class="switch on" data-switch id="remindSwitch"></div></div>
+              <div class="rule-row"><div><b>待回填提醒</b><span>发布 24 小时后仍未回填时提醒</span></div><div class="switch on" data-switch></div></div>
+              <div class="m-note" style="margin-bottom:0">微信提醒需关注服务号；站内信在顶部铃铛查看。</div>
             </div>
             <div class="card">
               <div class="card-head"><h3>我的数据</h3></div>
@@ -2274,8 +2548,8 @@ body{font-size:14.5px}
           </div>
           <div>
             <div class="card" style="margin-bottom:16px">
-              <div class="card-head"><h3>人设与偏好</h3><button class="link" data-toast="已保存偏好">编辑</button></div>
-              <div class="tags" style="margin-bottom:6px"><span>亲子</span><span>日本</span><span>海岛</span><span>酒店细节</span><span>5–7 天</span></div>
+              <div class="card-head"><h3>人设与偏好</h3><button class="link" id="setupEdit2">编辑</button></div>
+              <div class="tags" style="margin-bottom:6px" id="profileTags"><span>亲子</span><span>日本</span><span>海岛</span><span>酒店细节</span><span>5–7 天</span></div>
               <div class="rule-row"><div><b>亲子友好优先</b><span>影响趋势与素材推荐</span></div><div class="switch on" data-switch></div></div>
               <div class="rule-row"><div><b>酒店与房型</b><span>推荐含酒店细节的素材包</span></div><div class="switch on" data-switch></div></div>
               <div class="rule-row"><div><b>短途周末</b><span>打开后增加 2–3 天线路</span></div><div class="switch" data-switch></div></div>
@@ -2341,6 +2615,34 @@ body{font-size:14.5px}
       <div style="display:flex;gap:8px">
         <button class="btn primary" id="breakdownWrite">直接仿写这篇</button>
         <button class="btn" data-toast="已加入选题池">加入选题池</button>
+      </div>
+    </div>
+
+    <!-- 通知中心 -->
+    <div class="drawer-panel" data-dpanel="notif">
+      <div class="d-sec">
+        <h4>今天 09:00 · 已送达</h4>
+        <p class="small muted">每天内容备好后，按你的提醒设置推送一次；只在有更新时提醒，不打扰。</p>
+      </div>
+      <div class="notif-item">
+        <div class="notif-ic"><svg class="ic" style="width:16px;height:16px"><use href="#i-radar"/></svg></div>
+        <div style="flex:1"><b>今日 3 篇已按你的定位备好</b><span>亲子度假 · 亲子度假体验官 · 已避开 12 篇同质内容</span><time>09:00 · 站内信</time></div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-ic" style="background:var(--soft2);color:#8A682F"><svg class="ic" style="width:16px;height:16px"><use href="#i-clock"/></svg></div>
+        <div style="flex:1"><b>1 条内容待回填</b><span>「北海道滑雪」已发布 30 小时，补齐链接后才能进入复盘</span><time>09:00 · 站内信</time></div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-ic" style="background:#EEF1F7;color:#4C5E7A"><svg class="ic" style="width:16px;height:16px"><use href="#i-folder"/></svg></div>
+        <div style="flex:1"><b>「少女峰 · 冬」授权 7 天后到期</b><span>到期自动下架，需要的话先保存到你的素材</span><time>昨天 18:20</time></div>
+      </div>
+      <div class="d-sec" style="margin-top:16px">
+        <h4>提醒设置</h4>
+        <p class="small">当前：<b id="notifRemindText">微信服务号 · 09:00</b></p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn primary" id="notifGo">去看今日推荐</button>
+        <button class="btn" id="notifSettings">修改提醒时间</button>
       </div>
     </div>
 
@@ -2978,30 +3280,6 @@ body{font-size:14.5px}
       showToast('已带入创作台，可继续改写标题与开头');
     });
   }
-  function markBackfilled(){
-    $$('button.badge[data-drawer="backfill"]').forEach(function(b){
-      var s = document.createElement('span');
-      s.className = 'badge ok';
-      s.textContent = '审核中';
-      b.replaceWith(s);
-    });
-    $$('#p-home tbody span.badge, #p-content tbody span.badge').forEach(function(s){
-      if(s.textContent.trim() === '待回填'){ s.className = 'badge ok'; s.textContent = '审核中'; }
-    });
-    var row = document.querySelector('#p-home .rule-row');
-    if(row && row.querySelector('b') && row.querySelector('b').textContent.indexOf('待回填') > -1){
-      row.querySelector('b').textContent = '1 条回填审核中';
-      var sub = row.querySelector('span');
-      if(sub) sub.textContent = '「北海道滑雪」已提交，校验通过后计入本周产出';
-      var btn = row.querySelector('button');
-      if(btn){
-        var s = document.createElement('span');
-        s.className = 'badge ok';
-        s.textContent = '审核中';
-        btn.replaceWith(s);
-      }
-    }
-  }
   var bfSubmit = $('#bfSubmit'), bfLink = $('#bfLink');
   if(bfSubmit){
     bfSubmit.addEventListener('click', function(){
@@ -3073,7 +3351,7 @@ body{font-size:14.5px}
       var card = $('#breakdownCard');
       var badge = card ? card.querySelector('.step-head .badge') : null;
       if(badge) badge.textContent = '基于 ' + picked + ' 篇样本';
-      if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
+      if(card && card.scrollIntoView) card.scrollIntoView({behavior:'smooth', block:'center'});
       showToast('已拆解 ' + picked + ' 篇样本，可继续选模板');
     });
   }
@@ -3095,7 +3373,7 @@ body{font-size:14.5px}
         renderForm();
         var chosen = document.querySelector('.bench-card.on[data-post]');
         if(currentForm === 'image' && chosen) fillDraftFromPost(parseInt(chosen.dataset.post, 10));
-        if(card){ card.style.display = 'block'; card.scrollIntoView({behavior:'smooth', block:'center'}); }
+        if(card){ card.style.display = 'block'; if(card.scrollIntoView) card.scrollIntoView({behavior:'smooth', block:'center'}); }
         showToast(currentForm === 'image' ? '图文初稿已生成：配文 + 4 张配图方案' : '视频脚本已生成：5 个分镜 + 口播稿');
       }, 700);
     });
@@ -3161,6 +3439,10 @@ body{font-size:14.5px}
         if(draft) text = draft.innerText.trim();
       }
       if(text) copyText(text);
+      if(el.closest('#draftImage')){
+        var h = document.querySelector('#draftImage .draft-box h5');
+        trackCopied(h ? h.textContent.trim() : '今日备稿');
+      }
       showToast(text ? (el.dataset.copy || '已复制') : '没有可复制的内容');
     });
   });
@@ -3200,6 +3482,251 @@ body{font-size:14.5px}
   ];
   var todayAltIndex = [0, 0, 0];
   var todayCopied = {};
+  /* ---------- 创作者定位 ---------- */
+  var PROFILE = {name:'Yuki 在路上', direction:'亲子度假', persona:'亲子度假体验官', taboos:['绝对化用语','具体价格与报价'], remind:'微信服务号 · 09:00', remindOn:true, done:false};
+  try{
+    var savedProfile = JSON.parse(localStorage.getItem('tc_profile_v1') || 'null');
+    if(savedProfile) PROFILE = Object.assign(PROFILE, savedProfile);
+  }catch(e){}
+  function saveProfile(){
+    try{ localStorage.setItem('tc_profile_v1', JSON.stringify(PROFILE)); }catch(e){}
+  }
+  var TABOO_SHORT = {'绝对化用语':'绝对化用语','具体价格与报价':'具体价格','医疗与功效宣称':'医疗宣称','高风险项目':'高风险项目','政治与争议话题':'争议话题'};
+
+  /* ---------- 改写变体 ---------- */
+  var LEADS = ['少去两个景点，孩子反而更开心。', '酒店不是越早订越便宜。', '孩子哭，多半不是因为摔。'];
+  var OPENINGS = {
+    '反常识': function(i){ return '先给结论：' + LEADS[i]; },
+    '时间锚点': function(){ return '11 月第 2 周去的，回来一周才整理，信息还热着。'; },
+    '先提问': function(){ return '带娃出门，你会把行程排满吗？我们这次反着来。'; }
+  };
+  var ANGLE_WRITE = [
+    {
+      '省力节奏': {title:'带 4 岁娃去京都，5 天只走 3 个景点，反而更轻松', body:[
+        '我家娃 4 岁，这次京都 5 天 4 晚，只安排了 3 个景点：清水寺、岚山小火车、伏见稻荷前段。',
+        '住东山附近的町屋，早上 8 点走到清水寺，9 点前就回酒店吃早饭，完全避开人流。',
+        '每天只做一件事，孩子记得住，大人也不累。行程和住宿清单放评论区，按年龄抄就行。'
+      ]},
+      '酒店细节': {title:'京都带娃住哪：町屋好看，但酒店更省力', body:[
+        '这次住了 2 晚町屋 + 2 晚酒店，结论先给：带 4 岁娃，酒店更省力。',
+        '町屋离清水寺近、拍照好，但隔音一般、楼梯陡，娃午睡容易被吵；酒店有电梯和早餐，早上能多睡 40 分钟。',
+        '素材包里有 6 张房型与公共空间实拍，订之前可以对照着看。'
+      ]},
+      '预算感受': {title:'京都 5 天 4 晚，带娃的钱花在哪最值', body:[
+        '这趟最值的开销是住在东山附近：每天省下 1 小时通勤，娃的情绪稳定很多。',
+        '最不值的是 2 日公交券，实际每天只坐 2 次，步行反而更方便。',
+        '账单拆成住宿、交通、门票、吃饭 4 类放在图里，按你的天数换算。'
+      ]},
+      '避坑清单': {title:'带 4 岁娃去京都，这 4 个坑别踩', body:[
+        '① 清水寺 9 点后旅行团集中，带娃尽量 8 点前到。',
+        '② 岚山小火车热门时段要提前订，现场经常只剩站票。',
+        '③ 稻荷大社全程爬完对 4 岁太长，走到千本鸟居前段就回。',
+        '④ 町屋楼梯陡，行李多的话优先选有电梯的酒店。'
+      ]}
+    },
+    {
+      '省力节奏': {title:'冲绳亲子酒店订早了，反而多花了 800', body:[
+        '带娃去冲绳，酒店真的不用抢早。我们提前 3 个月订，结果临行前两周同房型降了 800。',
+        '选酒店只看 3 点：有没有儿童泳池、早餐到几点、房间能不能加床。位置反而没那么重要，打车 10 分钟都能到。',
+        '把这次住的两家对比放图里了，带 4 岁娃可以直接抄。'
+      ]},
+      '酒店细节': {title:'冲绳亲子酒店，房型和早餐比位置更重要', body:[
+        '带娃住冲绳，先看房型能不能加床，再看早餐几点结束，最后才看离海滩多远。',
+        '这次住的两家都有儿童泳池，但一家早餐 7 点开、一家 6 点半，带早起的娃差别很大。',
+        '房型、泳池和早餐实拍都放进素材包了，订之前先看一遍。'
+      ]},
+      '预算感受': {title:'冲绳带娃 5 天，哪些钱可以省', body:[
+        '这趟最值得花的是直飞和亲子房，省下的是租车升级和网红餐厅。',
+        '租车选普通紧凑型就够，儿童座椅提前订；餐厅人均超过 300 的，带 4 岁娃基本吃不安稳。',
+        '把 5 天账单拆成 4 类放图里，按你的出发城市替换机票即可。'
+      ]},
+      '避坑清单': {title:'冲绳亲子游，这 3 个坑我替你踩了', body:[
+        '① 酒店别只看“海景”，带娃更常用的是泳池和洗衣房。',
+        '② 水族馆尽量一开门就去，11 点后旅行团和亲子团集中。',
+        '③ 租车还车留足 40 分钟，国际航班柜台排队比想象中久。'
+      ]}
+    },
+    {
+      '省力节奏': {title:'第一次带娃滑雪，这 3 件事没做孩子会哭', body:[
+        '4 岁第一次上雪场，我们没报课，先在戏雪区玩了两小时。',
+        '三件事一定要提前做：护目镜别省、手套带两副、下午 3 点前撤。',
+        '孩子哭不是因为摔，是因为冷和累。第二天我们只玩半天，反而全程开心。'
+      ]},
+      '酒店细节': {title:'带娃滑雪，ski-in/out 酒店值不值', body:[
+        '带 4 岁娃滑雪，酒店离缆车越近越值：省下的不是路，是穿脱装备的时间。',
+        '这次住的 ski-in/out 酒店有烘干房，晚上把雪服烘干，第二天早上直接穿。',
+        '房型选了榻榻米，娃在地上打滚也不怕摔；素材包里有房型和雪具房实拍。'
+      ]},
+      '预算感受': {title:'带娃滑雪，租装备还是买装备', body:[
+        '4 岁长得快，雪服雪裤建议租，护目镜和手套建议买。',
+        '雪场租装备排队最久的是早上 9 点，提前一天下午租好，第二天直接上。',
+        '这趟装备花费和租赁价对比放图里了，按身高选就行。'
+      ]},
+      '避坑清单': {title:'第一次带娃滑雪，这 4 件事别省', body:[
+        '① 护目镜别省，雪地反光比冷更伤眼。',
+        '② 手套带两副，湿了能换，孩子才不闹。',
+        '③ 下午 3 点前撤，降温后孩子最容易崩溃。',
+        '④ 别急着报课，先在戏雪区玩熟再上雪道。'
+      ]}
+    }
+  ];
+  var COVER_STYLES = {
+    film:{cls:'cv-film', label:'胶片实景', note:'封面用清晨实景，真实感强'},
+    warm:{cls:'cv-warm', label:'暖色酒店', note:'封面换成酒店暖光，适合酒店向'},
+    card:{cls:'cv-card', label:'信息图卡', note:'封面换成行程图卡，攻略感更强'}
+  };
+  var REWRITE = {post:0, angle:'省力节奏', opening:'反常识', cover:'film'};
+
+  function syncRewriteUI(){
+    $$('#rwAngles .rw-chip').forEach(function(b){ b.classList.toggle('on', b.dataset.angle === REWRITE.angle); });
+    $$('#rwOpenings .rw-chip').forEach(function(b){ b.classList.toggle('on', b.dataset.opening === REWRITE.opening); });
+    $$('#rwCovers .rw-chip').forEach(function(b){ b.classList.toggle('on', b.dataset.cover === REWRITE.cover); });
+  }
+  function renderDraftVariant(){
+    var i = REWRITE.post;
+    var p = TODAY_POSTS[i];
+    if(!p) return;
+    var v = (ANGLE_WRITE[i] || {})[REWRITE.angle] || {title:p.title, body:p.body};
+    var body = v.body.slice();
+    var lead = OPENINGS[REWRITE.opening];
+    if(lead) body[0] = lead(i) + ' ' + body[0];
+    var box = $('#draftImage .draft-box');
+    if(box){
+      var html = '<h5>' + v.title + '</h5>';
+      body.forEach(function(par){ html += '<p>' + par + '</p>'; });
+      html += '<p class="muted">' + p.tags + '</p>';
+      box.innerHTML = html;
+    }
+    var tag = $('#draftFormTag');
+    if(tag) tag.textContent = '图文 · 已按人设改写';
+    var note = $('#draftSourceNote');
+    if(note) note.textContent = '已按「' + PROFILE.name + ' · ' + PROFILE.persona + '」改写：保留结构，换成你的事实与素材；发布前请核对价格与营业时间。';
+    var cover = COVER_STYLES[REWRITE.cover];
+    var coverEl = document.querySelector('#draftImage .img-ph');
+    if(coverEl){
+      coverEl.className = 'img-ph ' + cover.cls;
+      var sp = coverEl.querySelector('span');
+      if(sp) sp.textContent = cover.label + ' · 京都东山';
+    }
+    var sims = {'省力节奏':32, '酒店细节':18, '预算感受':15, '避坑清单':22};
+    var rwCount = $('#rwCount');
+    if(rwCount) rwCount.textContent = '当前：' + REWRITE.angle + ' · ' + REWRITE.opening + '开头 · ' + cover.label + ' · 相似度 ' + sims[REWRITE.angle] + '%';
+    var rwNote = $('#rwNote');
+    if(rwNote) rwNote.textContent = cover.note + '；同一素材多人使用，至少换一个角度和开头。';
+  }
+  function fillDraftFromPost(i){
+    REWRITE = {post:i, angle:'省力节奏', opening:'反常识', cover:'film'};
+    syncRewriteUI();
+    renderDraftVariant();
+  }
+  $$('#rwAngles .rw-chip').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      REWRITE.angle = btn.dataset.angle;
+      syncRewriteUI(); renderDraftVariant();
+      showToast('已换角度：' + REWRITE.angle + '，标题与正文同步改写');
+    });
+  });
+  $$('#rwOpenings .rw-chip').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      REWRITE.opening = btn.dataset.opening;
+      syncRewriteUI(); renderDraftVariant();
+      showToast('已换开头：' + REWRITE.opening);
+    });
+  });
+  $$('#rwCovers .rw-chip').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      REWRITE.cover = btn.dataset.cover;
+      syncRewriteUI(); renderDraftVariant();
+      showToast('已换配图风格：' + COVER_STYLES[REWRITE.cover].label);
+    });
+  });
+
+  /* ---------- 发布链路 ---------- */
+  var flowState = {copy:7, pub:5, fill:4, review:1, data:4};
+  var copiedTracked = false, backfillTracked = false;
+  function renderFlow(){
+    var map = {flowCopy:'copy', flowPub:'pub', flowFill:'fill', flowReview:'review', flowData:'data'};
+    Object.keys(map).forEach(function(id){
+      var el = $('#' + id);
+      if(el) el.textContent = flowState[map[id]];
+    });
+  }
+  function trackCopied(title){
+    var row = $('#copiedRow');
+    if(!row) return;
+    $('#copiedTitle').textContent = title || '今日备稿';
+    row.style.display = '';
+    var progress = $('#todayProgress');
+    if(progress) progress.textContent = '1/1';
+    var badge = row.querySelector('.flow-badge');
+    if(badge){ badge.className = 'flow-badge draft'; badge.innerHTML = '<i></i>已复制待发布'; }
+    if(!copiedTracked){ flowState.copy++; copiedTracked = true; renderFlow(); }
+  }
+  function advanceBackfill(){
+    if(backfillTracked) return;
+    backfillTracked = true;
+    flowState.pub++; flowState.fill++; flowState.review++;
+    renderFlow();
+  }
+  var simulateFlow = $('#simulateFlow');
+  if(simulateFlow){
+    simulateFlow.addEventListener('click', function(){
+      var row = null;
+      $$('#contentTbody tr').forEach(function(tr){
+        var b = tr.querySelector('.flow-badge.review');
+        if(!row && b) row = tr;
+      });
+      if(!row){ showToast('当前没有审核中的内容'); return; }
+      var badge = row.querySelector('.flow-badge');
+      badge.className = 'flow-badge data';
+      badge.innerHTML = '<i></i>有数据';
+      var tds = row.querySelectorAll('td');
+      if(tds[2]) tds[2].textContent = '1.1w';
+      if(tds[3]) tds[3].textContent = '680';
+      var sug = tds[5];
+      if(sug) sug.innerHTML = '可复制结构';
+      flowState.review = Math.max(0, flowState.review - 1);
+      flowState.data++;
+      renderFlow();
+      showToast('已模拟审核通过与公开数据回传');
+    });
+  }
+  function markBackfilled(){
+    $$('button.badge[data-drawer="backfill"]').forEach(function(b){
+      var s = document.createElement('span');
+      s.className = 'badge ok';
+      s.textContent = '审核中';
+      b.replaceWith(s);
+    });
+    $$('#p-home tbody span.badge, #p-content tbody span.badge').forEach(function(s){
+      if(s.textContent.trim() === '待回填'){ s.className = 'badge ok'; s.textContent = '审核中'; }
+    });
+    $$('#p-content tbody .flow-badge').forEach(function(b){
+      if(b.textContent.indexOf('待回填') > -1){
+        b.className = 'flow-badge review';
+        b.innerHTML = '<i></i>审核中';
+      }
+    });
+    var row = document.querySelector('#p-home .rule-row');
+    if(row && row.querySelector('b') && row.querySelector('b').textContent.indexOf('待回填') > -1){
+      row.querySelector('b').textContent = '1 条回填审核中';
+      var sub = row.querySelector('span');
+      if(sub) sub.textContent = '「北海道滑雪」已提交，校验通过后计入本周产出';
+      var btn = row.querySelector('button');
+      if(btn){
+        var s = document.createElement('span');
+        s.className = 'badge ok';
+        s.textContent = '审核中';
+        btn.replaceWith(s);
+      }
+    }
+    var cr = $('#copiedRow');
+    if(cr && cr.style.display !== 'none'){
+      var b = cr.querySelector('.flow-badge');
+      if(b && !b.classList.contains('data')){ b.className = 'flow-badge review'; b.innerHTML = '<i></i>审核中'; }
+    }
+    advanceBackfill();
+  }
   function todayPostText(i){
     var p = TODAY_POSTS[i];
     if(!p) return '';
@@ -3232,7 +3759,7 @@ body{font-size:14.5px}
     var card = $('#draftCard');
     if(card){
       card.style.display = 'block';
-      setTimeout(function(){ card.scrollIntoView({behavior:'smooth', block:'center'}); }, 80);
+      setTimeout(function(){ if(card.scrollIntoView) card.scrollIntoView({behavior:'smooth', block:'center'}); }, 80);
     }
   }
   $$('[data-today-copy]').forEach(function(btn){
@@ -3243,6 +3770,8 @@ body{font-size:14.5px}
       }
       var i = parseInt(btn.dataset.todayCopy, 10);
       copyText(todayPostText(i));
+      var tEl = document.querySelector('[data-today-card="' + i + '"] .tc-title');
+      trackCopied(tEl ? tEl.textContent.trim() : '');
       todayCopied[i] = true;
       btn.dataset.copied = '1';
       btn.textContent = '已复制 · 去回填';
@@ -3288,6 +3817,203 @@ body{font-size:14.5px}
     sw.addEventListener('click', function(){sw.classList.toggle('on')});
   });
 
+  /* ---------- 首次定位 ---------- */
+  var setup = $('#setup'), setupStep = 1, setupTmp = null;
+  function setupSummary(){
+    var t = setupTmp || PROFILE;
+    var taboos = (t.taboos || []).map(function(x){ return TABOO_SHORT[x] || x; }).join('、') || '暂不设置';
+    return '你会看到：<b>' + t.direction + '</b> · <b>' + t.persona + '</b><br>避开：' + taboos + '<br>提醒：' + (t.remindOn === false ? '已关闭' : t.remind);
+  }
+  function renderSetup(){
+    $$('.setup-step').forEach(function(s){ s.classList.toggle('on', parseInt(s.dataset.step, 10) === setupStep); });
+    $$('#setupProgress i').forEach(function(el, i){ el.classList.toggle('on', i < setupStep); });
+    var prev = $('#setupPrev'), next = $('#setupNext'), done = $('#setupDone');
+    if(prev) prev.style.display = setupStep === 1 ? 'none' : '';
+    if(next) next.style.display = setupStep === 3 ? 'none' : '';
+    if(done) done.style.display = setupStep === 3 ? '' : 'none';
+    if(!setupTmp) return;
+    $$('#setupDirections .opt').forEach(function(b){ b.classList.toggle('on', b.dataset.direction === setupTmp.direction); });
+    $$('#setupPersonas .opt').forEach(function(b){ b.classList.toggle('on', b.dataset.persona === setupTmp.persona); });
+    var nameInput = $('#setupName');
+    if(nameInput) nameInput.value = setupTmp.name;
+    $$('#setupTaboos .setup-chip').forEach(function(b){ b.classList.toggle('on', setupTmp.taboos.indexOf(b.dataset.taboo) > -1); });
+    $$('#setupRemind .setup-chip').forEach(function(b){ b.classList.toggle('on', b.dataset.remind === setupTmp.remind); });
+    var sum = $('#setupSummary');
+    if(sum) sum.innerHTML = setupSummary();
+  }
+  function openSetup(){
+    setupTmp = {name:PROFILE.name, direction:PROFILE.direction, persona:PROFILE.persona, taboos:PROFILE.taboos.slice(), remind:PROFILE.remind, remindOn:PROFILE.remindOn, done:PROFILE.done};
+    setupStep = 1;
+    renderSetup();
+    if(setup){ setup.classList.add('show'); setup.setAttribute('aria-hidden', 'false'); }
+  }
+  function closeSetup(){
+    if(setup){ setup.classList.remove('show'); setup.setAttribute('aria-hidden', 'true'); }
+  }
+  $$('#setupDirections .opt').forEach(function(b){ b.addEventListener('click', function(){ setupTmp.direction = b.dataset.direction; renderSetup(); }); });
+  $$('#setupPersonas .opt').forEach(function(b){ b.addEventListener('click', function(){ setupTmp.persona = b.dataset.persona; renderSetup(); }); });
+  $$('#setupTaboos .setup-chip').forEach(function(b){
+    b.addEventListener('click', function(){
+      var v = b.dataset.taboo, idx = setupTmp.taboos.indexOf(v);
+      if(idx > -1) setupTmp.taboos.splice(idx, 1); else setupTmp.taboos.push(v);
+      renderSetup();
+    });
+  });
+  $$('#setupRemind .setup-chip').forEach(function(b){ b.addEventListener('click', function(){ setupTmp.remind = b.dataset.remind; setupTmp.remindOn = true; renderSetup(); }); });
+  var setupName = $('#setupName');
+  if(setupName) setupName.addEventListener('input', function(){ setupTmp.name = setupName.value.trim() || '创作者'; });
+  var setupPrev = $('#setupPrev'), setupNext = $('#setupNext'), setupDone = $('#setupDone'), setupSkip = $('#setupSkip');
+  if(setupPrev) setupPrev.addEventListener('click', function(){ setupStep = Math.max(1, setupStep - 1); renderSetup(); });
+  if(setupNext) setupNext.addEventListener('click', function(){ setupStep = Math.min(3, setupStep + 1); renderSetup(); });
+  if(setupDone) setupDone.addEventListener('click', function(){
+    PROFILE = Object.assign({}, setupTmp, {done:true});
+    saveProfile(); applyProfile(); closeSetup();
+    var nd = $('#notifDot'); if(nd) nd.style.display = '';
+    showToast('定位已保存，今日 3 篇已按「' + PROFILE.direction + '」备好');
+  });
+  if(setupSkip) setupSkip.addEventListener('click', function(){
+    closeSetup();
+    try{ localStorage.setItem('tc_setup_skipped', '1'); }catch(e){}
+    showToast('已跳过，随时可在「我的 → 我的定位」里设置');
+  });
+  ['#setupEdit', '#setupEdit2', '#mSetupEntry'].forEach(function(sel){
+    var el = $(sel);
+    if(el) el.addEventListener('click', function(e){ e.stopPropagation(); openSetup(); });
+  });
+  var demoSetup = $('#demoSetup');
+  if(demoSetup) demoSetup.addEventListener('click', openSetup);
+
+  function applyProfile(){
+    var p = PROFILE;
+    var short = (p.name || '创作者').split(' ')[0];
+    var initial = (p.name || 'Y').charAt(0);
+    ['#sideName', '#profileName', '#mProfileName'].forEach(function(sel){ var el = $(sel); if(el) el.textContent = p.name || '创作者'; });
+    ['#profileAvatar', '#mProfileAvatar', '#mTasksAvatar'].forEach(function(sel){ var el = $(sel); if(el) el.textContent = initial; });
+    var sideRole = $('#sideRole'); if(sideRole) sideRole.textContent = p.persona;
+    var homeGreet = $('#homeGreet'); if(homeGreet) homeGreet.textContent = '早上好，' + short;
+    var profileRole = $('#profileRole'); if(profileRole) profileRole.textContent = p.persona + ' · 已加入 86 天';
+    var mProfileRole = $('#mProfileRole'); if(mProfileRole) mProfileRole.textContent = p.persona + ' · 小红书 8.6k 粉';
+    var dir = $('#profileDir'); if(dir) dir.textContent = p.direction;
+    var persona = $('#profilePersona'); if(persona) persona.textContent = p.persona;
+    var taboos = $('#profileTaboos'); if(taboos) taboos.textContent = (p.taboos || []).map(function(x){ return TABOO_SHORT[x] || x; }).join('、') || '未设置';
+    var mDir = $('#mProfileDir'); if(mDir) mDir.textContent = p.direction + ' · ' + p.persona;
+    var remindText = p.remindOn === false ? '已关闭' : p.remind;
+    var pr = $('#profileRemind'); if(pr) pr.textContent = remindText;
+    var mr = $('#mProfileRemind'); if(mr) mr.textContent = remindText;
+    var nr = $('#notifRemindText'); if(nr) nr.textContent = remindText;
+    var mnr = $('#mNotifRemind'); if(mnr) mnr.textContent = remindText;
+    var rb = $('#remindBadge'); if(rb){ rb.textContent = p.remindOn === false ? '已关闭' : '已开启'; rb.className = 'badge ' + (p.remindOn === false ? '' : 'ok'); }
+    var rs = $('#remindSwitch'); if(rs) rs.classList.toggle('on', p.remindOn !== false);
+    var mrs = $('#mRemindSwitch'); if(mrs) mrs.classList.toggle('on', p.remindOn !== false);
+    var tp = $('#todayPersona');
+    if(tp) tp.textContent = '定位：' + p.direction + ' · ' + p.persona + ' · 已避开 ' + (p.taboos || []).length + ' 类内容。选一条复制，到小红书粘贴发布，发完回来回填。';
+    var note = $('#todayDemoNote');
+    if(note){
+      var isDemo = p.direction !== '亲子度假';
+      note.style.display = isDemo ? '' : 'none';
+      note.textContent = '定位已保存为「' + p.direction + '」。当前首页 3 篇仍是亲子方向的示例内容，接入数据源后会按你的方向重新生成。';
+    }
+    var mDemo = $('#mTodayDemo');
+    if(mDemo) mDemo.style.display = p.direction !== '亲子度假' ? '' : 'none';
+    var dnote = $('#draftSourceNote');
+    if(dnote && $('#draftCard') && $('#draftCard').style.display !== 'none') renderDraftVariant();
+    var tags = $('#profileTags');
+    if(tags) tags.innerHTML = '<span>' + (p.direction || '方向') + '</span><span>' + (p.persona || '人设') + '</span><span>' + ((p.taboos || [])[0] ? '避开' + (TABOO_SHORT[p.taboos[0]] || p.taboos[0]) : '边界未设') + '</span>';
+  }
+  var remindSwitch = $('#remindSwitch');
+  if(remindSwitch) remindSwitch.addEventListener('click', function(){
+    PROFILE.remindOn = remindSwitch.classList.contains('on');
+    saveProfile(); applyProfile();
+  });
+  var mRemindSwitch = $('#mRemindSwitch');
+  if(mRemindSwitch) mRemindSwitch.addEventListener('click', function(){
+    PROFILE.remindOn = mRemindSwitch.classList.contains('on');
+    saveProfile(); applyProfile();
+  });
+
+  /* ---------- 通知中心 ---------- */
+  var notifBtn = $('#notifBtn');
+  if(notifBtn) notifBtn.addEventListener('click', function(){
+    openDrawer('notif');
+    var dot = $('#notifDot'); if(dot) dot.style.display = 'none';
+  });
+  var notifGo = $('#notifGo');
+  if(notifGo) notifGo.addEventListener('click', function(){
+    closeDrawer();
+    if(currentDevice === 'mobile'){ showMobilePage('mtasks'); return; }
+    var nav = document.querySelector('.nav-item[data-page="p-home"]');
+    if(nav) nav.click();
+  });
+  var notifSettings = $('#notifSettings');
+  if(notifSettings) notifSettings.addEventListener('click', function(){
+    closeDrawer();
+    if(currentDevice === 'mobile'){ showMobilePage('mprofile'); return; }
+    var nav = document.querySelector('.nav-item[data-page="p-profile"]');
+    if(nav) nav.click();
+  });
+  var mRemindEntry = $('#mRemindEntry');
+  if(mRemindEntry) mRemindEntry.addEventListener('click', function(e){
+    if(e.target.closest('[data-switch]')) return;
+    if(currentDevice !== 'mobile') return;
+    showMobilePage('mnotif');
+    var dot = $('#notifDot'); if(dot) dot.style.display = 'none';
+  });
+  var mNotice = $('#mNotice');
+  if(mNotice) mNotice.addEventListener('click', function(){
+    showMobilePage('mnotif');
+    var dot = $('#notifDot'); if(dot) dot.style.display = 'none';
+  });
+
+  /* ---------- 手机灵感与拆解 ---------- */
+  var BREAK_DATA = [
+    {why:'亲子出行的痛点不是去哪，而是累不累。标题用「只走 3 个景点」给出反常识承诺，正文用具体时间点证明可行，收藏动机很强。', struct:['反常识标题：少去反而更好','时间锚点：8 点、9 点，具体到小时','可执行清单：3 个景点 + 住宿位置','评论区承接：行程与清单']},
+    {why:'酒店是亲子游最贵的一笔。标题用「订早了反而多花 800」制造损失感，正文给 3 个判断点，读者会先收藏再比价。', struct:['损失感标题：订早反而贵','3 个判断点：泳池、早餐、加床','对比图：两家酒店实拍','结尾引导：按年龄抄']},
+    {why:'滑雪内容靠「孩子哭了」制造真实感，再用「3 件事」收敛成可执行建议，评论区自然追问装备和雪场。', struct:['真实场景开头：孩子哭了','归因：冷和累，不是摔','3 条可执行建议','第二天反证：只玩半天更开心']}
+  ];
+  var mBreakIndex = 0, mBreakAlt = 0;
+  function mBreakCurrentTitle(){
+    var p = TODAY_POSTS[mBreakIndex];
+    if(!p) return '';
+    return mBreakAlt === 0 ? p.title : p.alts[(mBreakAlt - 1) % p.alts.length];
+  }
+  function renderMBreak(){
+    var p = TODAY_POSTS[mBreakIndex], b = BREAK_DATA[mBreakIndex];
+    if(!p || !b) return;
+    var t = $('#mBreakTitle'); if(t) t.textContent = mBreakCurrentTitle();
+    var m = $('#mBreakMeta'); if(m) m.textContent = ['1.8w 赞 · 6,420 藏 · 亲子向','1.2w 赞 · 4,180 藏 · 酒店细节','9,600 赞 · 2,940 藏 · 避坑'][mBreakIndex] || '公开数据';
+    var w = $('#mBreakWhy'); if(w) w.textContent = b.why;
+    var s = $('#mBreakStruct'); if(s) s.innerHTML = b.struct.map(function(x){ return '<li>' + x + '</li>'; }).join('');
+    var d = $('#mBreakDraft');
+    if(d){
+      var html = '<p style="margin:0 0 8px"><b>' + mBreakCurrentTitle() + '</b></p>';
+      p.body.forEach(function(par){ html += '<p style="margin:0 0 8px">' + par + '</p>'; });
+      html += '<p class="muted" style="margin:0">' + p.tags + '</p>';
+      d.innerHTML = html;
+    }
+  }
+  $$('[data-mbreak]').forEach(function(el){
+    el.addEventListener('click', function(){
+      mBreakIndex = parseInt(el.dataset.mbreak, 10);
+      mBreakAlt = 0;
+      renderMBreak();
+      showMobilePage('mbreak');
+    });
+  });
+  var mBreakAltBtn = $('#mBreakAlt');
+  if(mBreakAltBtn) mBreakAltBtn.addEventListener('click', function(){
+    var p = TODAY_POSTS[mBreakIndex];
+    mBreakAlt = (mBreakAlt + 1) % (p.alts.length + 1);
+    renderMBreak();
+    showToast('已换一版标题');
+  });
+  var mBreakCopy = $('#mBreakCopy');
+  if(mBreakCopy) mBreakCopy.addEventListener('click', function(){
+    var p = TODAY_POSTS[mBreakIndex];
+    copyText(mBreakCurrentTitle() + '\n\n' + p.body.join('\n\n') + '\n\n' + p.tags);
+    trackCopied(mBreakCurrentTitle());
+    showToast('仿写稿已复制，去小红书粘贴发布');
+  });
+
   /* ---------- 移动端 ---------- */
   var phoneBody = $('#phoneBody');
   function showMobilePage(name){
@@ -3312,6 +4038,7 @@ body{font-size:14.5px}
     mTodayCopy.addEventListener('click', function(){
       if(mTodayCopy.dataset.copied === '1'){ showMobilePage('mpublish'); return; }
       copyText(todayPostText(0));
+      trackCopied(todayPostText(0).split('\n')[0]);
       mTodayCopy.dataset.copied = '1';
       mTodayCopy.textContent = '已复制 · 去回填';
       showToast('已复制全文，去小红书粘贴发布');
@@ -3325,6 +4052,9 @@ body{font-size:14.5px}
       if(!v){ showToast('请先粘贴发布链接'); if(mPublishLink) mPublishLink.focus(); return; }
       if(!/^https?:\/\//i.test(v)){ showToast('链接需以 http:// 或 https:// 开头'); if(mPublishLink) mPublishLink.focus(); return; }
       mPublishLink.value = '';
+      advanceBackfill();
+      var mh = document.querySelector('[data-mpage="mtasks"] .m-head .m-sub');
+      if(mh) mh.textContent = '2 条新素材可写 · 0 条待回填';
       showToast('回填已提交，校验通过后计入本周产出');
       setTimeout(function(){ showMobilePage('mtasks'); }, 900);
     });
@@ -3359,6 +4089,14 @@ body{font-size:14.5px}
       showToast(q ? '找到 ' + hit + ' 个素材包' : '已显示全部素材');
     });
   }
+  /* ---------- 初始化 ---------- */
+  applyProfile();
+  renderFlow();
+  try{
+    if(!PROFILE.done && !localStorage.getItem('tc_setup_skipped')){
+      setTimeout(openSetup, 350);
+    }
+  }catch(e){}
 })();
 </script>
 </body>
