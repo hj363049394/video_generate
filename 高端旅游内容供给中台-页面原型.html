@@ -29,7 +29,17 @@ button,input,select,textarea{font-family:inherit}
 .device-toggle button{border:none;background:none;color:#B9C4BE;padding:6px 14px;border-radius:7px;font-size:12.5px;cursor:pointer}
 .device-toggle button.active{background:#F2EEE4;color:#1E2A26;font-weight:700}
 .proto-hint{font-size:11.5px;color:#9DAAA3}
+.proto-controls{display:flex;align-items:center;gap:8px}
+@media(max-width:980px){.proto-controls{gap:6px}.proto-controls .device-toggle button{padding:6px 9px;font-size:12px}}
 @media(max-width:760px){.proto-hint{display:none}}
+/* ---------- 合伙人端 ---------- */
+.scope-band{display:flex;align-items:flex-start;gap:9px;background:var(--soft);border:1px solid #D5E4DC;border-radius:11px;padding:11px 14px;margin-bottom:16px;font-size:12px;color:#3F5C52;line-height:1.65}
+.scope-band .ic{width:16px;height:16px;margin-top:1px;color:var(--pine);flex:none}
+.quota{display:inline-flex;align-items:center;gap:6px;background:var(--soft2);color:#8A682F;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;white-space:nowrap}
+.advice{list-style:none;margin:0;padding:0}
+.advice li{display:flex;gap:9px;padding:11px 0;border-bottom:1px dashed var(--line);font-size:12.5px;line-height:1.65}
+.advice li:last-child{border-bottom:none}
+.advice .dot{margin-top:6px}
 .stage{height:100vh;padding-top:56px;overflow:hidden}
 /* ---------- 桌面端 ---------- */
 .desktop{display:flex;height:calc(100vh - 56px)}
@@ -275,11 +285,17 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 
 <div class="proto-bar">
   <div class="proto-brand"><span class="mk">旅</span><div>内容供给中台 <em>PROTOTYPE</em></div></div>
-  <div class="device-toggle">
-    <button class="active" data-device="desktop">桌面工作台</button>
-    <button data-device="mobile">合伙人 H5</button>
+  <div class="proto-controls">
+    <div class="device-toggle" id="roleToggle">
+      <button class="active" data-role="operator">运营端</button>
+      <button data-role="partner">合伙人端</button>
+    </div>
+    <div class="device-toggle" id="deviceToggle">
+      <button class="active" data-device="desktop">桌面</button>
+      <button data-device="mobile">手机 H5</button>
+    </div>
   </div>
-  <div class="proto-hint">点击左侧导航切换页面 · 示例数据</div>
+  <div class="proto-hint">切换角色与设备查看不同工作台 · 示例数据</div>
 </div>
 
 <div class="stage">
@@ -1131,6 +1147,369 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
     </nav>
   </div>
 </div><!-- /mobile -->
+<!-- ================= 合伙人端（桌面） ================= -->
+<div class="desktop" id="partnerApp" style="display:none">
+  <aside class="app-side">
+    <div class="side-brand">
+      <div class="mk">旅</div>
+      <div><b>合伙人工作台</b><span>PARTNER STUDIO</span></div>
+    </div>
+    <div class="nav-group">总览</div>
+    <button class="nav-item active" data-page="p-home" data-crumb="我的工作台"><svg class="ic"><use href="#i-grid"/></svg><span class="label">我的工作台</span></button>
+    <div class="nav-group">洞察</div>
+    <button class="nav-item" data-page="p-trends" data-crumb="趋势洞察"><svg class="ic"><use href="#i-radar"/></svg><span class="label">趋势洞察</span></button>
+    <button class="nav-item" data-page="p-benchmark" data-crumb="对标笔记"><svg class="ic"><use href="#i-copy"/></svg><span class="label">对标笔记</span></button>
+    <div class="nav-group">创作</div>
+    <button class="nav-item" data-page="p-packs" data-crumb="素材库"><svg class="ic"><use href="#i-folder"/></svg><span class="label">素材库</span></button>
+    <button class="nav-item" data-page="p-content" data-crumb="我的内容"><svg class="ic"><use href="#i-chart"/></svg><span class="label">我的内容</span></button>
+    <div class="nav-group">账号</div>
+    <button class="nav-item" data-page="p-profile" data-crumb="我的账号"><svg class="ic"><use href="#i-users"/></svg><span class="label">我的账号</span></button>
+    <div class="side-foot">
+      <div class="avatar">Y</div>
+      <div><b>Yuki 在路上</b><span>亲子度假体验官</span></div>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <header class="app-top">
+      <div class="crumb">合伙人 / <b id="pCrumb">我的工作台</b></div>
+      <div class="top-search"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input placeholder="搜索素材包、对标笔记"></div>
+      <div class="top-right">
+        <div class="health"><i></i>数据更新 09:00</div>
+        <button class="icon-btn" data-toast="暂无新的系统通知"><svg class="ic" style="width:16px;height:16px"><use href="#i-bell"/></svg></button>
+        <div class="avatar" style="width:28px;height:28px;font-size:11px">Y</div>
+      </div>
+    </header>
+
+    <div class="page-wrap" id="pPageWrap">
+
+      <!-- 我的工作台 -->
+      <section class="page active" data-page="p-home">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">2026年11月21日 · 周五</div>
+            <h1>早上好，Yuki</h1>
+            <p>本周还差 1 篇完成目标；有 1 条发布待回填，2 个素材包适合你的人设。</p>
+          </div>
+          <div class="actions">
+            <button class="btn" data-goto="p-content">查看我的内容</button>
+            <button class="btn primary" data-goto="p-packs"><svg class="ic" style="width:14px;height:14px"><use href="#i-folder"/></svg>去选素材</button>
+          </div>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="kpi-top"><span>本周目标</span></div><div class="kpi-val">5</div><div class="kpi-sub">已完成 4 篇 · 80%</div><svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none"><path d="M2 20 L24 18 L46 13 L68 10 L98 6" fill="none" stroke="#1F5C4D" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <div class="kpi"><div class="kpi-top"><span>本周已发布</span><span class="delta">+1</span></div><div class="kpi-val">4</div><div class="kpi-sub">较上周同期</div><svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none"><path d="M2 19 L24 14 L46 16 L68 9 L98 7" fill="none" stroke="#1F5C4D" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <div class="kpi"><div class="kpi-top"><span>待回填</span><span class="delta down">1</span></div><div class="kpi-val">1</div><div class="kpi-sub">已超过 24 小时</div><svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none"><path d="M2 19 L24 19 L46 18 L68 18 L98 17" fill="none" stroke="#9C4A33" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <div class="kpi"><div class="kpi-top"><span>本周互动</span><span class="delta">+12%</span></div><div class="kpi-val">4,280</div><div class="kpi-sub">赞藏评合计</div><svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none"><path d="M2 21 L24 17 L46 18 L68 11 L98 5" fill="none" stroke="#1F5C4D" stroke-width="2" stroke-linecap="round"/></svg></div>
+        </div>
+
+        <div class="cols cols-2">
+          <div class="card">
+            <div class="card-head"><h3>为你推荐</h3><button class="link" data-goto="p-packs">全部素材</button></div>
+            <div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line)">
+              <div class="m-thumb g-ski" style="width:54px;height:54px"></div>
+              <div style="flex:1;min-width:0">
+                <b style="font-size:13px">日本滑雪｜亲子向</b>
+                <div class="small muted" style="margin-top:2px">匹配你的「亲子度假体验官」人设 · 20 张实景 · 可领取</div>
+                <div class="tags" style="margin-top:6px"><span>日本</span><span>滑雪</span><span>亲子</span></div>
+              </div>
+              <button class="btn sm primary" data-drawer="pack">查看</button>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;padding:10px 0">
+              <div class="m-thumb g-island" style="width:54px;height:54px"></div>
+              <div style="flex:1;min-width:0">
+                <b style="font-size:13px">海岛私享｜家庭向</b>
+                <div class="small muted" style="margin-top:2px">你近 30 天海岛内容互动高于均值 · 30 张实景</div>
+                <div class="tags" style="margin-top:6px"><span>海岛</span><span>亲子</span><span>酒店</span></div>
+              </div>
+              <button class="btn sm primary" data-drawer="pack">查看</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>本周建议</h3><span class="badge brass">基于你的数据</span></div>
+            <ul class="advice">
+              <li><span class="dot"></span><div>你的亲子内容收藏率高于同人设均值，建议延续「行程节奏 + 酒店细节」结构。</div></li>
+              <li><span class="dot"></span><div>领取「海岛私享」后 3 天未发布，建议本周补 1 篇，避免素材额度浪费。</div></li>
+              <li><span class="dot"></span><div>近期标题偏攻略型，可尝试「反常识开头」提升点击，详见对标笔记。</div></li>
+            </ul>
+            <button class="btn sm" style="margin-top:10px" data-goto="p-benchmark">去看对标</button>
+          </div>
+        </div>
+
+        <div class="card" style="padding:8px 14px 14px">
+          <div class="card-head" style="padding:10px 0 0"><h3>我的内容表现</h3><button class="link" data-goto="p-content">查看全部</button></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>内容</th><th>平台</th><th>曝光</th><th>互动</th><th>回填</th><th>建议</th></tr></thead>
+              <tbody>
+                <tr><td class="t-title">带娃去京都，5 天不赶不累的路线</td><td>小红书</td><td class="num">3.2w</td><td class="num">1,860</td><td><span class="badge ok">已回填</span></td><td><span class="badge pine">可复制</span></td></tr>
+                <tr><td class="t-title">冲绳亲子酒店怎么选，看这 3 点</td><td>小红书</td><td class="num">2.1w</td><td class="num">1,120</td><td><span class="badge ok">已回填</span></td><td><span class="badge pine">可复制</span></td></tr>
+                <tr><td class="t-title">北海道滑雪，孩子第一次上雪场</td><td>小红书</td><td class="num">1.4w</td><td class="num">760</td><td><span class="badge">待回填</span></td><td><span class="badge brass">补回填</span></td></tr>
+                <tr><td class="t-title">海岛亲子游，行李清单</td><td>抖音</td><td class="num">0.9w</td><td class="num">540</td><td><span class="badge ok">已回填</span></td><td><span class="badge">观察</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 趋势洞察 -->
+      <section class="page" data-page="p-trends">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">洞察 / 人设范围</div>
+            <h1>趋势洞察</h1>
+            <p>只看与你相关的赛道，不做全平台数据开放。</p>
+          </div>
+          <div class="actions">
+            <span class="quota">本周查询 3 / 10</span>
+            <button class="btn" data-toast="趋势数据已更新">刷新</button>
+          </div>
+        </div>
+
+        <div class="scope-band"><svg class="ic"><use href="#i-radar"/></svg><div>当前展示范围：人设「亲子度假体验官」＋ 目的地「日本 / 海岛」。平台仅提供热度与结构摘要，不提供原始数据导出。</div></div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="kpi-top"><span>相关赛道</span></div><div class="kpi-val">12</div><div class="kpi-sub">日本 7 · 海岛 5</div></div>
+          <div class="kpi"><div class="kpi-top"><span>上升话题</span><span class="delta">+4</span></div><div class="kpi-val">4</div><div class="kpi-sub">近 7 天热度上涨</div></div>
+          <div class="kpi"><div class="kpi-top"><span>同人设均值互动率</span></div><div class="kpi-val">6.8%</div><div class="kpi-sub">你的 7.4% · 高于均值</div></div>
+          <div class="kpi"><div class="kpi-top"><span>赛道竞争度</span></div><div class="kpi-val">中</div><div class="kpi-sub">亲子日本内容供给适中</div></div>
+        </div>
+
+        <div class="cols cols-2">
+          <div class="card">
+            <div class="card-head"><h3>关键词热度</h3><span class="small muted">搜索指数 · 近 7 天</span></div>
+            <div class="bar-row"><span class="small">亲子游学</span><div class="bar-track"><div class="bar-fill" style="width:74%"></div></div><span class="small num">74</span></div>
+            <div class="bar-row"><span class="small">日本亲子</span><div class="bar-track"><div class="bar-fill" style="width:71%"></div></div><span class="small num">71</span></div>
+            <div class="bar-row"><span class="small">海岛亲子</span><div class="bar-track"><div class="bar-fill" style="width:66%"></div></div><span class="small num">66</span></div>
+            <div class="bar-row"><span class="small">温泉酒店</span><div class="bar-track"><div class="bar-fill brass" style="width:58%"></div></div><span class="small num">58</span></div>
+            <div class="bar-row"><span class="small">冲绳</span><div class="bar-track"><div class="bar-fill brass" style="width:52%"></div></div><span class="small num">52</span></div>
+            <p class="small muted" style="margin:12px 0 0">指数已归一化，仅用于比较趋势，不代表站内真实搜索量。</p>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>上升话题</h3><span class="badge pine">近 7 天</span></div>
+            <ul class="todo">
+              <li><span class="dot g"></span><div><strong># 京都亲子赏枫</strong><span>小红书 · 热度 +38% · 供给偏少</span></div><span class="badge brass">建议</span></li>
+              <li><span class="dot g"></span><div><strong># 冲绳亲子酒店</strong><span>小红书 · 热度 +26% · 竞争中</span></div><span class="badge brass">建议</span></li>
+              <li><span class="dot"></span><div><strong># 带爸妈旅行</strong><span>抖音 · 热度 +19% · 竞争高</span></div><span class="badge">观察</span></li>
+              <li><span class="dot"></span><div><strong># 北海道雪场幼儿园</strong><span>小红书 · 热度 +12% · 供给少</span></div><span class="badge">观察</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card" style="padding:8px 14px 14px">
+          <div class="card-head" style="padding:10px 0 0"><h3>本周机会</h3><span class="small muted">按与你人设的匹配度排序</span></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>话题</th><th>平台</th><th>热度</th><th>竞争</th><th>建议</th><th></th></tr></thead>
+              <tbody>
+                <tr><td class="t-title">京都亲子赏枫 5 天路线</td><td>小红书</td><td><span class="badge brass">86</span></td><td>低</td><td>优先做，供给少</td><td><button class="link" data-drawer="breakdown">拆解</button></td></tr>
+                <tr><td class="t-title">冲绳亲子酒店 3 选 1</td><td>小红书</td><td><span class="badge brass">78</span></td><td>中</td><td>可做，需差异化</td><td><button class="link" data-drawer="breakdown">拆解</button></td></tr>
+                <tr><td class="t-title">带爸妈去日本怎么排</td><td>抖音</td><td>71</td><td>高</td><td>换角度再做</td><td><button class="link" data-drawer="breakdown">拆解</button></td></tr>
+                <tr><td class="t-title">北海道亲子滑雪装备</td><td>小红书</td><td>64</td><td>低</td><td>可做，偏工具型</td><td><button class="link" data-drawer="breakdown">拆解</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 对标笔记 -->
+      <section class="page" data-page="p-benchmark">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">洞察 / 对标</div>
+            <h1>对标笔记</h1>
+            <p>输入主题，筛出同人群的对标与爆款，看结构而不是抄原文。</p>
+          </div>
+          <div class="actions"><span class="quota">本周查询 3 / 10</span></div>
+        </div>
+
+        <div class="toolbar">
+          <div class="search" style="flex:2"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input placeholder="输入主题，例如：京都亲子赏枫"></div>
+          <select><option>小红书</option><option>抖音</option><option>视频号</option></select>
+          <select><option>人群：亲子</option><option>人群：情侣</option><option>人群：朋友</option></select>
+          <select><option>互动 &gt; 1,000</option><option>互动 &gt; 5,000</option><option>近 30 天</option></select>
+          <button class="btn primary" data-toast="已筛选出 36 篇，展示匹配度最高的 4 篇">筛选</button>
+        </div>
+
+        <div class="card" style="padding:8px 14px 14px">
+          <div class="card-head" style="padding:10px 0 0"><h3>筛选结果</h3><span class="small muted">按匹配度排序 · 仅展示结构与指标</span></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>标题</th><th>平台</th><th>互动</th><th>结构特征</th><th>可迁移点</th><th></th></tr></thead>
+              <tbody>
+                <tr><td class="t-title">带 4 岁娃去京都，5 天只走了 3 个景点</td><td>小红书</td><td class="num">1.8w</td><td>反常识 + 少而精</td><td>行程留白、酒店位置</td><td><button class="btn sm" data-drawer="breakdown">拆解</button></td></tr>
+                <tr><td class="t-title">冲绳亲子酒店，我最后悔的是订早了</td><td>小红书</td><td class="num">1.2w</td><td>后悔式开头 + 对比</td><td>房型对比、预订时机</td><td><button class="btn sm" data-drawer="breakdown">拆解</button></td></tr>
+                <tr><td class="t-title">北海道第一次滑雪，孩子哭了两次</td><td>小红书</td><td class="num">9,600</td><td>真实经历 + 清单</td><td>装备清单、教练选择</td><td><button class="btn sm" data-drawer="breakdown">拆解</button></td></tr>
+                <tr><td class="t-title">带爸妈旅行，别把行程排满</td><td>抖音</td><td class="num">2.4w</td><td>口播 + 三点建议</td><td>节奏、住宿、用餐</td><td><button class="btn sm" data-drawer="breakdown">拆解</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="cols cols-2">
+          <div class="card">
+            <div class="card-head"><h3>筛选规则</h3></div>
+            <ul class="checks">
+              <li><svg class="ic" style="width:14px;height:14px;color:#2E7D5B"><use href="#i-check"/></svg>仅匹配与你人设一致的内容<span class="ok" style="margin-left:auto">已开启</span></li>
+              <li><svg class="ic" style="width:14px;height:14px;color:#2E7D5B"><use href="#i-check"/></svg>过滤发布时间超过 90 天的样本<span class="ok" style="margin-left:auto">已开启</span></li>
+              <li><svg class="ic" style="width:14px;height:14px;color:#2E7D5B"><use href="#i-check"/></svg>同主题最多展示 4 篇，避免信息过载<span class="ok" style="margin-left:auto">已开启</span></li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>使用边界</h3><span class="badge brass">重要</span></div>
+            <p class="small" style="line-height:1.8;margin:0">对标结果用于理解结构与选题，不提供原文转载或一键改写。发布内容须结合本人经历重写；引用数据需注明来源，AI 辅助内容需按平台要求标注。</p>
+            <div class="scope-band" style="margin:10px 0 0;background:var(--soft2);border-color:#E6D8BF;color:#6B5327"><svg class="ic" style="color:#8A682F"><use href="#i-clock"/></svg><div>查询额度每日重置，避免高频抓取；超出额度请联系运营开通。</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 我的内容 -->
+      <section class="page" data-page="p-content">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">分析 / 本人账号</div>
+            <h1>我的内容</h1>
+            <p>仅汇总你本人账号的发布与回填数据，用于复盘，不涉及其他合伙人。</p>
+          </div>
+          <div class="actions">
+            <select><option>近 7 天</option><option>近 30 天</option></select>
+            <button class="btn" data-toast="已导出我的数据">导出</button>
+          </div>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="kpi-top"><span>曝光</span><span class="delta">+12%</span></div><div class="kpi-val">8.6w</div><div class="kpi-sub">较上周</div></div>
+          <div class="kpi"><div class="kpi-top"><span>互动</span><span class="delta">+9%</span></div><div class="kpi-val">4,280</div><div class="kpi-sub">赞藏评合计</div></div>
+          <div class="kpi"><div class="kpi-top"><span>收藏率</span><span class="delta">+0.4pt</span></div><div class="kpi-val">3.6%</div><div class="kpi-sub">同人设均值 3.1%</div></div>
+          <div class="kpi"><div class="kpi-top"><span>粉丝净增</span><span class="delta">+126</span></div><div class="kpi-val">8.7k</div><div class="kpi-sub">本周新增关注</div></div>
+        </div>
+
+        <div class="cols cols-2">
+          <div class="card">
+            <div class="card-head"><h3>我的内容趋势</h3><span class="small muted">曝光 / 互动</span></div>
+            <svg class="chart" viewBox="0 0 560 190" preserveAspectRatio="none">
+              <defs><linearGradient id="pArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1F5C4D" stop-opacity=".2"/><stop offset="1" stop-color="#1F5C4D" stop-opacity="0"/></linearGradient></defs>
+              <line x1="0" y1="45" x2="560" y2="45" stroke="#EFEDE7"/><line x1="0" y1="95" x2="560" y2="95" stroke="#EFEDE7"/><line x1="0" y1="145" x2="560" y2="145" stroke="#EFEDE7"/>
+              <path d="M0 150 L80 138 L160 142 L240 116 L320 120 L400 92 L480 84 L560 62 L560 175 L0 175 Z" fill="url(#pArea)"/>
+              <path d="M0 150 L80 138 L160 142 L240 116 L320 120 L400 92 L480 84 L560 62" fill="none" stroke="#1F5C4D" stroke-width="2.4" stroke-linejoin="round"/>
+              <path d="M0 162 L80 156 L160 158 L240 144 L320 148 L400 132 L480 128 L560 116" fill="none" stroke="#B08A4F" stroke-width="2" stroke-dasharray="5 4"/>
+              <g font-size="10" fill="#8A857B"><text x="0" y="188">11-15</text><text x="270" y="188">11-18</text><text x="500" y="188">11-21</text></g>
+            </svg>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>复盘建议</h3><span class="badge brass">自动生成</span></div>
+            <ul class="advice">
+              <li><span class="dot"></span><div><b>延续亲子路线结构。</b>你的「少而精 + 酒店细节」内容收藏率最高，建议下周继续。</div></li>
+              <li><span class="dot"></span><div><b>标题可更具体。</b>带数字和天数的标题互动率高出 18%，如「5 天 4 晚」。 </div></li>
+              <li><span class="dot"></span><div><b>补齐回填。</b>1 条内容未回填，补齐后才能进入效果对比。</div></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card" style="padding:8px 14px 14px">
+          <div class="card-head" style="padding:10px 0 0"><h3>我的发布</h3><span class="small muted">共 12 条 · 待回填 1 条</span></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>内容</th><th>发布时间</th><th>曝光</th><th>互动</th><th>回填</th><th>建议</th></tr></thead>
+              <tbody>
+                <tr><td class="t-title">带娃去京都，5 天不赶不累的路线</td><td class="num muted">11-19</td><td class="num">3.2w</td><td class="num">1,860</td><td><span class="badge ok">已回填</span></td><td>可复制结构</td></tr>
+                <tr><td class="t-title">冲绳亲子酒店怎么选，看这 3 点</td><td class="num muted">11-18</td><td class="num">2.1w</td><td class="num">1,120</td><td><span class="badge ok">已回填</span></td><td>可复制结构</td></tr>
+                <tr><td class="t-title">北海道滑雪，孩子第一次上雪场</td><td class="num muted">11-17</td><td class="num">1.4w</td><td class="num">760</td><td><span class="badge">待回填</span></td><td>先补链接</td></tr>
+                <tr><td class="t-title">海岛亲子游，行李清单</td><td class="num muted">11-16</td><td class="num">0.9w</td><td class="num">540</td><td><span class="badge ok">已回填</span></td><td>换开头</td></tr>
+                <tr><td class="t-title">带爸妈去日本，行程怎么留白</td><td class="num muted">11-15</td><td class="num">1.0w</td><td class="num">610</td><td><span class="badge ok">已回填</span></td><td>观察</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted" style="margin:12px 0 0">数据来源：本人账号授权 + 发布回填。平台不读取你的账号后台私密数据。</p>
+        </div>
+      </section>
+
+      <!-- 素材库 -->
+      <section class="page" data-page="p-packs">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">创作 / 素材</div>
+            <h1>素材库</h1>
+            <p>按你的人设定向开放，素材包含成稿、实景图与发布建议。</p>
+          </div>
+          <div class="actions"><button class="btn" data-toast="已打开我的领取记录">领取记录</button></div>
+        </div>
+
+        <div class="scope-band"><svg class="ic"><use href="#i-folder"/></svg><div>同一素材包同人设最多 3 人领取。领取后请至少改写标题与开头 2 句，避免与同批内容重复。</div></div>
+
+        <div class="toolbar">
+          <div class="seg"><button class="active">全部</button><button>日本</button><button>海岛</button><button>北欧</button></div>
+          <select><option>全部场景</option><option>酒店</option><option>路线</option><option>体验</option></select>
+          <div class="search"><svg class="ic" style="width:15px;height:15px"><use href="#i-search"/></svg><input placeholder="搜索目的地、素材包"></div>
+        </div>
+
+        <div class="packs">
+          <article class="pack" data-drawer="pack"><div class="pack-cover g-kyoto"><span class="pack-label">京都 · 秋</span><span class="pack-count">24 张实景</span></div><div class="pack-body"><h4>京都赏枫 5 天 4 晚｜闺蜜向</h4><div class="tags"><span>日本</span><span>酒店</span><span>秋</span></div><div class="pack-meta"><span>已领 42</span><span>已发 27</span></div></div></article>
+          <article class="pack" data-drawer="pack"><div class="pack-cover g-island"><span class="pack-label">巴厘 · 四季</span><span class="pack-count">30 张实景</span></div><div class="pack-body"><h4>海岛私享｜家庭向</h4><div class="tags"><span>海岛</span><span>亲子</span><span>酒店</span></div><div class="pack-meta"><span>已领 18</span><span>已发 6</span></div></div></article>
+          <article class="pack" data-drawer="pack"><div class="pack-cover g-ski"><span class="pack-label">北海道 · 冬</span><span class="pack-count">20 张实景</span></div><div class="pack-body"><h4>日本滑雪｜亲子向</h4><div class="tags"><span>日本</span><span>滑雪</span><span>亲子</span></div><div class="pack-meta"><span>已领 8</span><span>已发 3</span></div></div></article>
+          <article class="pack" data-drawer="pack"><div class="pack-cover g-nordic"><span class="pack-label">芬兰 · 冬</span><span class="pack-count">18 张实景</span></div><div class="pack-body"><h4>北欧极光｜情侣向</h4><div class="tags"><span>北欧</span><span>玻璃屋</span><span>冬</span></div><div class="pack-meta"><span>已领 31</span><span>已发 18</span></div></div></article>
+          <article class="pack" data-drawer="pack"><div class="pack-cover g-xinjiang"><span class="pack-label">伊犁 · 秋</span><span class="pack-count">22 张实景</span></div><div class="pack-body"><h4>新疆环线｜朋友向</h4><div class="tags"><span>新疆</span><span>摄影</span><span>秋</span></div><div class="pack-meta"><span>已领 26</span><span>已发 14</span></div></div></article>
+          <article class="pack" data-drawer="pack"><div class="pack-cover g-swiss"><span class="pack-label">少女峰 · 冬</span><span class="pack-count">16 张实景</span></div><div class="pack-body"><h4>瑞士雪山｜蜜月向</h4><div class="tags"><span>瑞士</span><span>蜜月</span><span>冬</span></div><div class="pack-meta"><span>已领 12</span><span>已发 9</span></div></div></article>
+        </div>
+      </section>
+
+      <!-- 我的账号 -->
+      <section class="page" data-page="p-profile">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">账号</div>
+            <h1>我的账号</h1>
+            <p>人设与偏好决定你看到的趋势和素材范围。</p>
+          </div>
+        </div>
+
+        <div class="cols cols-2">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div style="display:flex;gap:14px;align-items:center">
+                <div class="avatar" style="width:52px;height:52px;font-size:18px">Y</div>
+                <div style="flex:1">
+                  <b style="font-size:15px">Yuki 在路上</b>
+                  <div class="small muted" style="margin-top:2px">亲子度假体验官 · 已加入 86 天</div>
+                </div>
+                <button class="btn sm" data-toast="已打开授权管理">管理授权</button>
+              </div>
+              <div class="rule-row" style="margin-top:8px"><div><b>小红书账号</b><span>已授权 · 数据更新于今日 09:00</span></div><span class="badge ok">已连接</span></div>
+              <div class="rule-row"><div><b>抖音账号</b><span>未授权 · 暂不展示该平台数据</span></div><button class="link" data-toast="已发送授权引导">去授权</button></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>我的数据</h3></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center;gap:8px">
+                <div><div style="font-family:var(--serif);font-size:22px">42</div><div class="small muted">已发布</div></div>
+                <div><div style="font-family:var(--serif);font-size:22px">92%</div><div class="small muted">回填率</div></div>
+                <div><div style="font-family:var(--serif);font-size:22px">18</div><div class="small muted">本周领取</div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-head"><h3>人设与偏好</h3><button class="link" data-toast="已保存偏好">编辑</button></div>
+              <div class="tags" style="margin-bottom:6px"><span>亲子</span><span>日本</span><span>海岛</span><span>酒店细节</span><span>5–7 天</span></div>
+              <div class="rule-row"><div><b>亲子友好优先</b><span>影响趋势与素材推荐</span></div><div class="switch on" data-switch></div></div>
+              <div class="rule-row"><div><b>酒店与房型</b><span>推荐含酒店细节的素材包</span></div><div class="switch on" data-switch></div></div>
+              <div class="rule-row"><div><b>短途周末</b><span>打开后增加 2–3 天线路</span></div><div class="switch" data-switch></div></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>平台规范</h3></div>
+              <ul class="checks">
+                <li><svg class="ic" style="width:14px;height:14px;color:#2E7D5B"><use href="#i-check"/></svg>不代发、不托管账号<span class="ok" style="margin-left:auto">已阅读</span></li>
+                <li><svg class="ic" style="width:14px;height:14px;color:#2E7D5B"><use href="#i-check"/></svg>素材授权与到期规则<span class="ok" style="margin-left:auto">已阅读</span></li>
+                <li><svg class="ic" style="width:14px;height:14px;color:#2E7D5B"><use href="#i-check"/></svg>AIGC 标识与极限词提示<span class="warn" style="margin-left:auto">待确认</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /pPageWrap -->
+  </main>
+</div><!-- /partnerApp -->
 </div><!-- /stage -->
 <!-- ================= 抽屉 ================= -->
 <div class="backdrop" id="backdrop"></div>
@@ -1224,31 +1603,51 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
   var $ = function(s,c){return (c||document).querySelector(s)};
   var $$ = function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
 
-  /* ---------- 设备切换 ---------- */
-  var desktop = $('#desktopApp'), mobile = $('#mobileApp');
-  $$('.device-toggle button').forEach(function(btn){
+  /* ---------- 角色与设备切换 ---------- */
+  var operatorApp = $('#desktopApp'), partnerApp = $('#partnerApp'), mobile = $('#mobileApp');
+  var roleToggle = $('#roleToggle'), deviceToggle = $('#deviceToggle');
+  var currentRole = 'operator', currentDevice = 'desktop';
+  function renderView(){
+    operatorApp.style.display = (currentDevice === 'desktop' && currentRole === 'operator') ? '' : 'none';
+    partnerApp.style.display = (currentDevice === 'desktop' && currentRole === 'partner') ? '' : 'none';
+    mobile.classList.toggle('active', currentDevice === 'mobile');
+    $$('button', deviceToggle).forEach(function(b){b.classList.toggle('active', b.dataset.device === currentDevice)});
+    $$('button', roleToggle).forEach(function(b){b.classList.toggle('active', b.dataset.role === currentRole)});
+  }
+  $$('button', deviceToggle).forEach(function(btn){
     btn.addEventListener('click', function(){
-      $$('.device-toggle button').forEach(function(b){b.classList.remove('active')});
-      btn.classList.add('active');
-      if(btn.dataset.device === 'mobile'){
-        desktop.style.display = 'none';
-        mobile.classList.add('active');
-      }else{
-        desktop.style.display = '';
-        mobile.classList.remove('active');
-      }
+      currentDevice = btn.dataset.device;
+      if(currentDevice === 'mobile') currentRole = 'partner';
+      renderView();
+    });
+  });
+  $$('button', roleToggle).forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if(currentDevice === 'mobile') currentDevice = 'desktop';
+      currentRole = btn.dataset.role;
+      renderView();
     });
   });
 
-  /* ---------- 桌面导航 ---------- */
+  /* ---------- 桌面导航（按工作台隔离） ---------- */
   $$('.nav-item').forEach(function(btn){
     btn.addEventListener('click', function(){
-      $$('.nav-item').forEach(function(b){b.classList.remove('active')});
+      var app = btn.closest('.desktop');
+      $$('.nav-item', app).forEach(function(b){b.classList.remove('active')});
       btn.classList.add('active');
       var page = btn.dataset.page;
-      $$('.page').forEach(function(p){p.classList.toggle('active', p.dataset.page === page)});
-      var crumb = $('#crumb'); if(crumb) crumb.textContent = btn.dataset.crumb || btn.textContent.trim();
-      var wrap = $('#pageWrap'); if(wrap) wrap.scrollTop = 0;
+      $$('.page', app).forEach(function(p){p.classList.toggle('active', p.dataset.page === page)});
+      var crumb = app.querySelector('.crumb b'); if(crumb) crumb.textContent = btn.dataset.crumb || btn.textContent.trim();
+      var wrap = app.querySelector('.page-wrap'); if(wrap) wrap.scrollTop = 0;
+    });
+  });
+
+  /* ---------- 工作台内跳转 ---------- */
+  $$('[data-goto]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var app = el.closest('.desktop') || document;
+      var nav = app.querySelector('.nav-item[data-page="' + el.dataset.goto + '"]');
+      if(nav) nav.click();
     });
   });
 
