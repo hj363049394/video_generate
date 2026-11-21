@@ -288,6 +288,18 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 .tpl-slots div{background:#FBFAF6;border:1px solid var(--line);border-radius:8px;padding:7px 8px;font-size:10px;line-height:1.55}
 .tpl-slots b{display:block;color:var(--brass);font-size:9px;letter-spacing:.06em;margin-bottom:2px}
 .tpl-rule{font-size:10px;color:#7A6A4D;background:var(--soft2);border-radius:8px;padding:7px 9px;line-height:1.6}
+.bench-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bench-grid .bench-card{margin:0;cursor:default}
+.bench-grid .bench-card .angle:last-of-type{margin-bottom:0}
+.bench-actions{display:flex;gap:7px;margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
+.track-map{display:grid;grid-template-columns:1fr 20px 1fr 20px 1.25fr;gap:8px;align-items:stretch;margin-bottom:16px}
+.track-map>div{background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 12px;min-width:0}
+.track-map>i{align-self:center;text-align:center;color:var(--brass);font-style:normal;font-size:17px}
+.track-map span{display:block;font-size:9.5px;color:var(--brass);font-weight:700;letter-spacing:.03em;margin-bottom:4px}
+.track-map b{display:block;font-size:12px;line-height:1.5}
+.track-map small{display:block;font-size:10px;color:var(--muted);line-height:1.55;margin-top:3px}
+.track-note{font-size:10.5px;color:var(--muted);line-height:1.7;margin:-8px 0 16px}
+@media(max-width:1100px){.bench-grid{grid-template-columns:1fr}.track-map{grid-template-columns:1fr}.track-map>i{transform:rotate(90deg);height:14px}}
 .track-pick{display:flex;align-items:center;gap:7px;font-size:11px;color:#B9C4BE}
 .track-pick select{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#F2EEE4;border-radius:8px;padding:5px 8px;font-size:11.5px;outline:none}
 .track-pick select option{color:#1B1A17;background:#fff}
@@ -389,7 +401,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 <div class="proto-bar">
   <div class="proto-brand"><span class="mk">旅</span><div>内容供给中台 <em>PROTOTYPE</em></div></div>
   <div class="proto-controls">
-    <label class="track-pick">赛道
+    <label class="track-pick" title="原型演示：正式环境仅显示当前账号已授权的业务赛道包">业务赛道包
       <select id="trackSel">
         <option value="travel">高端旅游</option>
         <option value="ai">AI 自媒体</option>
@@ -1034,6 +1046,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 
         <div class="tabs" data-tabs="settings">
           <button class="active" data-tab="source">数据源</button>
+          <button data-tab="tracks">赛道与标签</button>
           <button data-tab="compliance">合规规则</button>
           <button data-tab="org">组织权限</button>
         </div>
@@ -1070,6 +1083,42 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" data-panel="tracks">
+          <div class="scope-band"><svg class="ic"><use href="#i-radar"/></svg><div><b>业务赛道包 ≠ 用户人设 ≠ 平台分类。</b>赛道包是组织内部配置；平台话题、POI、正文与账号历史只作为识别信号，多对多映射到统一标签。</div></div>
+          <div class="cols cols-2">
+            <div class="card">
+              <div class="card-head"><h3>业务赛道包</h3><button class="link" data-toast="已新建赛道包草稿">新建赛道包</button></div>
+              <div class="rule-row"><div><b>高端旅游</b><span>内部 ID：travel · 子范围：日本亲子 / 海岛度假</span></div><span class="badge ok">已启用</span></div>
+              <div class="rule-row"><div><b>评分与供给</b><span>四维等权 · 亲子模板 12 个 · 实景素材 2,840 项</span></div><button class="link" data-toast="已打开赛道包配置">配置</button></div>
+              <div class="rule-row"><div><b>账号授权</b><span>18 个账号可见 · 合伙人不可自行切换未授权赛道</span></div><button class="link" data-toast="已打开授权账号列表">管理</button></div>
+              <div class="rule-row"><div><b>AI 自媒体</b><span>内部 ID：ai_media · 评分额外加权人设辨识度</span></div><span class="badge brass">试点</span></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>账号人设映射</h3><span class="small muted">由用户确认后生效</span></div>
+              <div class="rule-row"><div><b>Yuki 在路上</b><span>主赛道：高端旅游 · 人设：亲子度假体验官</span></div><span class="badge pine">已确认</span></div>
+              <div class="rule-row"><div><b>包含范围</b><span>亲子家庭 × 日本 / 海岛 × 度假酒店 / 慢行程</span></div><button class="link" data-toast="已打开人设范围编辑">编辑</button></div>
+              <div class="rule-row"><div><b>排除范围</b><span>穷游、特种兵行程、报价导流、未经授权素材</span></div><button class="link" data-toast="已打开排除项编辑">编辑</button></div>
+              <div class="rule-row"><div><b>冷启动依据</b><span>用户选择 + 最近 20 篇笔记识别，低置信度需人工确认</span></div><span class="badge">0.84</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>平台信号 → 内部标签映射</h3><button class="btn sm" data-toast="已新增一条人工映射规则">新增映射</button></div>
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr><th>平台信号</th><th>内部标准标签</th><th>置信度</th><th>识别依据</th><th>处理方式</th><th></th></tr></thead>
+                <tbody>
+                  <tr><td>小红书 #京都亲子游</td><td>主题：亲子游 · 人群：亲子家庭</td><td class="num">0.96</td><td>话题 + 正文</td><td>自动入库</td><td><button class="link" data-toast="已打开映射编辑">校正</button></td></tr>
+                  <tr><td>小红书 京都 POI</td><td>目的地：京都</td><td class="num">1.00</td><td>POI 结构化字段</td><td>自动入库</td><td><button class="link" data-toast="已打开映射编辑">校正</button></td></tr>
+                  <tr><td>正文「4 岁 / 带娃 / 不赶路」</td><td>人群：亲子家庭 · 风格：慢行程</td><td class="num">0.89</td><td>语义识别</td><td>自动入库</td><td><button class="link" data-toast="已打开映射编辑">校正</button></td></tr>
+                  <tr><td>账号近 20 篇 70% 为日本亲子</td><td>人设候选：亲子度假体验官</td><td class="num">0.84</td><td>账号历史内容</td><td>用户确认</td><td><button class="link" data-toast="已发起用户确认">确认</button></td></tr>
+                  <tr><td>正文「AI 做旅游攻略」</td><td>高端旅游 0.55 · AI 自媒体 0.45</td><td class="num">0.55</td><td>跨赛道语义</td><td>保留双标签，主赛道人工判定</td><td><button class="link" data-toast="已打开人工判定">判定</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="small muted" style="margin:12px 0 0;line-height:1.75">推荐分＝赛道相关度 × 人设匹配度 × 热度 × 新鲜度 × 供给缺口。平台原生分类若由数据接口返回，只作为一种信号；没有该字段时不虚构、不强行一一对应。</p>
           </div>
         </div>
 
@@ -1399,6 +1448,15 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 
         <div class="scope-band"><svg class="ic"><use href="#i-radar"/></svg><div id="trackScope">当前赛道：高端旅游 · 展示范围：人设「亲子度假体验官」＋ 目的地「日本 / 海岛」。赛道包决定选题库、评分口径、模板与素材范围。</div></div>
 
+        <div class="track-map">
+          <div><span>① 业务赛道包 · 运营配置</span><b id="mapTrack">高端旅游</b><small>决定选题库、评分权重、模板、素材与合规规则</small></div>
+          <i>→</i>
+          <div><span>② 账号人设 · 用户确认</span><b id="mapPersona">亲子度假体验官</b><small>决定目标人群、内容范围与排除项，不修改业务赛道</small></div>
+          <i>→</i>
+          <div><span>③ 平台信号 · 逐篇识别</span><b id="mapSignal">#京都亲子游 + 京都 POI + 文本「4 岁」</b><small>多对多映射到内部标签，不等于小红书官方分类</small></div>
+        </div>
+        <p class="track-note">顶部切换仅用于原型演示。正式产品中，合伙人只看到被授权的赛道包；笔记通过话题、关键词、POI、正文与账号历史内容识别标签，低置信度结果进入人工校正。</p>
+
         <div class="kpis">
           <div class="kpi"><div class="kpi-top"><span>相关赛道</span></div><div class="kpi-val" id="kpiTrack">12</div><div class="kpi-sub" id="kpiTrackSub">日本 7 · 海岛 5</div></div>
           <div class="kpi"><div class="kpi-top"><span>上升话题</span><span class="delta">+4</span></div><div class="kpi-val" id="kpiRising">4</div><div class="kpi-sub">近 7 天热度上涨</div></div>
@@ -1441,6 +1499,11 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
             </table>
           </div>
         </div>
+
+        <div class="card">
+          <div class="card-head"><h3>赛道爆款笔记 · 逐篇数据</h3><span class="small muted">公开指标估算 · 近 30 天 · 点击拆解查看结构</span></div>
+          <div class="bench-grid" id="trendNotes"></div>
+        </div>
       </section>
 
       <!-- 对标笔记 -->
@@ -1459,22 +1522,12 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
           <select><option>小红书</option><option>抖音</option><option>视频号</option></select>
           <select><option>人群：亲子</option><option>人群：情侣</option><option>人群：朋友</option></select>
           <select><option>互动 &gt; 1,000</option><option>互动 &gt; 5,000</option><option>近 30 天</option></select>
-          <button class="btn primary" data-toast="已筛选出 36 篇，展示匹配度最高的 4 篇">筛选</button>
+          <button class="btn primary" data-toast="已筛选出 36 篇，展示匹配度最高的 3 篇">筛选</button>
         </div>
 
-        <div class="card" style="padding:8px 14px 14px">
-          <div class="card-head" style="padding:10px 0 0"><h3>筛选结果</h3><span class="small muted">按匹配度排序 · 仅展示结构与指标</span></div>
-          <div class="tbl-wrap">
-            <table class="tbl">
-              <thead><tr><th>标题</th><th>平台</th><th>互动</th><th>结构特征</th><th>可迁移点</th><th></th></tr></thead>
-              <tbody>
-                <tr><td class="t-title">带 4 岁娃去京都，5 天只走了 3 个景点</td><td>小红书</td><td class="num">1.8w</td><td>反常识 + 少而精</td><td>行程留白、酒店位置</td><td><button class="btn sm" data-drawer="breakdown">拆解</button></td></tr>
-                <tr><td class="t-title">冲绳亲子酒店，我最后悔的是订早了</td><td>小红书</td><td class="num">1.2w</td><td>后悔式开头 + 对比</td><td>房型对比、预订时机</td><td><button class="btn sm" data-drawer="breakdown">拆解</button></td></tr>
-                <tr><td class="t-title">北海道第一次滑雪，孩子哭了两次</td><td>小红书</td><td class="num">9,600</td><td>真实经历 + 清单</td><td>装备清单、教练选择</td><td><button class="btn sm" data-drawer="breakdown">拆解</button></td></tr>
-                <tr><td class="t-title">带爸妈旅行，别把行程排满</td><td>抖音</td><td class="num">2.4w</td><td>口播 + 三点建议</td><td>节奏、住宿、用餐</td><td><button class="btn sm" data-drawer="breakdown">拆解</button></td></tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="card">
+          <div class="card-head"><h3>筛选结果 · 每篇笔记的爆款数据</h3><span class="small muted">按人设匹配度排序 · 指标为公开数据估算</span></div>
+          <div class="bench-grid" id="benchmarkGrid"></div>
         </div>
 
         <div class="cols cols-2">
@@ -2194,6 +2247,8 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
     travel: {
       name:'高端旅游',
       sample:'京都亲子赏枫 5 天 4 晚',
+      persona:'亲子度假体验官',
+      signal:'#京都亲子游 + 京都 POI + 文本「4 岁」',
       scope:'当前赛道：高端旅游 · 展示范围：人设「亲子度假体验官」＋ 目的地「日本 / 海岛」。赛道包决定选题库、评分口径、模板与素材范围。',
       kpi:['12','日本 7 · 海岛 5','4','6.8%','你的 7.4% · 高于均值','中','亲子日本内容供给适中'],
       topics:[
@@ -2207,12 +2262,19 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
         ['冲绳亲子酒店 3 选 1','小红书','78','中','可做，需差异化'],
         ['带爸妈去日本怎么排','抖音','71','高','换角度再做'],
         ['北海道亲子滑雪装备','小红书','64','低','可做，偏工具型']
+      ],
+      notes:[
+        {title:'带 4 岁娃去京都，5 天只走了 3 个景点',form:'图文',tag:'日本 · 亲子',days:'3 天前',score:'8.6',stats:['1.8w','6,420','860','+1,240','9.4%'],dims:[8.4,8.7,8.2,9.0],angle:'数字承诺开头 + 路线清单体，把「少而精」做成反攻略钩子。',persona:'用真实带娃节奏讲取舍，保留孩子年龄与体力细节。'},
+        {title:'冲绳亲子酒店，我最后悔的是订早了',form:'图文',tag:'海岛 · 酒店',days:'8 天前',score:'8.3',stats:['1.2w','4,180','610','+780','8.1%'],dims:[8.6,8.1,8.5,7.9],angle:'后悔式开头 + 房型对比，把订错的时间成本讲清楚。',persona:'以住过多家亲子酒店的体验给结论，弱化广告感。'},
+        {title:'北海道第一次滑雪，孩子哭了两次',form:'视频',tag:'日本 · 滑雪',days:'12 天前',score:'7.9',stats:['9,600','2,940','480','+520','7.2%'],dims:[8.0,7.8,8.4,7.4],angle:'真实经历 + 装备清单，冲突点放在孩子反应而不是风景。',persona:'保留第一次带娃滑雪的笨拙感，比专家口吻更可信。'}
       ]
     },
     ai: {
       name:'AI 自媒体',
       sample:'用 AI 做小红书图文号，30 天起号复盘',
-      scope:'当前赛道：AI 自媒体 · 展示范围：人设「AI 工具测评」＋ 主题「起号 / 工作流 / 变现」。该赛道同质化高，评分会额外看人设辨识度。',
+      persona:'AI 工具实测者',
+      signal:'#AI工具 + 关键词「实测」+ 历史内容「工作流」',
+      scope:'当前赛道：AI 自媒体 · 展示范围：人设「AI 工具实测者」＋ 主题「起号 / 工作流 / 变现」。该赛道同质化高，评分会额外看人设辨识度。',
       kpi:['18','工具 8 · 起号 5 · 变现 5','6','5.2%','你的 4.8% · 低于均值','高','同质化严重，靠人设区分'],
       topics:[
         ['# AI 数字人带货','小红书 · 热度 +52% · 竞争高','观察'],
@@ -2225,12 +2287,19 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
         ['零基础提示词模板合集','小红书','85','中','可做，偏工具'],
         ['AI 数字人口播避坑','抖音','78','高','换角度再做'],
         ['AI 副业真实收入拆解','视频号','69','低','优先做，供给少']
+      ],
+      notes:[
+        {title:'30 天用 AI 做图文号：失败的 7 天也放出来了',form:'图文',tag:'起号 · 复盘',days:'5 天前',score:'9.0',stats:['2.3w','9,860','1,240','+2,180','10.8%'],dims:[9.2,8.8,9.1,8.9],angle:'反完美复盘 + 连续数据，把失败过程变成追更理由。',persona:'只展示亲手跑过的后台截图与判断，拒绝万能起号承诺。'},
+        {title:'别再囤提示词了，这 3 条工作流我每天都用',form:'图文',tag:'AI 工具 · 工作流',days:'9 天前',score:'8.7',stats:['1.6w','1.1w','720','+1,460','11.2%'],dims:[8.8,9.0,8.1,8.9],angle:'反囤积观点 + 高频场景清单，用使用频次替代工具数量。',persona:'以真实的一天串联工具，保留输入、修改与最终产出。'},
+        {title:'AI 数字人做了 14 条视频，只有 2 条没扑街',form:'视频',tag:'数字人 · 实测',days:'15 天前',score:'8.2',stats:['8,900','3,260','1,080','+690','8.9%'],dims:[9.0,8.0,8.5,7.4],angle:'低成功率冲突 + 样本对照，先给结果再拆失败原因。',persona:'明确测试周期与样本量，不把单次结果包装成普遍结论。'}
       ]
     },
     life: {
       name:'生活方式',
       sample:'小户型阳台改造，预算 5000',
-      scope:'当前赛道：生活方式 · 展示范围：人设「城市小户型改造」＋ 主题「家居 / 穿搭 / 一人食」。素材以实拍为主，AI 图仅用于排版示意。',
+      persona:'小户型生活实验家',
+      signal:'#小户型改造 + 正文「5000 元」+ 图片「阳台」',
+      scope:'当前赛道：生活方式 · 展示范围：人设「小户型生活实验家」＋ 主题「家居 / 穿搭 / 一人食」。素材以实拍为主，AI 图仅用于排版示意。',
       kpi:['15','家居 6 · 穿搭 4 · 出行 5','3','6.1%','你的 5.6% · 略低','中','家居供给偏多'],
       topics:[
         ['# 小户型阳台改造','小红书 · 热度 +29% · 供给多','建议'],
@@ -2243,11 +2312,18 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
         ['5000 元改造出租房','小红书','76','低','优先做，供给少'],
         ['通勤穿搭 7 天不重样','抖音','70','高','换角度再做'],
         ['一人食早餐 10 分钟','视频号','62','中','可做，偏工具']
+      ],
+      notes:[
+        {title:'5000 元改造 6㎡ 阳台，最贵的是这把椅子',form:'图文',tag:'家居 · 预算',days:'4 天前',score:'8.9',stats:['2.0w','1.3w','930','+1,120','12.0%'],dims:[9.1,8.8,8.7,8.9],angle:'面积与预算双数字 + 单品争议，清单中保留价格锚点。',persona:'用自家尺寸、真实账单与住后反馈，不用样板间口吻。'},
+        {title:'租来的房子也值得好好住：我只改了这 4 处',form:'图文',tag:'租房 · 改造',days:'10 天前',score:'8.5',stats:['1.4w','9,800','640','+960','10.6%'],dims:[8.7,8.4,9.0,8.0],angle:'态度型标题 + 可逆改造，兼顾情绪价值与可执行清单。',persona:'突出租客限制与退租恢复，不用自住房方案硬套。'},
+        {title:'一人食第 37 天：15 分钟的一锅晚餐',form:'视频',tag:'一人食 · 晚餐',days:'6 天前',score:'8.0',stats:['1.1w','4,600','520','+580','8.4%'],dims:[8.2,8.0,8.6,7.3],angle:'连续记录 + 时间承诺，用一锅到底减少步骤与洗碗负担。',persona:'保留下班后的真实状态与分量，不拍成精致美食广告。'}
       ]
     },
     know: {
       name:'知识教育',
       sample:'零基础学 Excel：3 个函数搞定报表',
+      persona:'职场技能教练',
+      signal:'#Excel函数 + 关键词「月度报表」+ 历史内容「职场效率」',
       scope:'当前赛道：知识教育 · 展示范围：人设「职场技能教练」＋ 主题「办公 / 语言 / 考证」。模板偏清单与步骤，合规上不得承诺收益或通过率。',
       kpi:['20','职场 8 · 语言 6 · 考证 6','5','4.6%','你的 5.1% · 高于均值','中','考证类需求稳定'],
       topics:[
@@ -2261,13 +2337,38 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
         ['雅思口语 6 到 7 的 4 周','B站','79','高','换角度再做'],
         ['PPT 排版 5 个模板','小红书','73','低','优先做，供给少'],
         ['考公备考时间表','视频号','66','高','换角度再做']
+      ],
+      notes:[
+        {title:'只用 3 个函数，我把月度报表从 2 小时缩到 10 分钟',form:'图文',tag:'Excel · 效率',days:'2 天前',score:'9.2',stats:['2.6w','2.1w','1,360','+2,460','13.8%'],dims:[9.3,9.4,8.7,9.2],angle:'前后耗时对比 + 三步解法，收藏点落在可复用公式。',persona:'用同一表演示修改前后，注明版本与适用条件。'},
+        {title:'雅思口语 6 到 7，我停掉了这 3 种练习',form:'视频',tag:'雅思 · 口语',days:'11 天前',score:'8.6',stats:['1.3w','8,900','1,120','+1,480','10.1%'],dims:[9.0,8.5,8.8,8.2],angle:'减法学习 + 错误示范，先纠偏再给四周练习安排。',persona:'说明起点、周期与样本，不承诺分数或通过率。'},
+        {title:'PPT 别先找模板：先做这 4 个对齐',form:'图文',tag:'PPT · 排版',days:'7 天前',score:'8.2',stats:['9,800','1.2w','390','+760','11.4%'],dims:[8.5,8.8,7.7,8.0],angle:'反模板观点 + 前后对照，把抽象审美变成四个检查动作。',persona:'用职场真实页面改稿，保留错误例子的修改过程。'}
       ]
     }
   };
   var trackSel = $('#trackSel');
+  function noteCardHTML(note, withCreateAction){
+    var statLabels = ['点赞','收藏','评论','涨粉','互动率'];
+    var dimLabels = ['钩子','结构','情绪','传播'];
+    var stats = note.stats.map(function(value,i){
+      return '<div><b>' + value + '</b><span>' + statLabels[i] + '</span></div>';
+    }).join('');
+    var dims = note.dims.map(function(value,i){
+      return '<div class="dim' + (i === 3 ? ' hot' : '') + '"><span>' + dimLabels[i] + '</span><i><em style="width:' + (value * 10) + '%"></em></i><b>' + value.toFixed(1) + '</b></div>';
+    }).join('');
+    return '<article class="bench-card">' +
+      '<div class="bench-top"><div class="bench-title"><b>' + note.title + '</b><div class="bench-tags"><span class="badge' + (note.form === '视频' ? ' brass' : '') + '">' + note.form + '</span><span class="badge pine">' + note.tag + '</span><span class="small muted">' + note.days + '</span></div></div><div class="score">' + note.score + '<small>综合推荐</small></div></div>' +
+      '<div class="stat-row">' + stats + '</div>' + dims +
+      '<div class="angle"><b>仿写角度</b>' + note.angle + '</div>' +
+      '<div class="angle"><b>人设钩子</b>' + note.persona + '</div>' +
+      '<div class="bench-actions"><button class="btn sm" data-drawer="breakdown">拆解</button>' + (withCreateAction ? '<button class="btn sm primary" data-goto="p-create">去创作台</button>' : '') + '</div>' +
+      '</article>';
+  }
   function renderTrack(){
     var d = trackData[trackSel.value]; if(!d) return;
     var scope = $('#trackScope'); if(scope) scope.textContent = d.scope;
+    var mapTrack = $('#mapTrack'); if(mapTrack) mapTrack.textContent = d.name;
+    var mapPersona = $('#mapPersona'); if(mapPersona) mapPersona.textContent = d.persona;
+    var mapSignal = $('#mapSignal'); if(mapSignal) mapSignal.textContent = d.signal;
     [['kpiTrack',0],['kpiTrackSub',1],['kpiRising',2],['kpiRate',3],['kpiRateSub',4],['kpiComp',5],['kpiCompSub',6]].forEach(function(p){
       var el = $('#' + p[0]); if(el) el.textContent = d.kpi[p[1]];
     });
@@ -2279,13 +2380,18 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
     if(rows) rows.innerHTML = d.rows.map(function(r){
       return '<tr><td class="t-title">' + r[0] + '</td><td>' + r[1] + '</td><td><span class="badge brass">' + r[2] + '</span></td><td>' + r[3] + '</td><td>' + r[4] + '</td><td><button class="link" data-drawer="breakdown">拆解</button></td></tr>';
     }).join('');
+    var trendNotes = $('#trendNotes');
+    if(trendNotes) trendNotes.innerHTML = d.notes.map(function(note){return noteCardHTML(note, false)}).join('');
+    var benchmarkGrid = $('#benchmarkGrid');
+    if(benchmarkGrid) benchmarkGrid.innerHTML = d.notes.map(function(note){return noteCardHTML(note, true)}).join('');
     var topicInput = $('#createTopic'); if(topicInput) topicInput.value = d.sample;
   }
   if(trackSel){
     trackSel.addEventListener('change', function(){
       renderTrack();
-      showToast('已切换到「' + trackData[trackSel.value].name + '」赛道包');
+      showToast('已切换业务赛道包：' + trackData[trackSel.value].name + '（原型演示）');
     });
+    renderTrack();
   }
 
   /* ---------- 桌面导航（按工作台隔离） ---------- */
@@ -2301,13 +2407,13 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
     });
   });
 
-  /* ---------- 工作台内跳转 ---------- */
-  $$('[data-goto]').forEach(function(el){
-    el.addEventListener('click', function(){
-      var app = el.closest('.desktop') || document;
-      var nav = app.querySelector('.nav-item[data-page="' + el.dataset.goto + '"]');
-      if(nav) nav.click();
-    });
+  /* ---------- 工作台内跳转（含动态笔记卡） ---------- */
+  document.addEventListener('click', function(e){
+    var el = e.target.closest('[data-goto]');
+    if(!el) return;
+    var app = el.closest('.desktop') || document;
+    var nav = app.querySelector('.nav-item[data-page="' + el.dataset.goto + '"]');
+    if(nav) nav.click();
   });
 
   /* ---------- 通用 Tab ---------- */
