@@ -300,20 +300,33 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 .track-map small{display:block;font-size:10px;color:var(--muted);line-height:1.55;margin-top:3px}
 .track-note{font-size:10.5px;color:var(--muted);line-height:1.7;margin:-8px 0 16px}
 @media(max-width:1100px){.bench-grid{grid-template-columns:1fr}.track-map{grid-template-columns:1fr}.track-map>i{transform:rotate(90deg);height:14px}}
-/* ---------- 首页：搜索优先 ---------- */
-.home-hero{background:linear-gradient(150deg,#173B32 0%,#1F5C4D 62%,#2F6B5E 100%);border-radius:16px;padding:22px 24px;color:#EDF2EF;margin-bottom:16px}
-.home-hero .eyebrow{color:#C8B183}
-.home-hero h1{font-family:var(--serif);font-size:25px;margin:0 0 4px;color:#fff}
-.home-hero p{margin:0 0 14px;font-size:12.5px;color:#BBD0C6}
-.hero-search{display:flex;align-items:center;gap:9px;background:#fff;border-radius:11px;padding:6px 7px 6px 13px;height:48px}
-.hero-search .ic{color:var(--pine)}
-.hero-search input{flex:1;border:none;outline:none;font-size:14px;background:none;min-width:0;color:var(--ink)}
-.hero-search .btn{height:36px;white-space:nowrap}
-.dir-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:12px}
-.dir-row>span{font-size:11px;color:#A9C0B6}
-.dir-chip{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.07);color:#DCE6E0;border-radius:999px;padding:4px 11px;font-size:11.5px;cursor:pointer}
-.dir-chip.active{background:#F2EEE4;border-color:#F2EEE4;color:#173B32;font-weight:700}
-.dir-chip.add{border-style:dashed;color:#A9C0B6}
+/* ---------- 首页：通栏搜索 + 供给优先 ---------- */
+.home-band{position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin:-24px -28px 18px;padding:13px 28px;background:linear-gradient(120deg,#173B32 0%,#1F5C4D 68%,#2F6B5E 100%);color:#EDF2EF;box-shadow:0 8px 20px rgba(23,59,50,.16)}
+.hb-greet{display:flex;flex-direction:column;gap:1px;flex:none}
+.hb-greet .eyebrow{color:#C8B183;font-size:10px}
+.hb-greet b{font-family:var(--serif);font-size:19px;color:#fff;line-height:1.3}
+.hb-greet span{font-size:10.5px;color:#A9C0B6}
+.hb-search{flex:1;min-width:300px;display:flex;align-items:center;gap:8px;background:#fff;border-radius:12px;padding:5px 6px 5px 14px;height:46px;box-shadow:0 5px 16px rgba(0,0,0,.14)}
+.hb-search .ic{color:var(--pine)}
+.hb-search input{flex:1;min-width:0;border:none;outline:none;background:none;font-size:13.5px;color:var(--ink)}
+.hb-search .btn{height:34px;white-space:nowrap}
+.hb-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap;width:100%;font-size:10.5px;color:#A9C0B6}
+.hb-tags button{border:none;background:rgba(255,255,255,.1);color:#DCE6E0;border-radius:999px;padding:3px 10px;font-size:10.5px;cursor:pointer}
+.hb-tags button:hover{background:rgba(255,255,255,.2)}
+.dir-band{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px 18px;margin-bottom:16px}
+.dir-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.dir-head h3{margin:0;font-size:14px;font-family:var(--serif);display:flex;align-items:center;gap:8px}
+.dir-head p{margin:4px 0 0;font-size:11.5px;color:var(--muted);line-height:1.6}
+.dir-chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dir-chip{border:1px solid var(--line);background:#FBFAF6;color:#4A463E;border-radius:999px;padding:7px 15px;font-size:12.5px;cursor:pointer;transition:.15s}
+.dir-chip:hover{border-color:#B9CFC5;color:var(--pine)}
+.dir-chip.active{background:var(--pine);border-color:var(--pine);color:#fff;font-weight:700}
+.dir-chip.add{border-style:dashed;background:#fff;color:var(--muted)}
+.dir-empty{font-size:12px;color:var(--muted)}
+.pack-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:12px}
+.pack-body .flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+@media(max-width:1100px){.pack-grid{grid-template-columns:1fr}}
+@media(max-width:980px){.home-band{margin:-18px -18px 16px;padding:12px 18px;gap:12px}.hb-search{min-width:100%}}
 .account-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:11px}
 .account-stats div{background:#F7F4ED;border-radius:10px;padding:9px 11px}
 .account-stats b{display:block;font-family:var(--serif);font-size:19px;line-height:1.3}
@@ -327,7 +340,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 .hot-meta{display:flex;gap:9px;font-size:10.5px;color:var(--muted);margin-top:2px;flex-wrap:wrap}
 .hot-score{font-family:var(--serif);font-size:17px;color:var(--brass);flex:none}
 @media(max-width:820px){.proto-controls{gap:6px}}
-@media(max-width:760px){.home-hero{padding:16px}.home-hero h1{font-size:20px}.hero-search{height:44px}}
+@media(max-width:760px){.home-band{position:static}.hb-greet b{font-size:17px}.dir-band{padding:13px 14px}}
 /* ---------- 首页：供给为主角 ---------- */
 .supply-band{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:16px}
 .supply-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;flex-wrap:wrap}
@@ -1407,19 +1420,37 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
 
       <!-- 我的工作台 -->
       <section class="page active" data-page="p-home">
-        <div class="home-hero">
-          <div class="eyebrow">2026年11月21日 · 周五</div>
-          <h1>早上好，Yuki</h1>
-          <p>先领本周的实景素材包，或搜一个目的地看最近在火的笔记，再写成自己账号的版本。</p>
-          <div class="hero-search">
+        <div class="home-band">
+          <div class="hb-greet">
+            <span class="eyebrow">2026年11月21日 · 周五</span>
+            <b>早上好，Yuki</b>
+            <span>今天想写点什么？</span>
+          </div>
+          <div class="hb-search">
             <svg class="ic" style="width:17px;height:17px"><use href="#i-search"/></svg>
-            <input id="homeSearch" placeholder="试试：京都亲子、海岛酒店、北海道滑雪">
+            <input id="homeSearch" placeholder="搜目的地、玩法、爆款笔记，例如：京都亲子">
             <button class="btn primary sm" data-goto="p-benchmark">搜爆款</button>
           </div>
-          <div class="dir-row">
-            <span>我的关注方向</span>
-            <div id="dirChips" style="display:flex;gap:7px;flex-wrap:wrap"></div>
-            <button class="dir-chip add" data-toast="已打开关注方向设置">＋ 添加</button>
+          <div class="hb-tags">
+            <span>热门搜索：</span>
+            <button data-toast="已搜索：京都亲子">京都亲子</button>
+            <button data-toast="已搜索：海岛酒店">海岛酒店</button>
+            <button data-toast="已搜索：北海道滑雪">北海道滑雪</button>
+            <button data-toast="已搜索：冲绳亲子">冲绳亲子</button>
+          </div>
+        </div>
+
+        <div class="dir-band">
+          <div class="dir-head">
+            <div>
+              <h3>我的关注方向 <span class="badge pine" id="dirCount">已选 1 个</span></h3>
+              <p>决定首页推荐、趋势与对标笔记的范围；可以多选，也可以先不选。</p>
+            </div>
+            <button class="link" data-toast="已打开关注方向设置">管理关注方向</button>
+          </div>
+          <div class="dir-chips">
+            <div id="dirChips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+            <button class="dir-chip add" data-toast="已打开关注方向设置">＋ 添加方向</button>
           </div>
         </div>
 
@@ -1462,41 +1493,50 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
           </div>
         </div>
 
-        <div class="cols cols-2">
-          <div class="card">
-            <div class="card-head"><h3>本周可领取</h3><span class="small muted">按人设匹配度</span></div>
-            <div class="pack-line">
-              <div class="pack-thumb g-kyoto">京都</div>
-              <div class="pm">
-                <b>京都赏枫 5 天 4 晚｜亲子向</b>
-                <div class="flags"><span class="pack-flag">24 张实景</span><span class="pack-flag auth">授权至 12-31</span><span class="pack-flag">匹配 92</span></div>
-              </div>
-              <button class="btn sm primary" data-toast="已领取「京都赏枫 5 天 4 晚」，可去创作台打开">领取</button>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head" style="margin-bottom:0">
+            <div>
+              <h3 style="margin:0">本周可领取素材包</h3>
+              <span class="small muted">实景拍摄 · 授权随包展示 · 领取后可在创作台改写成自己账号的版本</span>
             </div>
-            <div class="pack-line">
-              <div class="pack-thumb g-ski">雪</div>
-              <div class="pm">
-                <b>日本滑雪｜亲子向</b>
-                <div class="flags"><span class="pack-flag">20 张实景</span><span class="pack-flag auth">授权至 03-31</span><span class="pack-flag">剩余 3 次</span></div>
-              </div>
-              <button class="btn sm primary" data-toast="已领取「日本滑雪｜亲子向」，可去创作台打开">领取</button>
-            </div>
-            <div class="pack-line">
-              <div class="pack-thumb g-island">海岛</div>
-              <div class="pm">
-                <b>海岛私享｜家庭向</b>
-                <div class="flags"><span class="pack-flag">30 张实景</span><span class="pack-flag auth">授权至 12-31</span><span class="pack-flag">匹配 88</span></div>
-              </div>
-              <button class="btn sm primary" data-toast="已领取「海岛私享｜家庭向」，可去创作台打开">领取</button>
-            </div>
-            <button class="btn sm" style="margin-top:12px" data-goto="p-packs">去素材库看全部</button>
-            <div class="small muted" style="margin-top:10px;line-height:1.7;border-top:1px dashed var(--line);padding-top:9px">运营建议（可忽略）：优先写「京都亲子赏枫」，热度 +38%、供给偏少。</div>
+            <button class="link" data-goto="p-packs">查看全部素材包</button>
           </div>
-          <div class="card">
-            <div class="card-head"><h3>待办</h3><span class="badge">2 项</span></div>
-            <div class="rule-row"><div><b>1 条发布待回填</b><span>「北海道滑雪，孩子第一次上雪场」已超过 24 小时</span></div><button class="btn sm" data-goto="p-content">去回填</button></div>
-            <div class="rule-row"><div><b>2 个素材包可领</b><span>本周还剩 3 次领取额度</span></div><button class="btn sm" data-goto="p-packs">去领取</button></div>
+          <div class="pack-grid">
+            <div class="pack">
+              <div class="pack-cover g-kyoto"><span class="pack-label">京都 · 秋</span><span class="pack-count">24 张实景</span></div>
+              <div class="pack-body">
+                <h4>京都赏枫 5 天 4 晚｜亲子向</h4>
+                <div class="flags"><span class="pack-flag auth">授权至 12-31</span><span class="pack-flag">匹配 92</span><span class="pack-flag">可差异化 3 版</span></div>
+                <div class="pack-meta"><span>7 天有效</span><span>已领 12 次</span></div>
+                <button class="btn primary sm" style="width:100%;margin-top:10px" data-toast="已领取「京都赏枫 5 天 4 晚」，可去创作台打开">领取素材包</button>
+              </div>
+            </div>
+            <div class="pack">
+              <div class="pack-cover g-ski"><span class="pack-label">北海道 · 冬</span><span class="pack-count">20 张实景</span></div>
+              <div class="pack-body">
+                <h4>日本滑雪｜亲子向</h4>
+                <div class="flags"><span class="pack-flag auth">授权至 03-31</span><span class="pack-flag">匹配 86</span><span class="pack-flag">可差异化 3 版</span></div>
+                <div class="pack-meta"><span>剩余 3 次</span><span>已领 9 次</span></div>
+                <button class="btn primary sm" style="width:100%;margin-top:10px" data-toast="已领取「日本滑雪｜亲子向」，可去创作台打开">领取素材包</button>
+              </div>
+            </div>
+            <div class="pack">
+              <div class="pack-cover g-island"><span class="pack-label">巴厘 · 四季</span><span class="pack-count">30 张实景</span></div>
+              <div class="pack-body">
+                <h4>海岛私享｜家庭向</h4>
+                <div class="flags"><span class="pack-flag auth">授权至 12-31</span><span class="pack-flag">匹配 88</span><span class="pack-flag">可差异化 3 版</span></div>
+                <div class="pack-meta"><span>7 天有效</span><span>已领 7 次</span></div>
+                <button class="btn primary sm" style="width:100%;margin-top:10px" data-toast="已领取「海岛私享｜家庭向」，可去创作台打开">领取素材包</button>
+              </div>
+            </div>
           </div>
+          <div class="small muted" style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);line-height:1.7">运营建议（可忽略）：优先写「京都亲子赏枫」，热度 +38%、供给偏少。</div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head"><h3>待办</h3><span class="badge">2 项</span></div>
+          <div class="rule-row"><div><b>1 条发布待回填</b><span>「北海道滑雪，孩子第一次上雪场」已超过 24 小时</span></div><button class="btn sm" data-goto="p-content">去回填</button></div>
+          <div class="rule-row"><div><b>2 个素材包可领</b><span>本周还剩 3 次领取额度</span></div><button class="btn sm" data-goto="p-packs">去领取</button></div>
         </div>
 
         <div class="card" style="padding:8px 14px 14px">
@@ -2502,9 +2542,11 @@ select:focus,input:focus,textarea:focus{border-color:var(--pine2)}
     var keys = activeKeys();
     var d = trackData[keys[0]] || trackData.travel;
     var chips = $('#dirChips');
-    if(chips) chips.innerHTML = Object.keys(trackData).map(function(k){
+    if(chips) chips.innerHTML = (directions.length ? '' : '<span class="dir-empty">未选择时展示全部方向</span>') + Object.keys(trackData).map(function(k){
       return '<button class="dir-chip' + (directions.indexOf(k) > -1 ? ' active' : '') + '" data-dir="' + k + '">' + trackData[k].name + '</button>';
     }).join('');
+    var dirCount = $('#dirCount');
+    if(dirCount) dirCount.textContent = directions.length ? '已选 ' + directions.length + ' 个' : '未选择';
     var scope = $('#trackScope');
     if(scope) scope.textContent = '当前关注：' + (directions.length ? directions.map(function(k){return trackData[k].name}).join(' · ') : '全部方向（未选择时展示全部）') + ' · 人设「' + d.persona + '」＋ 目的地「日本 / 海岛」。关注方向由你自己选，可多选，也可以不选。';
     var mapTrack = $('#mapTrack');
